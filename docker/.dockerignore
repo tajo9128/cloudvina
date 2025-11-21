@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.log
+*.swp
+.DS_Store
+.env
+.venv
+venv/
+test_data/
+*.pdb
+*.sdf
+*.pdbqt
