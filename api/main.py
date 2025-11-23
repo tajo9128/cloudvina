@@ -263,27 +263,6 @@ async def start_job(
             'batch_job_id': batch_job_id
         }).eq('id', job_id).execute()
         
-        return {
-            "job_id": job_id,
-            "batch_job_id": batch_job_id,
-            "status": "SUBMITTED",
-            "message": "Job submitted to compute queue"
-        }
-    
-    except HTTPException:
-        raise
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to start job: {str(e)}"
-        )
-
-@app.get("/jobs/{job_id}")
-async def get_job(
-    job_id: str,
-    current_user: dict = Depends(get_current_user)
-):
-    """
     Get job status and results
     """
     try:
