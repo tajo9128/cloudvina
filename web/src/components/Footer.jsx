@@ -28,7 +28,7 @@ export default function Footer() {
                         <ul className="space-y-2 text-gray-400 text-sm">
                             <li><Link to="/about" className="hover:text-white">About Us</Link></li>
                             <li><Link to="/blog" className="hover:text-white">Blog</Link></li>
-                            <li><a href="mailto:cloudvina2025@gmail.com" className="hover:text-white">Contact</a></li>
+                            <li><Link to="/contact" className="hover:text-white">Contact</Link></li>
                         </ul>
                     </div>
                     <div>
