@@ -47,15 +47,7 @@ export default function JobResultsPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <Link to="/" className="flex items-center space-x-2 text-gray-800">
-                        <div className="text-2xl">🧬</div>
-                        <h1 className="text-xl font-bold">CloudVina</h1>
-                    </Link>
-                    <Link to="/dashboard" className="text-gray-600 hover:text-purple-600 font-medium">Dashboard</Link>
-                </div>
-            </header>
+
 
             <main className="container mx-auto px-4 py-12">
                 <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">

@@ -59,19 +59,7 @@ export default function ConverterPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <Link to="/" className="flex items-center space-x-2 text-gray-800 hover:text-purple-600 transition">
-                        <div className="text-2xl">🧬</div>
-                        <h1 className="text-xl font-bold">CloudVina</h1>
-                    </Link>
-                    <div className="flex gap-4">
-                        <Link to="/dashboard" className="text-gray-600 hover:text-purple-600 font-medium">Dashboard</Link>
-                        <Link to="/login" className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">Sign In</Link>
-                    </div>
-                </div>
-            </header>
+
 
             <div className="container mx-auto px-4 py-12">
                 <div className="max-w-2xl mx-auto">
@@ -121,8 +109,8 @@ export default function ConverterPage() {
                                 type="submit"
                                 disabled={!file || loading}
                                 className={`w-full py-3 rounded-lg font-semibold text-white transition ${!file || loading
-                                        ? 'bg-gray-400 cursor-not-allowed'
-                                        : 'bg-purple-600 hover:bg-purple-700 shadow-md'
+                                    ? 'bg-gray-400 cursor-not-allowed'
+                                    : 'bg-purple-600 hover:bg-purple-700 shadow-md'
                                     }`}
                             >
                                 {loading ? (

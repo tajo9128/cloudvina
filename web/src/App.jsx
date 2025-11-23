@@ -64,8 +64,13 @@ function App() {
                             path="/dock/:jobId"
                             element={session ? <JobResultsPage /> : <Navigate to="/login" />}
                         />
+                        import BlogPage from './pages/BlogPage'
+
+                        // ...
+
                         <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} />
                         <Route path="/tools/converter" element={<ConverterPage />} />
+                        <Route path="/blog" element={<BlogPage />} />
                     </Routes>
                 </Layout>
             </BrowserRouter>
