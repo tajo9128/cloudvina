@@ -74,6 +74,9 @@ S3_BUCKET = os.getenv("S3_BUCKET", "cloudvina-jobs-use1-1763775915")
 class SignupRequest(BaseModel):
     email: EmailStr
     password: str
+    phone: str
+    designation: str
+    organization: str
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -128,19 +131,38 @@ def health_check():
 @app.post("/auth/signup", status_code=status.HTTP_201_CREATED)
 async def signup(request: SignupRequest):
     """
-    Create a new user account
+    Create a new user account with verification required
+    Requires: email, password, phone, designation, organization
     """
     try:
+        # Create auth user
         response = supabase.auth.sign_up({
             "email": request.email,
-            "password": request.password
+            "password": request.password,
+            "options": {
+                "data": {
+                    "phone": request.phone,
+                    "designation": request.designation,
+                    "organization": request.organization
+                }
+            }
         })
         
         if response.user:
-            # Initialize user credits
+            # Initialize user credits (free tier)
             supabase.table('user_credits').insert({
                 'user_id': response.user.id,
-                'credits': 10  # Free trial credits
+                'credits': 10,  # Free trial credits
+                'plan': 'free'
+            }).execute()
+            
+            # Create user profile
+            supabase.table('user_profiles').insert({
+                'id': response.user.id,
+                'phone': request.phone,
+                'phone_verified': False,  # Needs verification
+                'designation': request.designation,
+                'organization': request.organization
             }).execute()
         
         return {
@@ -148,7 +170,7 @@ async def signup(request: SignupRequest):
                 "id": response.user.id,
                 "email": response.user.email
             },
-            "message": "Account created successfully. Please check your email for verification."
+            "message": "Account created successfully. Please verify your email (check your inbox) and phone number before submitting jobs."
         }
     
     except Exception as e:
@@ -194,8 +216,27 @@ async def submit_job(
 ):
     """
     Submit a new docking job and get upload URLs
+    Includes rate limiting: 3 jobs/day for free users
+    Requires email and phone verification
     """
     try:
+        # Import rate limiter
+        from api.services.rate_limiter import RateLimiter
+        
+        # Check if user can submit job (verification + rate limit)
+        eligibility = await RateLimiter.check_can_submit(supabase, current_user.id)
+        
+        if not eligibility['allowed']:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail={
+                    "error": eligibility['message'],
+                    "reason": eligibility.get('reason'),
+                    "jobs_today": eligibility.get('jobs_today'),
+                    "limit": eligibility.get('limit')
+                }
+            )
+        
         # Generate unique job ID
         job_id = str(uuid.uuid4())
         
@@ -215,15 +256,21 @@ async def submit_job(
             'ligand_s3_key': ligand_key
         }).execute()
         
+        # Increment daily usage (for rate limiting)
+        await RateLimiter.increment_usage(supabase, current_user.id)
+        
         return {
             "job_id": job_id,
             "upload_urls": {
                 "receptor": receptor_url,
                 "ligand": ligand_url
             },
-            "message": "Upload your files to the provided URLs, then call /jobs/{job_id}/start"
+            "message": "Upload your files to the provided URLs, then call /jobs/{job_id}/start",
+            "remaining_jobs_today": eligibility.get('remaining_today')
         }
     
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
