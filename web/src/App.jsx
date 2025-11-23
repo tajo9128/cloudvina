@@ -10,6 +10,7 @@ import DashboardPage from './pages/DashboardPage'
 import NewJobPage from './pages/NewJobPage'
 import JobResultsPage from './pages/JobResultsPage'
 import ConverterPage from './pages/ConverterPage'
+import AdminPage from './pages/AdminPage'
 
 const queryClient = new QueryClient()
 
@@ -58,6 +59,7 @@ function App() {
                         path="/dock/:jobId"
                         element={session ? <JobResultsPage /> : <Navigate to="/login" />}
                     />
+                    <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} />
                     <Route path="/tools/converter" element={<ConverterPage />} />
                 </Routes>
             </BrowserRouter>

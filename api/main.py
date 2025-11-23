@@ -19,6 +19,7 @@ from aws_services import (
     get_batch_job_status
 )
 from tools import router as tools_router
+from admin import router as admin_router
 
 app = FastAPI(
     title="CloudVina API",
@@ -27,6 +28,7 @@ app = FastAPI(
 )
 
 app.include_router(tools_router)
+app.include_router(admin_router)
 
 # CORS middleware for frontend
 app.add_middleware(
