@@ -352,3 +352,35 @@ async def get_activity_logs(
             detail=f"Failed to fetch activity logs: {str(e)}"
         )
 
+
+@router.post("/fix-s3-cors")
+async def fix_s3_cors(admin_user: dict = Depends(get_admin_user)):
+    """Configure S3 CORS to allow uploads from any origin"""
+    import boto3
+    import os
+    
+    try:
+        AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+        S3_BUCKET = os.getenv("S3_BUCKET", "cloudvina-jobs-use1-1763775915")
+        
+        s3 = boto3.client('s3', region_name=AWS_REGION)
+        
+        cors_configuration = {
+            'CORSRules': [{
+                'AllowedHeaders': ['*'],
+                'AllowedMethods': ['GET', 'PUT', 'POST', 'HEAD'],
+                'AllowedOrigins': ['*'],
+                'ExposeHeaders': ['ETag'],
+                'MaxAgeSeconds': 3000
+            }]
+        }
+        
+        s3.put_bucket_cors(Bucket=S3_BUCKET, CORSConfiguration=cors_configuration)
+        
+        return {"message": f"Successfully configured CORS for bucket: {S3_BUCKET}"}
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to configure CORS: {str(e)}"
+        )
