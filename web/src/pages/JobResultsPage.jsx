@@ -60,7 +60,7 @@ export default function JobResultsPage() {
     if (!job) return <div className="text-center py-12">Job not found</div>
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
 
             <main className="container mx-auto px-4 py-12">
                 <div className="max-w-5xl mx-auto">
