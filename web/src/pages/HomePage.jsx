@@ -68,24 +68,56 @@ export default function HomePage() {
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-bold text-gray-900 mb-4">Why CloudVina?</h2>
                         <p className="text-gray-600 max-w-2xl mx-auto">
-                            Built for researchers who need speed, reliability, and simplicity.
+                            Built for researchers who needspeed, reliability, and flexibility.
                         </p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
                         <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div className="text-4xl mb-4">🎁</div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Generous Free Tier</h3>
+                            <p className="text-gray-600">
+                                <strong>100 bonus credits</strong> on signup (30-day expiry) + <strong>30 monthly credits</strong> (recurring).
+                                Start with 130 credits for free!
+                            </p>
+                        </div>
+                        <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
                             <div className="text-4xl mb-4">⚡</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Lightning Fast</h3>
-                            <p className="text-gray-600">Powered by AWS Fargate. Run hundreds of docking jobs in parallel without waiting for queues.</p>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Smart Rate Limiting</h3>
+                            <p className="text-gray-600">
+                                Free users: <strong>3 jobs/day</strong> for first month, then 1/day.
+                                Paid users: <strong>unlimited daily jobs</strong> - use credits anytime!
+                            </p>
+                        </div>
+                        <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div className="text-4xl mb-4">💎</div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Credits Never Expire</h3>
+                            <p className="text-gray-600">
+                                Paid plan credits <strong>never expire</strong>. Use them at your own pace.
+                                Auto-downgrade to free tier when exhausted.
+                            </p>
                         </div>
                         <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
                             <div className="text-4xl mb-4">🔒</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Secure & Private</h3>
-                            <p className="text-gray-600">Your data is encrypted in transit and at rest. We use ephemeral containers that are destroyed after use.</p>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Secure & Verified</h3>
+                            <p className="text-gray-600">
+                                Email and phone verification required for all users.
+                                Your data is encrypted and containers destroyed after use.
+                            </p>
                         </div>
                         <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div className="text-4xl mb-4">💰</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Cost Effective</h3>
-                            <p className="text-gray-600">Pay only for the compute you use. No monthly fees or hidden infrastructure costs.</p>
+                            <div className="text-4xl mb-4">🇮🇳</div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Built for India</h3>
+                            <p className="text-gray-600">
+                                Affordable pricing in <strong>Indian Rupees</strong> (₹).
+                                Student plans starting at just ₹99/month. Special rates for institutions.
+                            </p>
+                        </div>
+                        <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
+                            <div className="text-4xl mb-4">⚙️</div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">AWS Powered</h3>
+                            <p className="text-gray-600">
+                                Powered by AWS Fargate. Run hundreds of docking jobs in parallel without waiting for queues.
+                            </p>
                         </div>
                     </div>
                 </div>
