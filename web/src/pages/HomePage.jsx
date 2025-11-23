@@ -8,19 +8,26 @@ export default function HomePage() {
             {/* Hero Section */}
             <section className="pt-12 pb-20 bg-gradient-to-b from-purple-50 to-white">
                 <div className="container mx-auto px-4 text-center">
+                    <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-bold mb-6">
+                        🎉 Get 130 FREE Credits on Signup!
+                    </div>
                     <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
                         Molecular Docking <br />
-                        <span className="text-purple-600">at Cloud Scale</span>
+                        <span className="text-purple-600">for Indian Researchers</span>
                     </h1>
-                    <p className="text-xl text-gray-600 mb-10 max-w-2xl mx-auto">
-                        Accelerate your drug discovery pipeline with our high-performance, secure, and scalable AutoDock Vina platform. No infrastructure to manage.
+                    <p className="text-xl text-gray-600 mb-4 max-w-2xl mx-auto">
+                        Start with <strong>100 bonus credits</strong> + <strong>30 monthly credits</strong> for free.
+                        No credit card required.
+                    </p>
+                    <p className="text-lg text-gray-500 mb-10 max-w-2xl mx-auto">
+                        High-performance AutoDock Vina platform powered by AWS. Affordable pricing in ₹. Built for students, researchers, and institutions.
                     </p>
                     <div className="flex justify-center gap-4">
-                        <Link to="/dock/new" className="bg-purple-600 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-purple-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            Launch Job
+                        <Link to="/login" className="bg-purple-600 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-purple-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
+                            Start Free with 130 Credits
                         </Link>
-                        <a href="#features" className="bg-white text-gray-700 px-8 py-4 rounded-xl text-lg font-bold border border-gray-200 hover:border-purple-200 hover:bg-purple-50 transition shadow-sm">
-                            Learn More
+                        <a href="#pricing" className="bg-white text-gray-700 px-8 py-4 rounded-xl text-lg font-bold border border-gray-200 hover:border-purple-200 hover:bg-purple-50 transition shadow-sm">
+                            View Pricing
                         </a>
                     </div>
                 </div>
