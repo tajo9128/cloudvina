@@ -48,6 +48,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# NEW: Activity logging middleware for audit trail
+from api.middleware.activity_logger import ActivityLoggerMiddleware
+app.add_middleware(ActivityLoggerMiddleware)
+
 # NEW: Setup SQLAdmin (Django-style admin panel at /sqladmin)
 admin = setup_admin(app)
 

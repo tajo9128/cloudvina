@@ -271,3 +271,84 @@ async def get_system_stats(admin_user: dict = Depends(get_admin_user)):
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to fetch stats: {str(e)}"
         )
+
+# ============================================================================
+# Analytics Endpoints (NEW for Phase 6)
+# ============================================================================
+
+from api.services.analytics import AnalyticsService
+from api.models import ActivityLog, async_session_maker
+from sqlalchemy import select
+
+@router.get("/analytics")
+async def get_analytics(admin_user: dict = Depends(get_admin_user)):
+    """Get comprehensive analytics dashboard data"""
+    try:
+        service = AnalyticsService()
+        stats = await service.get_dashboard_stats()
+        return stats
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch analytics: {str(e)}"
+        )
+
+@router.get("/analytics/timeline")
+async def get_job_timeline(
+    days: int = 7,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Get job submission timeline for charts"""
+    try:
+        service = AnalyticsService()
+        timeline = await service.get_job_timeline(days)
+        return timeline
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch timeline: {str(e)}"
+        )
+
+@router.get("/activity-logs")
+async def get_activity_logs(
+    skip: int = 0,
+    limit: int = 100,
+    action: Optional[str] = None,
+    resource_type: Optional[str] = None,
+    admin_user: dict = Depends(get_admin_user)
+):
+    """Get recent activity logs with optional filters"""
+    try:
+        async with async_session_maker() as session:
+            query = select(ActivityLog).order_by(ActivityLog.created_at.desc())
+            
+            if action:
+                query = query.where(ActivityLog.action.contains(action))
+            
+            if resource_type:
+                query = query.where(ActivityLog.resource_type == resource_type)
+            
+            query = query.offset(skip).limit(limit)
+            
+            result = await session.execute(query)
+            logs = result.scalars().all()
+            
+            return [
+                {
+                    "id": str(log.id),
+                    "user_id": str(log.user_id) if log.user_id else None,
+                    "action": log.action,
+                    "resource_type": log.resource_type,
+                    "resource_id": log.resource_id,
+                    "details": log.details,
+                    "ip_address": str(log.ip_address) if log.ip_address else None,
+                    "created_at": log.created_at.isoformat()
+                }
+                for log in logs
+            ]
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch activity logs: {str(e)}"
+        )
+
