@@ -1,27 +1,48 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import { Link } from 'react-router-dom'
+import JobFilters from '../components/JobFilters'
+import ExportButtons from '../components/ExportButtons'
 
 export default function DashboardPage() {
     const [jobs, setJobs] = useState([])
     const [loading, setLoading] = useState(true)
+    const [filters, setFilters] = useState({
+        status: '',
+        search: '',
+        minAffinity: '',
+        maxAffinity: ''
+    })
 
     useEffect(() => {
         fetchJobs()
-    }, [])
+    }, [filters])
 
     const fetchJobs = async () => {
         try {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) return
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) return
 
-            const { data, error } = await supabase
-                .from('jobs')
-                .select('*')
-                .eq('user_id', user.id)
-                .order('created_at', { ascending: false })
+            // Call API with filters
+            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+            const params = new URLSearchParams()
 
-            if (error) throw error
+            if (filters.status) params.append('status', filters.status)
+            if (filters.search) params.append('search', filters.search)
+            if (filters.minAffinity) params.append('min_affinity', filters.minAffinity)
+            if (filters.maxAffinity) params.append('max_affinity', filters.maxAffinity)
+
+            const url = `${apiUrl}/jobs?${params.toString()}`
+
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`
+                }
+            })
+
+            if (!response.ok) throw new Error('Failed to fetch jobs')
+
+            const data = await response.json()
             setJobs(data)
         } catch (error) {
             console.error('Error fetching jobs:', error)
@@ -30,17 +51,27 @@ export default function DashboardPage() {
         }
     }
 
+    const handleFilterChange = (newFilters) => {
+        setFilters(newFilters)
+        setLoading(true)
+    }
+
     return (
         <div className="min-h-screen bg-gray-50">
-
 
             <main className="container mx-auto px-4 py-8">
                 <div className="flex justify-between items-center mb-8">
                     <h1 className="text-2xl font-bold text-gray-900">Your Docking Jobs</h1>
-                    <Link to="/dock/new" className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
-                        + New Job
-                    </Link>
+                    <div className="flex gap-3">
+                        <ExportButtons />
+                        <Link to="/dock/new" className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                            + New Job
+                        </Link>
+                    </div>
                 </div>
+
+                {/* Job Filters */}
+                <JobFilters onFilterChange={handleFilterChange} />
 
                 {loading ? (
                     <div className="text-center py-12">Loading jobs...</div>

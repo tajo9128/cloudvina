@@ -1,12 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
+import MoleculeViewer from '../components/MoleculeViewer'
+import ExportButtons from '../components/ExportButtons'
 
 export default function JobResultsPage() {
     const { jobId } = useParams()
     const [job, setJob] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
+    const [pdbqtData, setPdbqtData] = useState(null)
 
     useEffect(() => {
         fetchJob()
@@ -34,6 +37,17 @@ export default function JobResultsPage() {
             if (!res.ok) throw new Error('Failed to fetch job')
             const data = await res.json()
             setJob(data)
+
+            // Fetch PDBQT data if succeeded
+            if (data.status === 'SUCCEEDED' && data.download_urls?.output && !pdbqtData) {
+                try {
+                    const pdbqtRes = await fetch(data.download_urls.output)
+                    const pdbqtText = await pdbqtRes.text()
+                    setPdbqtData(pdbqtText)
+                } catch (err) {
+                    console.error('Failed to fetch PDBQT:', err)
+                }
+            }
         } catch (err) {
             setError(err.message)
         } finally {
@@ -48,16 +62,18 @@ export default function JobResultsPage() {
     return (
         <div className="min-h-screen bg-gray-50">
 
-
             <main className="container mx-auto px-4 py-12">
-                <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-                    <div className="bg-purple-600 px-8 py-6 flex justify-between items-center">
-                        <h1 className="text-2xl font-bold text-white">Job Details</h1>
-                        <span className="text-purple-200 font-mono text-sm">{job.job_id}</span>
-                    </div>
+                <div className="max-w-5xl mx-auto">
+                    {/* Header */}
+                    <div className="bg-white rounded-xl shadow-lg overflow-hidden mb-6">
+                        <div className="bg-purple-600 px-8 py-6 flex justify-between items-center">
+                            <h1 className="text-2xl font-bold text-white">Job Details</h1>
+                            <div className="flex items-center gap-4">
+                                <span className="text-purple-200 font-mono text-sm">{job.job_id}</span>
+                                <ExportButtons jobId={jobId} className="hidden md:flex" />
+                            </div>
+                        </div>
 
-                    <div className="p-8 space-y-8">
-                        {/* Status Section */}
                         <div className="flex items-center justify-between border-b border-gray-100 pb-8">
                             <div>
                                 <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Status</h2>
@@ -83,34 +99,18 @@ export default function JobResultsPage() {
                                     <div className="mt-2 text-3xl font-bold text-gray-900">{job.binding_affinity} <span className="text-lg text-gray-400 font-normal">kcal/mol</span></div>
                                 </div>
                             )}
-                        </div>
-
-                        {/* Downloads Section */}
-                        {job.status === 'SUCCEEDED' && job.download_urls && (
-                            <div>
-                                <h2 className="text-lg font-bold text-gray-900 mb-4">Results & Logs</h2>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <a href={job.download_urls.output} className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 shadow-sm">
-                                        Download PDBQT Output
-                                    </a>
-                                    <a href={job.download_urls.log} className="flex items-center justify-center px-4 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 shadow-sm">
-                                        View Log File
-                                    </a>
+                            )}
+                            {/* Failure Message */}
+                            {job.status === 'FAILED' && (
+                                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                    <h3 className="text-red-800 font-bold mb-2">Job Failed</h3>
+                                    <p className="text-red-600 text-sm">
+                                        Please check your input files and try again. Ensure your ligand and receptor are correctly prepared.
+                                    </p>
                                 </div>
-                            </div>
-                        )}
-
-                        {/* Failure Message */}
-                        {job.status === 'FAILED' && (
-                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                <h3 className="text-red-800 font-bold mb-2">Job Failed</h3>
-                                <p className="text-red-600 text-sm">
-                                    Please check your input files and try again. Ensure your ligand and receptor are correctly prepared.
-                                </p>
-                            </div>
-                        )}
+                            )}
+                        </div>
                     </div>
-                </div>
             </main>
         </div>
     )
