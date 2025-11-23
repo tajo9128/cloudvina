@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 export default function HomePage() {
     return (
-        <div className="bg-white">
+        <div className="bg-gradient-to-br from-purple-50 via-white to-blue-50 min-h-screen">
             {/* Hero Section */}
             <section className="pt-12 pb-20 bg-gradient-to-b from-purple-50 to-white">
                 <div className="container mx-auto px-4 text-center">
