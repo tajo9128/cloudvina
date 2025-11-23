@@ -1,11 +1,31 @@
 from fastapi import HTTPException, status
 from supabase import Client
-from datetime import date
+from datetime import date, datetime
 
 class RateLimiter:
-    """Rate limiting for free tier users"""
+    """
+    Rate limiting for free tier users
+    - First 30 days: 3 jobs/day
+    - After 30 days: 1 job/day
+    """
     
-    FREE_TIER_DAILY_LIMIT = 3
+    @staticmethod
+    def get_daily_limit(account_created_at: datetime, plan: str) -> int:
+        """
+        Get daily job limit based on account age and plan
+        """
+        if plan and plan != 'free':
+            return 99999  # Paid users: no limit
+        
+        # Calculate account age in days
+        age_days = (datetime.now() - account_created_at).days
+        
+        # First 30 days: 3 jobs/day
+        if age_days < 30:
+            return 3
+        else:
+            # After 30 days: 1 job/day
+            return 1
     
     @staticmethod
     async def check_can_submit(supabase: Client, user_id: str) -> dict:
@@ -32,8 +52,8 @@ class RateLimiter:
                     "reason": "phone_not_verified"
                 }
             
-            # Check user plan
-            credits_response = supabase.table('user_credits').select('plan, credits').eq('user_id', user_id).single().execute()
+            # Get user credits and account info
+            credits_response = supabase.table('user_credits').select('plan, credits, account_created_at').eq('user_id', user_id).single().execute()
             
             if not credits_response.data:
                 return {
@@ -44,6 +64,10 @@ class RateLimiter:
             
             user_plan = credits_response.data.get('plan', 'free')
             user_credits = credits_response.data.get('credits', 0)
+            account_created_str = credits_response.data.get('account_created_at')
+            
+            # Parse account creation date
+            account_created_at = datetime.fromisoformat(account_created_str.replace('Z', '+00:00')) if account_created_str else datetime.now()
             
             # Check if user has credits
             if user_credits <= 0:
@@ -53,12 +77,16 @@ class RateLimiter:
                     "reason": "no_credits"
                 }
             
+            # Get dynamic daily limit
+            daily_limit = RateLimiter.get_daily_limit(account_created_at, user_plan)
+            
             # Paid users: only check credits, no daily limit
             if user_plan and user_plan != 'free':
                 return {
                     "allowed": True,
                     "message": "Job submission allowed",
-                    "credits_remaining": user_credits
+                    "credits_remaining": user_credits,
+                    "daily_limit": None
                 }
             
             # Free users: check daily limit
@@ -73,21 +101,28 @@ class RateLimiter:
             if usage_response.data and len(usage_response.data) > 0:
                 jobs_today = usage_response.data[0].get('job_count', 0)
             
-            if jobs_today >= RateLimiter.FREE_TIER_DAILY_LIMIT:
+            if jobs_today >= daily_limit:
+                account_age = (datetime.now() - account_created_at).days
+                message = f"Daily limit reached. You can submit {daily_limit} job{'s' if daily_limit > 1 else ''} per day "
+                if account_age < 30:
+                    message += f"(first month bonus). Try again in 24 hours or upgrade for unlimited access."
+                else:
+                    message += f"(1 per day after first month). Upgrade for unlimited access."
+                
                 return {
                     "allowed": False,
-                    "message": f"Daily limit reached. Free users can submit {RateLimiter.FREE_TIER_DAILY_LIMIT} jobs per day. Please try again in 24 hours or upgrade to a paid plan for unlimited daily jobs.",
+                    "message": message,
                     "reason": "daily_limit_reached",
                     "jobs_today": jobs_today,
-                    "limit": RateLimiter.FREE_TIER_DAILY_LIMIT
+                    "limit": daily_limit
                 }
             
             return {
                 "allowed": True,
                 "message": "Job submission allowed",
                 "jobs_today": jobs_today,
-                "limit": RateLimiter.FREE_TIER_DAILY_LIMIT,
-                "remaining_today": RateLimiter.FREE_TIER_DAILY_LIMIT - jobs_today,
+                "limit": daily_limit,
+                "remaining_today": daily_limit - jobs_today,
                 "credits_remaining": user_credits
             }
             

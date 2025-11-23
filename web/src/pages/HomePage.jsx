@@ -103,32 +103,32 @@ export default function HomePage() {
                         <div className="bg-white p-8 rounded-2xl border-2 border-gray-200 hover:border-purple-300 hover:shadow-lg transition">
                             <div className="mb-6">
                                 <div className="text-green-600 font-bold text-sm mb-2">FREE FOREVER</div>
-                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Free Trial</h3>
+                                <h3 className="text-2xl font-bold text-gray-900 mb-2">Free Plan</h3>
                                 <div className="flex items-baseline mb-4">
                                     <span className="text-5xl font-bold text-gray-900">₹0</span>
                                 </div>
-                                <p className="text-gray-600 text-sm">Perfect for trying molecular docking</p>
+                                <p className="text-gray-600 text-sm">Perfect for students getting started</p>
                             </div>
                             <ul className="space-y-3 mb-8">
                                 <li className="flex items-start text-sm">
                                     <span className="text-green-600 mr-2 mt-0.5">✓</span>
-                                    <span>10 free docking jobs</span>
+                                    <span><strong>100 bonus credits</strong> (30-day signup bonus)</span>
                                 </li>
                                 <li className="flex items-start text-sm">
                                     <span className="text-green-600 mr-2 mt-0.5">✓</span>
-                                    <span>Valid for 30 days</span>
+                                    <span><strong>30 credits/month</strong> (recurring, 1/day)</span>
                                 </li>
                                 <li className="flex items-start text-sm">
                                     <span className="text-green-600 mr-2 mt-0.5">✓</span>
-                                    <span>Basic support</span>
+                                    <span><strong>3 jobs/day</strong> (first month)</span>
                                 </li>
                                 <li className="flex items-start text-sm">
                                     <span className="text-green-600 mr-2 mt-0.5">✓</span>
-                                    <span>Community access</span>
+                                    <span>1 job/day (after 1st month)</span>
                                 </li>
                                 <li className="flex items-start text-sm">
                                     <span className="text-green-600 mr-2 mt-0.5">✓</span>
-                                    <span>Download results</span>
+                                    <span>Email & phone verification</span>
                                 </li>
                             </ul>
                             <Link to="/login" className="block w-full py-3 px-6 text-center border-2 border-purple-600 text-purple-600 font-bold rounded-xl hover:bg-purple-50 transition">
@@ -155,7 +155,11 @@ export default function HomePage() {
                             <ul className="space-y-3 mb-8">
                                 <li className="flex items-start text-sm">
                                     <span className="text-purple-600 mr-2 mt-0.5">✓</span>
-                                    <span><strong>100 jobs/month</strong> (~3 per day)</span>
+                                    <span><strong>100 jobs/month</strong> (never expire)</span>
+                                </li>
+                                <li className="flex items-start text-sm">
+                                    <span className="text-purple-600 mr-2 mt-0.5">✓</span>
+                                    <span>No daily limit</span>
                                 </li>
                                 <li className="flex items-start text-sm">
                                     <span className="text-purple-600 mr-2 mt-0.5">✓</span>
@@ -196,7 +200,11 @@ export default function HomePage() {
                             <ul className="space-y-3 mb-8">
                                 <li className="flex items-start text-sm">
                                     <span className="text-blue-600 mr-2 mt-0.5">✓</span>
-                                    <span><strong>500 jobs/month</strong></span>
+                                    <span><strong>500 jobs/month</strong> (never expire)</span>
+                                </li>
+                                <li className="flex items-start text-sm">
+                                    <span className="text-blue-600 mr-2 mt-0.5">✓</span>
+                                    <span>No daily limit</span>
                                 </li>
                                 <li className="flex items-start text-sm">
                                     <span className="text-blue-600 mr-2 mt-0.5">✓</span>

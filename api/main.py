@@ -149,11 +149,19 @@ async def signup(request: SignupRequest):
         })
         
         if response.user:
-            # Initialize user credits (free tier)
+            # Initialize user credits (free tier with signup bonus)
+            from datetime import datetime, timedelta
+            
             supabase.table('user_credits').insert({
                 'user_id': response.user.id,
-                'credits': 10,  # Free trial credits
-                'plan': 'free'
+                'plan': 'free',
+                'bonus_credits': 100,  # One-time signup bonus (expires in 30 days)
+                'bonus_expiry': (datetime.now() + timedelta(days=30)).isoformat(),
+                'monthly_credits': 30,  # Monthly recurring credits (1 per day)
+                'last_monthly_reset': datetime.now().date().isoformat(),
+                'paid_credits': 0,
+                'account_created_at': datetime.now().isoformat(),
+                'credits': 130  # Legacy field (bonus + monthly)
             }).execute()
             
             # Create user profile
@@ -310,6 +318,26 @@ async def start_job(
             'batch_job_id': batch_job_id
         }).eq('id', job_id).execute()
         
+        return {
+            "job_id": job_id,
+            "status": "SUBMITTED",
+            "message": "Job started successfully"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to start job: {str(e)}"
+        )
+
+@app.get("/jobs/{job_id}", response_model=dict)
+async def get_job_status(
+    job_id: str,
+    current_user: dict = Depends(get_current_user)
+):
+    """
     Get job status and results
     """
     try:
@@ -359,6 +387,7 @@ async def start_job(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get job status: {str(e)}"
         )
+
 
 if __name__ == "__main__":
     import uvicorn
