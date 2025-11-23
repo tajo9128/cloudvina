@@ -9,7 +9,35 @@ export default function JobResultsPage() {
     const [job, setJob] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
-    const [pdbqtData, setPdbqtData] = useState(null)
+    const [elapsedTime, setElapsedTime] = useState(0)
+    const ESTIMATED_DURATION = 300 // 5 minutes in seconds
+
+    useEffect(() => {
+        let timer
+        if (job && ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(job.status)) {
+            // Calculate elapsed time based on created_at if available, otherwise start from 0
+            const startTime = job.created_at ? new Date(job.created_at).getTime() : Date.now()
+            
+            timer = setInterval(() => {
+                const now = Date.now()
+                const seconds = Math.floor((now - startTime) / 1000)
+                setElapsedTime(seconds)
+            }, 1000)
+        }
+        return () => clearInterval(timer)
+    }, [job])
+
+    const getProgressColor = (percentage) => {
+        if (percentage < 30) return 'bg-blue-500'
+        if (percentage < 70) return 'bg-purple-500'
+        return 'bg-green-500'
+    }
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60)
+        const secs = seconds % 60
+        return `${mins}m ${secs}s`
+    }
 
     useEffect(() => {
         fetchJob()
@@ -59,6 +87,9 @@ export default function JobResultsPage() {
     if (error) return <div className="text-center py-12 text-red-600">{error}</div>
     if (!job) return <div className="text-center py-12">Job not found</div>
 
+    const progressPercentage = Math.min((elapsedTime / ESTIMATED_DURATION) * 100, 99)
+    const remainingSeconds = Math.max(ESTIMATED_DURATION - elapsedTime, 0)
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
 
@@ -74,7 +105,26 @@ export default function JobResultsPage() {
                             </div>
                         </div>
 
-                        <div className="flex items-center justify-between border-b border-gray-100 pb-8">
+                        {/* Progress Bar Section */}
+                        {['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(job.status) && (
+                            <div className="px-8 py-6 bg-gray-50 border-b border-gray-100">
+                                <div className="flex justify-between text-sm font-medium text-gray-600 mb-2">
+                                    <span>Progress</span>
+                                    <span>Estimated Time Remaining: {formatTime(remainingSeconds)}</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2.5">
+                                    <div 
+                                        className={`h-2.5 rounded-full transition-all duration-500 ${getProgressColor(progressPercentage)}`} 
+                                        style={{ width: `${progressPercentage}%` }}
+                                    ></div>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-2 text-center">
+                                    Typical duration: 2-10 minutes. Please do not close this tab.
+                                </p>
+                            </div>
+                        )}
+
+                        <div className="flex items-center justify-between border-b border-gray-100 pb-8 px-8 pt-6">
                             <div>
                                 <h2 className="text-sm font-medium text-gray-500 uppercase tracking-wide">Status</h2>
                                 <div className="mt-2 flex items-center">

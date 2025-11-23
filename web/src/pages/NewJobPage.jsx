@@ -10,37 +10,57 @@ export default function NewJobPage() {
     const [ligandFile, setLigandFile] = useState(null)
     const [error, setError] = useState(null)
 
-    // Verification State
-    const [isVerified, setIsVerified] = useState(true) // Assume true until checked
-    const [userPhone, setUserPhone] = useState('')
-    const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false)
-    const [checkingVerification, setCheckingVerification] = useState(true)
+    // Job Progress State
+    const [submittedJob, setSubmittedJob] = useState(null)
+    const [elapsedTime, setElapsedTime] = useState(0)
+    const ESTIMATED_DURATION = 300 // 5 minutes
 
     useEffect(() => {
-        checkVerification()
-    }, [])
-
-    const checkVerification = async () => {
-        try {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (!user) return
-
-            // Check profile for phone verification
-            const { data: profile } = await supabase
-                .from('user_profiles')
-                .select('phone, phone_verified')
-                .eq('id', user.id)
-                .single()
-
-            if (profile) {
-                setUserPhone(profile.phone)
-                setIsVerified(profile.phone_verified)
-            }
-        } catch (err) {
-            console.error('Error checking verification:', err)
-        } finally {
-            setCheckingVerification(false)
+        let timer
+        if (submittedJob && ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(submittedJob.status)) {
+            const startTime = submittedJob.created_at ? new Date(submittedJob.created_at).getTime() : Date.now()
+            timer = setInterval(() => {
+                const now = Date.now()
+                setElapsedTime(Math.floor((now - startTime) / 1000))
+            }, 1000)
         }
+        return () => clearInterval(timer)
+    }, [submittedJob])
+
+    useEffect(() => {
+        let poller
+        if (submittedJob && ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(submittedJob.status)) {
+            poller = setInterval(async () => {
+                try {
+                    const { data: { session } } = await supabase.auth.getSession()
+                    if (!session) return
+
+                    const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+                    const res = await fetch(`${apiUrl}/jobs/${submittedJob.job_id}`, {
+                        headers: { 'Authorization': `Bearer ${session.access_token}` }
+                    })
+                    if (res.ok) {
+                        const data = await res.json()
+                        setSubmittedJob(data)
+                    }
+                } catch (err) {
+                    console.error('Polling error:', err)
+                }
+            }, 5000)
+        }
+        return () => clearInterval(poller)
+    }, [submittedJob])
+
+    const getProgressColor = (percentage) => {
+        if (percentage < 30) return 'bg-blue-500'
+        if (percentage < 70) return 'bg-purple-500'
+        return 'bg-green-500'
+    }
+
+    const formatTime = (seconds) => {
+        const mins = Math.floor(seconds / 60)
+        const secs = seconds % 60
+        return `${mins}m ${secs}s`
     }
 
     const handleSubmit = async (e) => {
@@ -79,7 +99,6 @@ export default function NewJobPage() {
 
             if (!createRes.ok) {
                 const err = await createRes.json()
-                // If backend returns verification error, show modal
                 if (createRes.status === 403 && err.detail?.reason === 'phone_not_verified') {
                     setIsVerified(false)
                     setIsVerificationModalOpen(true)
@@ -104,7 +123,13 @@ export default function NewJobPage() {
 
             if (!startRes.ok) throw new Error('Failed to start job')
 
-            navigate(`/dock/${job_id}`)
+            // Instead of navigating, set state to show progress
+            setSubmittedJob({
+                job_id,
+                status: 'SUBMITTED',
+                created_at: new Date().toISOString()
+            })
+
         } catch (err) {
             setError(err.message)
         } finally {
@@ -122,6 +147,9 @@ export default function NewJobPage() {
         })
         if (!res.ok) throw new Error(`Failed to upload ${file.name}`)
     }
+
+    const progressPercentage = Math.min((elapsedTime / ESTIMATED_DURATION) * 100, 99)
+    const remainingSeconds = Math.max(ESTIMATED_DURATION - elapsedTime, 0)
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
@@ -166,12 +194,13 @@ export default function NewJobPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Receptor (PDB)
                             </label>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition-colors cursor-pointer relative">
+                            <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors relative ${submittedJob ? 'bg-gray-50 border-gray-200' : 'border-gray-300 hover:border-purple-500 cursor-pointer'}`}>
                                 <input
                                     type="file"
                                     accept=".pdb"
+                                    disabled={!!submittedJob}
                                     onChange={(e) => setReceptorFile(e.target.files[0])}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                                 />
                                 <div className="space-y-1">
                                     <div className="text-3xl">🧬</div>
@@ -189,12 +218,13 @@ export default function NewJobPage() {
                             <label className="block text-sm font-medium text-gray-700 mb-2">
                                 Ligand (PDBQT, SDF, MOL2)
                             </label>
-                            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-purple-500 transition-colors cursor-pointer relative">
+                            <div className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors relative ${submittedJob ? 'bg-gray-50 border-gray-200' : 'border-gray-300 hover:border-purple-500 cursor-pointer'}`}>
                                 <input
                                     type="file"
                                     accept=".pdbqt,.sdf,.mol2"
+                                    disabled={!!submittedJob}
                                     onChange={(e) => setLigandFile(e.target.files[0])}
-                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
                                 />
                                 <div className="space-y-1">
                                     <div className="text-3xl">💊</div>
@@ -213,14 +243,57 @@ export default function NewJobPage() {
                             </div>
                         )}
 
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className={`w-full py-3 rounded-lg font-bold text-white transition ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 shadow-md'
-                                }`}
-                        >
-                            {loading ? 'Submitting...' : 'Launch Docking Job'}
-                        </button>
+                        {!submittedJob ? (
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className={`w-full py-3 rounded-lg font-bold text-white transition ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 shadow-md'
+                                    }`}
+                            >
+                                {loading ? 'Submitting...' : 'Launch Docking Job'}
+                            </button>
+                        ) : (
+                            <div className="space-y-4 animate-in fade-in duration-500">
+                                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                                    <div className="flex justify-between items-center mb-2">
+                                        <span className="font-medium text-gray-700">Status: {submittedJob.status}</span>
+                                        <span className="text-sm text-gray-500">Est. Remaining: {formatTime(remainingSeconds)}</span>
+                                    </div>
+
+                                    {/* Progress Bar */}
+                                    <div className="w-full bg-gray-200 rounded-full h-3 mb-2 overflow-hidden">
+                                        <div
+                                            className={`h-full transition-all duration-500 ${getProgressColor(progressPercentage)}`}
+                                            style={{ width: `${progressPercentage}%` }}
+                                        >
+                                            {['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(submittedJob.status) && (
+                                                <div className="w-full h-full animate-pulse bg-white/20"></div>
+                                            )}
+                                        </div>
+                                    </div>
+
+                                    <p className="text-xs text-gray-500 text-center">
+                                        Job ID: {submittedJob.job_id}
+                                    </p>
+                                </div>
+
+                                {submittedJob.status === 'SUCCEEDED' && (
+                                    <button
+                                        type="button"
+                                        onClick={() => navigate(`/dock/${submittedJob.job_id}`)}
+                                        className="w-full py-3 rounded-lg font-bold text-white bg-green-600 hover:bg-green-700 shadow-md transition animate-bounce"
+                                    >
+                                        View Results 🎉
+                                    </button>
+                                )}
+
+                                {submittedJob.status === 'FAILED' && (
+                                    <div className="text-center text-red-600 font-medium">
+                                        Job Failed. Please try again.
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </form>
                 </div>
             </main>
