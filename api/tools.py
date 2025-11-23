@@ -25,20 +25,20 @@ async def convert_sdf_to_pdbqt(file: UploadFile = File(...)):
         sdf_string = content.decode('utf-8')
 
         # Parse SDF with RDKit
-        suppl = Chem.SDMolSupplier()
-        suppl.SetData(sdf_string)
-        
-        # RDKit SDMolSupplier usually reads from file, so let's use a different approach for bytes
-        # Use MolFromMolBlock if it's a single mol, or iterate
-        # Better: Write to temp buffer or use ForwardSDMolSupplier with stream
-        # Simplest for API: Use Chem.MolFromMolBlock on the string content
-        
+        # Try parsing as a single block first
         mol = Chem.MolFromMolBlock(sdf_string, removeHs=False)
+        
         if mol is None:
-             # Try to parse as multiple mols and take the first one
-            suppl = Chem.SDMolSupplier()
-            suppl.SetData(sdf_string)
-            mol = next(suppl, None)
+            # If that fails, try using ForwardSDMolSupplier with a memory stream
+            # This handles cases with multiple molecules (taking the first) or slightly malformed files
+            stream = io.BytesIO(content)
+            suppl = Chem.ForwardSDMolSupplier(stream, removeHs=False)
+            try:
+                mol = next(suppl)
+            except StopIteration:
+                mol = None
+            except Exception:
+                mol = None
             
         if mol is None:
             raise ValueError("Could not parse SDF file. Ensure it contains valid 3D molecular data.")
