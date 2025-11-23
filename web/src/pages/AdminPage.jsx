@@ -126,19 +126,7 @@ export default function AdminPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            {/* Header */}
-            <header className="bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <Link to="/" className="flex items-center space-x-2 text-gray-800">
-                        <div className="text-2xl">🧬</div>
-                        <h1 className="text-xl font-bold">CloudVina Admin</h1>
-                    </Link>
-                    <div className="flex gap-4">
-                        <Link to="/dashboard" className="text-gray-600 hover:text-purple-600 font-medium">Dashboard</Link>
-                        <button onClick={() => supabase.auth.signOut()} className="text-gray-600 hover:text-red-600">Sign Out</button>
-                    </div>
-                </div>
-            </header>
+
 
             <main className="container mx-auto px-4 py-8">
                 <h1 className="text-2xl font-bold text-gray-900 mb-8">Admin Panel</h1>
@@ -152,8 +140,8 @@ export default function AdminPage() {
                                     key={tab}
                                     onClick={() => setActiveTab(tab)}
                                     className={`py-4 px-1 border-b-2 font-medium text-sm capitalize ${activeTab === tab
-                                            ? 'border-purple-600 text-purple-600'
-                                            : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                                        ? 'border-purple-600 text-purple-600'
+                                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                                         }`}
                                 >
                                     {tab}
@@ -204,8 +192,8 @@ export default function AdminPage() {
                                                             <button
                                                                 onClick={() => toggleVerify(user.id, user.is_verified)}
                                                                 className={`px-3 py-1 rounded-full text-xs font-semibold ${user.is_verified
-                                                                        ? 'bg-green-100 text-green-800'
-                                                                        : 'bg-gray-100 text-gray-800'
+                                                                    ? 'bg-green-100 text-green-800'
+                                                                    : 'bg-gray-100 text-gray-800'
                                                                     }`}
                                                             >
                                                                 {user.is_verified ? 'Verified' : 'Unverified'}

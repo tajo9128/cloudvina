@@ -32,18 +32,7 @@ export default function DashboardPage() {
 
     return (
         <div className="min-h-screen bg-gray-50">
-            <header className="bg-white shadow-sm">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <Link to="/" className="flex items-center space-x-2 text-gray-800">
-                        <div className="text-2xl">🧬</div>
-                        <h1 className="text-xl font-bold">CloudVina</h1>
-                    </Link>
-                    <div className="flex gap-4">
-                        <Link to="/tools/converter" className="text-gray-600 hover:text-purple-600 font-medium">Tools</Link>
-                        <button onClick={() => supabase.auth.signOut()} className="text-gray-600 hover:text-red-600">Sign Out</button>
-                    </div>
-                </div>
-            </header>
+
 
             <main className="container mx-auto px-4 py-8">
                 <div className="flex justify-between items-center mb-8">
