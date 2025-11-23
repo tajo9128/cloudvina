@@ -41,27 +41,33 @@ function App() {
         </div>
     }
 
+    import Layout from './components/Layout'
+
+    // ... (imports)
+
     return (
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
-                <Routes>
-                    <Route path="/" element={<HomePage />} />
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route
-                        path="/dashboard"
-                        element={session ? <DashboardPage /> : <Navigate to="/login" />}
-                    />
-                    <Route
-                        path="/dock/new"
-                        element={session ? <NewJobPage /> : <Navigate to="/login" />}
-                    />
-                    <Route
-                        path="/dock/:jobId"
-                        element={session ? <JobResultsPage /> : <Navigate to="/login" />}
-                    />
-                    <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} />
-                    <Route path="/tools/converter" element={<ConverterPage />} />
-                </Routes>
+                <Layout>
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route
+                            path="/dashboard"
+                            element={session ? <DashboardPage /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/dock/new"
+                            element={session ? <NewJobPage /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/dock/:jobId"
+                            element={session ? <JobResultsPage /> : <Navigate to="/login" />}
+                        />
+                        <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} />
+                        <Route path="/tools/converter" element={<ConverterPage />} />
+                    </Routes>
+                </Layout>
             </BrowserRouter>
         </QueryClientProvider>
     )

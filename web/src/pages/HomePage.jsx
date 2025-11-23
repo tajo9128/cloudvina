@@ -1,30 +1,12 @@
 import { Link } from 'react-router-dom'
 
+import { Link } from 'react-router-dom'
+
 export default function HomePage() {
     return (
-        <div className="min-h-screen bg-white">
-            {/* Header */}
-            <header className="bg-white shadow-sm fixed w-full z-50">
-                <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-                    <Link to="/" className="flex items-center space-x-2 text-gray-800 hover:text-purple-600 transition">
-                        <div className="text-2xl">🧬</div>
-                        <h1 className="text-xl font-bold">CloudVina</h1>
-                    </Link>
-                    <nav className="hidden md:flex space-x-8">
-                        <a href="#features" className="text-gray-600 hover:text-purple-600 font-medium">Features</a>
-                        <a href="#pricing" className="text-gray-600 hover:text-purple-600 font-medium">Pricing</a>
-                        <Link to="/tools/converter" className="text-gray-600 hover:text-purple-600 font-medium">Tools</Link>
-                        <Link to="/dashboard" className="text-gray-600 hover:text-purple-600 font-medium">Dashboard</Link>
-                    </nav>
-                    <div className="flex gap-4">
-                        <Link to="/login" className="px-4 py-2 text-purple-600 font-medium hover:bg-purple-50 rounded-lg transition">Log In</Link>
-                        <Link to="/dock/new" className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition shadow-md">Start Docking</Link>
-                    </div>
-                </div>
-            </header>
-
+        <div className="bg-white">
             {/* Hero Section */}
-            <section className="pt-32 pb-20 bg-gradient-to-b from-purple-50 to-white">
+            <section className="pt-12 pb-20 bg-gradient-to-b from-purple-50 to-white">
                 <div className="container mx-auto px-4 text-center">
                     <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
                         Molecular Docking <br />
@@ -159,50 +141,6 @@ export default function HomePage() {
                     </div>
                 </div>
             </section>
-
-            {/* Footer */}
-            <footer className="bg-gray-900 text-white py-12">
-                <div className="container mx-auto px-4">
-                    <div className="grid md:grid-cols-4 gap-8 mb-8">
-                        <div>
-                            <div className="flex items-center space-x-2 mb-4">
-                                <div className="text-2xl">🧬</div>
-                                <h2 className="text-xl font-bold">CloudVina</h2>
-                            </div>
-                            <p className="text-gray-400 text-sm">
-                                Democratizing drug discovery with cloud-native molecular docking tools.
-                            </p>
-                        </div>
-                        <div>
-                            <h3 className="font-bold mb-4">Product</h3>
-                            <ul className="space-y-2 text-gray-400 text-sm">
-                                <li><a href="#features" className="hover:text-white">Features</a></li>
-                                <li><a href="#pricing" className="hover:text-white">Pricing</a></li>
-                                <li><Link to="/tools/converter" className="hover:text-white">SDF Converter</Link></li>
-                                <li><Link to="/admin" className="hover:text-white">Admin</Link></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3 className="font-bold mb-4">Company</h3>
-                            <ul className="space-y-2 text-gray-400 text-sm">
-                                <li><Link to="/about" className="hover:text-white">About Us</Link></li>
-                                <li><Link to="/blog" className="hover:text-white">Blog</Link></li>
-                                <li><a href="mailto:cloudvina2025@gmail.com" className="hover:text-white">Contact</a></li>
-                            </ul>
-                        </div>
-                        <div>
-                            <h3 className="font-bold mb-4">Legal</h3>
-                            <ul className="space-y-2 text-gray-400 text-sm">
-                                <li><Link to="/privacy" className="hover:text-white">Privacy Policy</Link></li>
-                                <li><Link to="/terms" className="hover:text-white">Terms of Service</Link></li>
-                            </ul>
-                        </div>
-                    </div>
-                    <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-                        © {new Date().getFullYear()} CloudVina. All rights reserved.
-                    </div>
-                </div>
-            </footer>
         </div>
     )
 }
