@@ -99,18 +99,46 @@ export default function JobResultsPage() {
                                     <div className="mt-2 text-3xl font-bold text-gray-900">{job.binding_affinity} <span className="text-lg text-gray-400 font-normal">kcal/mol</span></div>
                                 </div>
                             )}
-                            )}
-                            {/* Failure Message */}
-                            {job.status === 'FAILED' && (
-                                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                                    <h3 className="text-red-800 font-bold mb-2">Job Failed</h3>
-                                    <p className="text-red-600 text-sm">
-                                        Please check your input files and try again. Ensure your ligand and receptor are correctly prepared.
-                                    </p>
-                                </div>
-                            )}
                         </div>
+
+                        {/* 3D Molecule Viewer */}
+                        {job.status === 'SUCCEEDED' && pdbqtData && (
+                            <div>
+                                <MoleculeViewer
+                                    pdbqtData={pdbqtData}
+                                    width={700}
+                                    height={500}
+                                    title="Docking Result Visualization"
+                                />
+                            </div>
+                        )}
+
+                        {/* Downloads Section */}
+                        {job.status === 'SUCCEEDED' && job.download_urls && (
+                            <div>
+                                <h2 className="text-lg font-bold text-gray-900 mb-4">Results & Logs</h2>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <a href={job.download_urls.output} className="flex items-center justify-center px-4 py-3 border border-transparent text-base font-medium rounded-md text-white bg-purple-600 hover:bg-purple-700 shadow-sm">
+                                        Download PDBQT Output
+                                    </a>
+                                    <a href={job.download_urls.log} className="flex items-center justify-center px-4 py-3 border border-gray-300 text-base font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 shadow-sm">
+                                        View Log File
+                                    </a>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Failure Message */}
+                        {job.status === 'FAILED' && (
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <h3 className="text-red-800 font-bold mb-2">Job Failed</h3>
+                                <p className="text-red-600 text-sm">
+                                    Please check your input files and try again. Ensure your ligand and receptor are correctly prepared.
+                                </p>
+                            </div>
+                        )}
                     </div>
+                </div>
             </main>
         </div>
     )
