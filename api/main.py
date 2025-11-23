@@ -213,6 +213,102 @@ async def login(request: LoginRequest):
             detail=f"Login failed: {str(e)}"
         )
 
+# OTP Cache for MVP (In-memory)
+# Format: {user_id: {"otp": "123456", "expires": datetime}}
+otp_cache = {}
+
+class OTPRequest(BaseModel):
+    phone: str
+
+class OTPVerifyRequest(BaseModel):
+    phone: str
+    otp: str
+
+@app.post("/auth/send-otp")
+async def send_otp(
+    request: OTPRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Generate and send OTP (Mock/Log for MVP)
+    """
+    try:
+        # Generate 6-digit OTP
+        import random
+        otp = str(random.randint(100000, 999999))
+        
+        # Store in cache with 10-minute expiry
+        otp_cache[current_user['id']] = {
+            "otp": otp,
+            "expires": datetime.now().timestamp() + 600
+        }
+        
+        # Log OTP to console (for MVP testing)
+        print(f"============================================")
+        print(f"🔐 OTP for user {current_user['email']} ({request.phone}): {otp}")
+        print(f"============================================")
+        
+        # In production, integrate SNS/Twilio here
+        
+        return {
+            "message": "OTP sent successfully. (Check server logs for code in Dev Mode)",
+            "dev_mode_otp": otp # Return OTP in response for easier testing if needed, or remove for security
+        }
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to send OTP: {str(e)}"
+        )
+
+@app.post("/auth/verify-otp")
+async def verify_otp(
+    request: OTPVerifyRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    Verify OTP and update user profile
+    """
+    try:
+        user_id = current_user['id']
+        cached_data = otp_cache.get(user_id)
+        
+        if not cached_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="OTP expired or not requested"
+            )
+            
+        if datetime.now().timestamp() > cached_data['expires']:
+            del otp_cache[user_id]
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="OTP expired"
+            )
+            
+        if cached_data['otp'] != request.otp:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid OTP"
+            )
+            
+        # OTP Valid - Update Profile
+        supabase.table('user_profiles').update({
+            'phone_verified': True
+        }).eq('id', user_id).execute()
+        
+        # Clear cache
+        del otp_cache[user_id]
+        
+        return {"message": "Phone verification successful"}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Verification failed: {str(e)}"
+        )
+
 # ============================================================================
 # Job Management Routes
 # ============================================================================
