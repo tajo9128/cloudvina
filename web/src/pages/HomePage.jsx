@@ -1,7 +1,4 @@
 import { Link } from 'react-router-dom'
-// Fixed duplicate import issue
-
-
 
 export default function HomePage() {
     return (
