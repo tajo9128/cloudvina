@@ -4,6 +4,7 @@ Handles authentication, job submission, and AWS Batch orchestration
 """
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 import os
@@ -21,14 +22,22 @@ from aws_services import (
 from tools import router as tools_router
 from admin import router as admin_router
 
+# NEW: Import SQLAdmin setup
+from admin_sqladmin import setup_admin
+
 app = FastAPI(
     title="CloudVina API",
-    description="Molecular docking as a service",
-    version="1.0.0"
+    description="Molecular docking as a service with AutoDock Vina",
+    version="1.0.0",
+    docs_url="/docs",  # Swagger UI
+    redoc_url="/redoc"  # ReDoc
 )
 
-app.include_router(tools_router)
-app.include_router(admin_router)
+# NEW: Add session middleware for SQLAdmin authentication
+app.add_middleware(
+    SessionMiddleware, 
+    secret_key=os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
+)
 
 # CORS middleware for frontend
 app.add_middleware(
@@ -38,6 +47,12 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# NEW: Setup SQLAdmin (Django-style admin panel at /sqladmin)
+admin = setup_admin(app)
+
+app.include_router(tools_router)
+app.include_router(admin_router)
 
 # ============================================================================
 # Configuration
