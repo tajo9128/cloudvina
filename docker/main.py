@@ -3,9 +3,10 @@
 CloudVina - Docking Runner Script
 Orchestrates the complete docking workflow:
 1. Download input files from S3
-2. Convert ligand to PDBQT format
-3. Run AutoDock Vina
-4. Upload results back to S3
+2. Convert ligand to PDBQT format (supports .pdbqt, .sdf, .mol2)
+3. Prepare receptor (convert to PDBQT if needed)
+4. Run AutoDock Vina
+5. Upload results back to S3
 """
 
 import os
@@ -24,6 +25,7 @@ except ImportError:
 
 class DockingRunner:
     def __init__(self):
+        print("--- CLOUDVINA RUNNER v2.0 (SDF SUPPORT) ---")
         # Get job parameters from environment variables
         self.job_id = os.environ.get('JOB_ID')
         self.s3_bucket = os.environ.get('S3_BUCKET', 'cloudvina-jobs')
@@ -63,53 +65,87 @@ class DockingRunner:
         """Upload file to S3"""
         try:
             print(f"[5/5] Uploading {local_path.name} to S3...")
+            if not local_path.exists():
+                print(f"      ⚠️ File {local_path} does not exist, skipping upload")
+                return False
+                
             self.s3.upload_file(str(local_path), self.s3_bucket, key)
             print(f"      ✓ Uploaded to s3://{self.s3_bucket}/{key}")
             return True
-        except ClientError as e:
-            print(f"      ✗ Failed to upload {local_path}: {e}")
+        except Exception as e:
+            print(f"      ✗ Failed to upload {key}: {e}")
             return False
 
     def convert_ligand_to_pdbqt(self, input_file: Path, output_file: Path) -> bool:
-        """Convert ligand from SDF/MOL2/PDB to PDBQT using OpenBabel"""
+        """Convert ligand (SDF, MOL2, PDB) to PDBQT using OpenBabel"""
+        print(f"[2/5] Preparing ligand...")
+        
+        if not input_file.exists():
+            print(f"      ✗ Input file {input_file} not found")
+            return False
+            
+        # Check if already PDBQT
+        if input_file.suffix.lower() == '.pdbqt':
+            print(f"      ℹ️  Input is already PDBQT")
+            subprocess.run(['cp', str(input_file), str(output_file)])
+            return True
+            
         try:
-            print(f"[2/5] Converting ligand to PDBQT format...")
-            cmd = ['obabel', str(input_file), '-O', str(output_file), '-h']
+            # Construct obabel command
+            # -i <format> input_file -o pdbqt -O output_file --gen3d
+            input_format = input_file.suffix.lower().lstrip('.')
+            if input_format == 'sdf': input_format = 'sdf'
+            elif input_format == 'mol2': input_format = 'mol2'
+            elif input_format == 'pdb': input_format = 'pdb'
+            
+            cmd = ['obabel', f'-i{input_format}', str(input_file), '-o', 'pdbqt', '-O', str(output_file), '--gen3d', '-h']
+            
+            print(f"      Running: {' '.join(cmd)}")
             result = subprocess.run(cmd, capture_output=True, text=True)
             
             if result.returncode != 0:
-                print(f"      ✗ Conversion failed: {result.stderr}")
+                print(f"      ✗ OpenBabel conversion failed: {result.stderr}")
                 return False
-            
-            print(f"      ✓ Converted to {output_file}")
+                
+            if not output_file.exists() or output_file.stat().st_size == 0:
+                print(f"      ✗ Output PDBQT file is empty or missing")
+                return False
+                
+            print(f"      ✓ Converted {input_format.upper()} to PDBQT")
             return True
+            
         except Exception as e:
-            print(f"      ✗ Error during conversion: {e}")
+            print(f"      ✗ Error converting ligand: {e}")
             return False
 
-    def prepare_receptor(self, receptor_file: Path, output_file: Path) -> bool:
-        """Prepare receptor (for now, just copy if already PDBQT)"""
-        # In production, you'd use AutoDockTools to properly prepare the receptor
-        # For MVP, we assume the user uploads a pre-prepared PDBQT
-        try:
-            print(f"[3/5] Preparing receptor...")
+    def prepare_receptor(self, input_file: Path, output_file: Path) -> bool:
+        """Prepare receptor (convert to PDBQT)"""
+        print(f"[3/5] Preparing receptor...")
+        
+        if not input_file.exists():
+            print(f"      ✗ Input file {input_file} not found")
+            return False
             
-            if receptor_file.suffix == '.pdbqt':
-                # Already in correct format
-                subprocess.run(['cp', str(receptor_file), str(output_file)])
-                print(f"      ✓ Receptor ready (PDBQT format)")
-                return True
-            else:
-                # Convert PDB to PDBQT (basic conversion)
-                cmd = ['obabel', str(receptor_file), '-O', str(output_file), '-h']
-                result = subprocess.run(cmd, capture_output=True, text=True)
+        if input_file.suffix.lower() == '.pdbqt':
+            print(f"      ℹ️  Input is already PDBQT")
+            subprocess.run(['cp', str(input_file), str(output_file)])
+            return True
+            
+        try:
+            # Convert PDB to PDBQT using obabel
+            # -xr: output as rigid molecule (no branches)
+            cmd = ['obabel', str(input_file), '-O', str(output_file), '-xr', '-h']
+            
+            print(f"      Running: {' '.join(cmd)}")
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            if result.returncode != 0:
+                print(f"      ✗ OpenBabel conversion failed: {result.stderr}")
+                return False
                 
-                if result.returncode != 0:
-                    print(f"      ✗ Conversion failed: {result.stderr}")
-                    return False
-                
-                print(f"      ✓ Converted receptor to PDBQT")
-                return True
+            print(f"      ✓ Converted receptor to PDBQT")
+            return True
+            
         except Exception as e:
             print(f"      ✗ Error preparing receptor: {e}")
             return False
@@ -119,41 +155,49 @@ class DockingRunner:
         try:
             print(f"[4/5] Running AutoDock Vina...")
             
-            # Basic docking parameters (center of mass, 20x20x20 box)
-            # In production, these would come from user input
+            # Verify inputs
+            if not receptor.exists() or not ligand.exists():
+                print("      ✗ Missing receptor or ligand PDBQT files")
+                return False
+            
             cmd = [
                 'vina',
                 '--receptor', str(receptor),
                 '--ligand', str(ligand),
                 '--out', str(output),
-                '--log', str(log),
                 '--center_x', '0',
                 '--center_y', '0', 
                 '--center_z', '0',
                 '--size_x', '20',
                 '--size_y', '20',
                 '--size_z', '20',
-                '--cpu', '1',  # AWS Free Tier t2.micro has 1 vCPU
+                '--cpu', '1',
                 '--exhaustiveness', '8'
             ]
             
+            # Capture output
             result = subprocess.run(cmd, capture_output=True, text=True)
+            
+            # Write log
+            with open(log, 'w') as f:
+                f.write(result.stdout)
             
             if result.returncode != 0:
                 print(f"      ✗ Vina failed: {result.stderr}")
                 return False
             
             print(f"      ✓ Docking complete!")
-            print(f"      ✓ Results saved to {output}")
             
-            # Parse log for binding affinity
+            # Parse affinity
             if log.exists():
                 with open(log) as f:
-                    log_content = f.read()
-                    if 'REMARK VINA RESULT:' in log_content:
-                        lines = [l for l in log_content.split('\n') if 'REMARK VINA RESULT:' in l]
-                        if lines:
-                            print(f"      📊 Best affinity: {lines[0].split()[3]} kcal/mol")
+                    content = f.read()
+                    for line in content.splitlines():
+                        if line.strip().startswith('1'):
+                            parts = line.split()
+                            if len(parts) >= 2:
+                                print(f"      📊 Best affinity: {parts[1]} kcal/mol")
+                                break
             
             return True
         except Exception as e:
@@ -166,9 +210,13 @@ class DockingRunner:
         print("CloudVina - Molecular Docking Pipeline")
         print("="*60 + "\n")
         
+        # Determine input file extensions based on S3 keys
+        receptor_ext = Path(self.receptor_key).suffix
+        ligand_ext = Path(self.ligand_key).suffix
+        
         # Define file paths
-        receptor_input = self.work_dir / 'receptor_input.pdb'
-        ligand_input = self.work_dir / 'ligand_input.sdf'
+        receptor_input = self.work_dir / f'receptor_input{receptor_ext}'
+        ligand_input = self.work_dir / f'ligand_input{ligand_ext}'
         receptor_pdbqt = self.work_dir / 'receptor.pdbqt'
         ligand_pdbqt = self.work_dir / 'ligand.pdbqt'
         output_pdbqt = self.work_dir / 'output.pdbqt'
@@ -198,11 +246,6 @@ class DockingRunner:
             sys.exit(1)
         if not self.upload_to_s3(log_file, f'{output_prefix}/log.txt'):
             sys.exit(1)
-        
-        # Create success marker
-        success_file = self.work_dir / 'SUCCESS'
-        success_file.write_text(f"Job {self.job_id} completed successfully\n")
-        self.upload_to_s3(success_file, f'{output_prefix}/SUCCESS')
         
         print("\n" + "="*60)
         print("✅ DOCKING COMPLETE!")

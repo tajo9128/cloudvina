@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: cloudvina-api
+    env: python
+    region: oregon
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_KEY
+        sync: false
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_REGION
+        value: us-east-1
+      - key: S3_BUCKET
+        value: cloudvina-jobs-use1-1763775915
+      - key: BATCH_JOB_QUEUE
+        value: cloudvina-fargate-queue
+      - key: BATCH_JOB_DEFINITION
+        value: cloudvina-fargate-job-v10

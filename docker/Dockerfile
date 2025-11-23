@@ -22,11 +22,12 @@ RUN wget https://github.com/ccsb-scripps/AutoDock-Vina/releases/download/v1.2.5/
 RUN pip install --no-cache-dir boto3==1.34.0
 
 # Copy runner script
-COPY run_docking.py /app/run_docking.py
+ARG CACHEBUST=1
+COPY main.py /app/main.py
 WORKDIR /app
 
 # Verify installation
 RUN vina --version && obabel --version
 
 # Entry point
-ENTRYPOINT ["python", "run_docking.py"]
+ENTRYPOINT ["python", "main.py"]
