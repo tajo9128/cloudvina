@@ -7,6 +7,7 @@ import { supabase } from './supabaseClient'
 import HomePage from './pages/HomePage'
 import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
+import Layout from './components/Layout'
 
 const queryClient = new QueryClient()
 
