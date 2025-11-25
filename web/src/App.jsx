@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 
 // Pages
+import TestPage from './pages/TestPage'
 import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
@@ -52,6 +53,7 @@ function App() {
             <BrowserRouter>
                 <Layout>
                     <Routes>
+                        <Route path="/test" element={<TestPage />} />
                         <Route path="/" element={<HomePage />} />
                         <Route path="/login" element={<LoginPage />} />
                         <Route
