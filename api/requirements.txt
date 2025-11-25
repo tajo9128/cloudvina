@@ -17,3 +17,4 @@ reportlab==4.0.7
 scipy
 numpy
 itsdangerous==2.1.2
+pandas==2.1.4
