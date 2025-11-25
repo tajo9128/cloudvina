@@ -66,7 +66,7 @@ function App() {
                             path="/dock/:jobId"
                             element={session ? <JobResultsPage /> : <Navigate to="/login" />}
                         />
-                        <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} />
+                        {/* <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} /> */}
                         <Route path="/tools/converter" element={<ConverterPage />} />
                         <Route path="/blog" element={<BlogPage />} />
                         <Route path="/about" element={<AboutPage />} />
