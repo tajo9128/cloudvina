@@ -20,6 +20,12 @@ if DATABASE_URL:
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql+asyncpg://", 1)
     elif DATABASE_URL.startswith("postgresql://"):
         DATABASE_URL = DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://", 1)
+    
+    # Replace pooler port 6543 with direct connection port 5432 for asyncpg
+    if ":6543/" in DATABASE_URL:
+        DATABASE_URL = DATABASE_URL.replace(":6543/", ":5432/")
+    
+    print(f"Using DATABASE_URL: {DATABASE_URL[:50]}...")  # Debug: print first 50 chars
 
 engine = create_async_engine(DATABASE_URL, echo=False)
 async_session_maker = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
