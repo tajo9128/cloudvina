@@ -4,7 +4,7 @@ Tracks all significant actions for audit trail
 """
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
-from api.models import ActivityLog, async_session_maker
+from models import ActivityLog, async_session_maker
 import json
 
 class ActivityLoggerMiddleware(BaseHTTPMiddleware):

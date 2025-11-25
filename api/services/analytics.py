@@ -3,7 +3,7 @@ Analytics Service for CloudVina
 Provides dashboard statistics and insights
 """
 from sqlalchemy import func, select, and_, or_
-from api.models import Job, User, ActivityLog, async_session_maker
+from models import Job, User, ActivityLog, async_session_maker
 from datetime import datetime, timedelta
 from typing import Dict, List
 

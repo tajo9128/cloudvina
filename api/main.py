@@ -49,7 +49,7 @@ app.add_middleware(
 )
 
 # NEW: Activity logging middleware for audit trail
-from api.middleware.activity_logger import ActivityLoggerMiddleware
+from middleware.activity_logger import ActivityLoggerMiddleware
 app.add_middleware(ActivityLoggerMiddleware)
 
 # NEW: Setup SQLAdmin (Django-style admin panel at /sqladmin)
@@ -325,7 +325,7 @@ async def submit_job(
     """
     try:
         # Import rate limiter
-        from api.services.rate_limiter import RateLimiter
+        from services.rate_limiter import RateLimiter
         
         # Check if user can submit job (verification + rate limit)
         eligibility = await RateLimiter.check_can_submit(supabase, current_user.id)
