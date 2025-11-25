@@ -276,8 +276,8 @@ async def get_system_stats(admin_user: dict = Depends(get_admin_user)):
 # Analytics Endpoints (NEW for Phase 6)
 # ============================================================================
 
-from api.services.analytics import AnalyticsService
-from api.models import ActivityLog, async_session_maker
+from services.analytics import AnalyticsService
+from models import ActivityLog, async_session_maker
 from sqlalchemy import select
 
 @router.get("/analytics")
