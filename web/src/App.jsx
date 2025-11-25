@@ -9,7 +9,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import NewJobPage from './pages/NewJobPage'
 import JobResultsPage from './pages/JobResultsPage'
-import AdminPage from './pages/AdminPage'
+// import AdminPage from './pages/AdminPage' // Temporarily disabled
 import ConverterPage from './pages/ConverterPage'
 import BlogPage from './pages/BlogPage'
 import AboutPage from './pages/AboutPage'
