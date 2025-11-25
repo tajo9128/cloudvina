@@ -3,8 +3,17 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
 
-// Pages (to be created)
+// Pages
 import HomePage from './pages/HomePage'
+import LoginPage from './pages/LoginPage'
+import DashboardPage from './pages/DashboardPage'
+import NewJobPage from './pages/NewJobPage'
+import JobResultsPage from './pages/JobResultsPage'
+import AdminPage from './pages/AdminPage'
+import ConverterPage from './pages/ConverterPage'
+import BlogPage from './pages/BlogPage'
+import AboutPage from './pages/AboutPage'
+import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
 import Layout from './components/Layout'
