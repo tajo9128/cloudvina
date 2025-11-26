@@ -2,8 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
 :root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   line-height: 1.5;
   font-weight: 400;
 
@@ -20,4 +22,107 @@ body {
 
 #root {
   min-height: 100vh;
+}
+
+/* Blue-Dominated Design System */
+
+/* Glassmorphic Card Effect */
+@layer components {
+  .glass-card {
+    @apply bg-white/10 backdrop-blur-md border border-white/20 rounded-xl shadow-deep-blue;
+  }
+
+  .glass-card-light {
+    @apply bg-white/80 backdrop-blur-sm border border-blue-100 rounded-xl shadow-lg;
+  }
+
+  /* Blue Gradient Backgrounds */
+  .bg-blue-mesh {
+    background: linear-gradient(135deg, #0a1e3e 0%, #1e3a8a 25%, #3b82f6 50%, #1e3a8a 75%, #0a1e3e 100%);
+    background-size: 400% 400%;
+    animation: gradient-shift 15s ease infinite;
+  }
+
+  .bg-deep-blue-gradient {
+    background: linear-gradient(to bottom right, #0a1e3e, #1e3a8a, #002247);
+  }
+
+  .bg-royal-gradient {
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 50%, #06b6d4 100%);
+  }
+
+  /* Blue Glow Button */
+  .btn-blue-glow {
+    @apply bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold py-3 px-6 rounded-lg shadow-blue-glow transition-all duration-300;
+  }
+
+  .btn-blue-glow:hover {
+    @apply shadow-blue-glow-lg transform scale-105;
+  }
+
+  /* 3D Card Effect */
+  .card-3d {
+    @apply transform transition-all duration-300 hover:scale-105 hover:shadow-2xl;
+    transform-style: preserve-3d;
+  }
+
+  .card-3d:hover {
+    transform: perspective(1000px) rotateX(2deg) rotateY(-2deg);
+  }
+
+  /* Animated Gradient Text */
+  .text-blue-gradient {
+    @apply bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-600 bg-clip-text text-transparent;
+    background-size: 200% auto;
+    animation: gradient-text 3s linear infinite;
+  }
+
+  /* Blue Border Glow */
+  .border-blue-glow {
+    @apply border-2 border-blue-500/50 transition-all duration-300;
+  }
+
+  .border-blue-glow:hover {
+    @apply border-blue-400 shadow-blue-glow;
+  }
+}
+
+/* Animations */
+@keyframes gradient-shift {
+
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes gradient-text {
+  0% {
+    background-position: 0% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-deep-navy-900;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-blue-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-blue-500;
 }

@@ -2,29 +2,35 @@ import { Link } from 'react-router-dom'
 
 export default function HomePage() {
     return (
-        <div className="bg-gradient-to-br from-purple-50 via-white to-blue-50 min-h-screen">
+        <div className="bg-blue-mesh min-h-screen">
             {/* Hero Section */}
-            <section className="pt-12 pb-20 bg-gradient-to-b from-purple-50 to-white">
-                <div className="container mx-auto px-4 text-center">
-                    <div className="inline-block bg-green-100 text-green-800 px-4 py-2 rounded-full text-sm font-bold mb-6">
+            <section className="pt-12 pb-20 bg-deep-blue-gradient relative overflow-hidden">
+                {/* Animated Background Elements */}
+                <div className="absolute inset-0 opacity-20">
+                    <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500 rounded-full filter blur-3xl animate-float"></div>
+                    <div className="absolute bottom-20 right-10 w-96 h-96 bg-cyan-500 rounded-full filter blur-3xl animate-float" style={{ animationDelay: '2s' }}></div>
+                </div>
+
+                <div className="container mx-auto px-4 text-center relative z-10">
+                    <div className="inline-block bg-tech-cyan-400/20 border border-tech-cyan-400 text-tech-cyan-100 px-6 py-3 rounded-full text-sm font-bold mb-8 shadow-blue-glow">
                         🎉 Get 130 FREE Credits on Signup!
                     </div>
-                    <h1 className="text-5xl md:text-6xl font-extrabold text-gray-900 mb-6 leading-tight">
+                    <h1 className="text-5xl md:text-7xl font-extrabold text-white mb-6 leading-tight">
                         Molecular Docking <br />
-                        <span className="text-purple-600">for Indian Researchers</span>
+                        <span className="text-blue-gradient">for Indian Researchers</span>
                     </h1>
-                    <p className="text-xl text-gray-600 mb-4 max-w-2xl mx-auto">
-                        Start with <strong>100 bonus credits</strong> + <strong>30 monthly credits</strong> for free.
+                    <p className="text-xl text-blue-100 mb-4 max-w-2xl mx-auto">
+                        Start with <strong className="text-tech-cyan-400">100 bonus credits</strong> + <strong className="text-tech-cyan-400">30 monthly credits</strong> for free.
                         No credit card required.
                     </p>
-                    <p className="text-lg text-gray-500 mb-10 max-w-2xl mx-auto">
+                    <p className="text-lg text-blue-200/80 mb-10 max-w-2xl mx-auto">
                         High-performance AutoDock Vina platform powered by AWS. Affordable pricing in ₹. Built for students, researchers, and institutions.
                     </p>
-                    <div className="flex justify-center gap-4">
-                        <Link to="/login" className="bg-purple-600 text-white px-8 py-4 rounded-xl text-lg font-bold hover:bg-purple-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-1">
-                            Start Free with 130 Credits
+                    <div className="flex flex-wrap justify-center gap-4">
+                        <Link to="/login" className="btn-blue-glow text-lg px-10 py-4 rounded-xl font-bold">
+                            Start Free with 130 Credits →
                         </Link>
-                        <a href="#pricing" className="bg-white text-gray-700 px-8 py-4 rounded-xl text-lg font-bold border border-gray-200 hover:border-purple-200 hover:bg-purple-50 transition shadow-sm">
+                        <a href="#pricing" className="glass-card text-white px-10 py-4 rounded-xl text-lg font-bold border-blue-glow hover:bg-white/20 transition">
                             View Pricing
                         </a>
                     </div>
@@ -32,34 +38,34 @@ export default function HomePage() {
             </section>
 
             {/* Free Tools Section */}
-            <section className="py-20 bg-white">
+            <section className="py-20 bg-gradient-to-b from-deep-navy-900 to-deep-navy-800">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">Free Research Tools</h2>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
+                        <h2 className="text-4xl font-bold text-white mb-4">Free Research Tools</h2>
+                        <p className="text-blue-200 max-w-2xl mx-auto">
                             Essential utilities for computational chemistry, available for free.
                         </p>
                     </div>
                     <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
-                        <div className="bg-purple-50 rounded-2xl p-8 border border-purple-100 hover:shadow-lg transition">
-                            <div className="text-4xl mb-4">🧪</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">SDF to PDBQT Converter</h3>
-                            <p className="text-gray-600 mb-6">
+                        <div className="glass-card-light card-3d p-8">
+                            <div className="text-5xl mb-4">🧪</div>
+                            <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">SDF to PDBQT Converter</h3>
+                            <p className="text-gray-700 mb-6">
                                 Convert your ligand files from SDF format to PDBQT format instantly.
                                 Optimized for AutoDock Vina compatibility.
                             </p>
-                            <Link to="/tools/converter" className="text-purple-600 font-bold hover:text-purple-700 flex items-center">
-                                Try Converter <span className="ml-2">→</span>
+                            <Link to="/tools/converter" className="text-blue-600 font-bold hover:text-blue-700 flex items-center group">
+                                Try Converter <span className="ml-2 group-hover:translate-x-1 transition-transform inline-block">→</span>
                             </Link>
                         </div>
-                        <div className="bg-gray-50 rounded-2xl p-8 border border-gray-100 opacity-75">
-                            <div className="text-4xl mb-4">📊</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Results Analyzer</h3>
-                            <p className="text-gray-600 mb-6">
+                        <div className="glass-card p-8 opacity-60">
+                            <div className="text-5xl mb-4">📊</div>
+                            <h3 className="text-2xl font-bold text-white mb-3">Results Analyzer</h3>
+                            <p className="text-blue-200 mb-6">
                                 Visualize and analyze your docking results with advanced 3D rendering.
                                 (Coming Soon)
                             </p>
-                            <span className="text-gray-400 font-bold cursor-not-allowed">
+                            <span className="text-blue-300 font-bold cursor-not-allowed">
                                 Coming Soon
                             </span>
                         </div>
@@ -68,59 +74,59 @@ export default function HomePage() {
             </section>
 
             {/* Features Section */}
-            <section id="features" className="py-20 bg-gray-50">
+            <section id="features" className="py-20 bg-gradient-to-b from-deep-navy-800 to-royal-blue-700">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-gray-900 mb-4">Why CloudVina?</h2>
-                        <p className="text-gray-600 max-w-2xl mx-auto">
+                        <h2 className="text-4xl font-bold text-white mb-4">Why CloudVina?</h2>
+                        <p className="text-blue-100 max-w-2xl mx-auto">
                             Built for researchers who needspeed, reliability, and flexibility.
                         </p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
-                        <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div className="text-4xl mb-4">🎁</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Generous Free Tier</h3>
-                            <p className="text-gray-600">
-                                <strong>100 bonus credits</strong> on signup (30-day expiry) + <strong>30 monthly credits</strong> (recurring).
+                        <div className="glass-card-light card-3d p-8">
+                            <div className="text-5xl mb-4">🎁</div>
+                            <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Generous Free Tier</h3>
+                            <p className="text-gray-700">
+                                <strong className="text-blue-600">100 bonus credits</strong> on signup (30-day expiry) + <strong className="text-blue-600">30 monthly credits</strong> (recurring).
                                 Start with 130 credits for free!
                             </p>
                         </div>
-                        <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div className="text-4xl mb-4">⚡</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Smart Rate Limiting</h3>
-                            <p className="text-gray-600">
-                                Free users: <strong>3 jobs/day</strong> for first month, then 1/day.
-                                Paid users: <strong>unlimited daily jobs</strong> - use credits anytime!
+                        <div className="glass-card-light card-3d p-8">
+                            <div className="text-5xl mb-4">⚡</div>
+                            <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Smart Rate Limiting</h3>
+                            <p className="text-gray-700">
+                                Free users: <strong className="text-blue-600">3 jobs/day</strong> for first month, then 1/day.
+                                Paid users: <strong className="text-blue-600">unlimited daily jobs</strong> - use credits anytime!
                             </p>
                         </div>
-                        <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div className="text-4xl mb-4">💎</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Credits Never Expire</h3>
-                            <p className="text-gray-600">
-                                Paid plan credits <strong>never expire</strong>. Use them at your own pace.
+                        <div className="glass-card-light card-3d p-8">
+                            <div className="text-5xl mb-4">💎</div>
+                            <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Credits Never Expire</h3>
+                            <p className="text-gray-700">
+                                Paid plan credits <strong className="text-blue-600">never expire</strong>. Use them at your own pace.
                                 Auto-downgrade to free tier when exhausted.
                             </p>
                         </div>
-                        <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div className="text-4xl mb-4">🔒</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Secure & Verified</h3>
-                            <p className="text-gray-600">
+                        <div className="glass-card-light card-3d p-8">
+                            <div className="text-5xl mb-4">🔒</div>
+                            <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Secure & Verified</h3>
+                            <p className="text-gray-700">
                                 Email and phone verification required for all users.
                                 Your data is encrypted and containers destroyed after use.
                             </p>
                         </div>
-                        <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div className="text-4xl mb-4">🇮🇳</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Built for India</h3>
-                            <p className="text-gray-600">
-                                Affordable pricing in <strong>Indian Rupees</strong> (₹).
+                        <div className="glass-card-light card-3d p-8">
+                            <div className="text-5xl mb-4">🇮🇳</div>
+                            <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Built for India</h3>
+                            <p className="text-gray-700">
+                                Affordable pricing in <strong className="text-blue-600">Indian Rupees</strong> (₹).
                                 Student plans starting at just ₹99/month. Special rates for institutions.
                             </p>
                         </div>
-                        <div className="bg-white p-8 rounded-xl shadow-sm hover:shadow-md transition">
-                            <div className="text-4xl mb-4">⚙️</div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">AWS Powered</h3>
-                            <p className="text-gray-600">
+                        <div className="glass-card-light card-3d p-8">
+                            <div className="text-5xl mb-4">⚙️</div>
+                            <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">AWS Powered</h3>
+                            <p className="text-gray-700">
                                 Powered by AWS Fargate. Run hundreds of docking jobs in parallel without waiting for queues.
                             </p>
                         </div>
@@ -129,11 +135,11 @@ export default function HomePage() {
             </section>
 
             {/* Pricing Section */}
-            <section id="pricing" className="py-20 bg-gradient-to-b from-white to-purple-50">
+            <section id="pricing" className="py-20 bg-royal-gradient relative overflow-hidden">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-gray-900 mb-4">Simple, Transparent Pricing</h2>
-                        <p className="text-xl text-gray-600">Start free, scale as you grow. Perfect for Indian students and researchers.</p>
+                        <h2 className="text-5xl font-bold text-white mb-4">Simple, Transparent Pricing</h2>
+                        <p className="text-xl text-blue-100">Start free, scale as you grow. Perfect for Indian students and researchers.</p>
                     </div>
                     <div className="max-w-7xl mx-auto grid md:grid-cols-4 gap-6">
                         {/* Free Tier */}
