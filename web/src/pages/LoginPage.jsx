@@ -27,9 +27,11 @@ export default function LoginPage() {
                     throw new Error('Please enter a valid 10-digit Indian mobile number')
                 }
 
+                import { API_URL } from '../config'
+
+                // ... inside component
                 // Call backend API for signup
-                const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
-                const response = await fetch(`${apiUrl}/auth/signup`, {
+                const response = await fetch(`${API_URL}/auth/signup`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({

@@ -23,8 +23,11 @@ export default function DashboardPage() {
             const { data: { session } } = await supabase.auth.getSession()
             if (!session) return
 
+            import { API_URL } from '../config'
+
+            // ... inside component
             // Call API with filters
-            const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000'
+            // const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:8000' // Removed
             const params = new URLSearchParams()
 
             if (filters.status) params.append('status', filters.status)
@@ -32,7 +35,7 @@ export default function DashboardPage() {
             if (filters.minAffinity) params.append('min_affinity', filters.minAffinity)
             if (filters.maxAffinity) params.append('max_affinity', filters.maxAffinity)
 
-            const url = `${apiUrl}/jobs?${params.toString()}`
+            const url = `${API_URL}/jobs?${params.toString()}`
 
             const response = await fetch(url, {
                 headers: {
