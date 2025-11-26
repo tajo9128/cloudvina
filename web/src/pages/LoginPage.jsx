@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import { useNavigate, Link } from 'react-router-dom'
+import VerificationModal from '../components/VerificationModal'
 
 export default function LoginPage() {
     const [loading, setLoading] = useState(false)
@@ -13,6 +14,7 @@ export default function LoginPage() {
     const [isSignUp, setIsSignUp] = useState(false)
     const [error, setError] = useState(null)
     const [success, setSuccess] = useState(null)
+    const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false)
     const navigate = useNavigate()
 
     const handleAuth = async (e) => {
@@ -52,12 +54,8 @@ export default function LoginPage() {
                         throw new Error(data.detail || 'Signup failed')
                     }
 
-                    setSuccess('✅ Account created! Please check your email to verify your account.')
-                    setTimeout(() => {
-                        setIsSignUp(false)
-                        setEmail('')
-                        setPassword('')
-                    }, 3000)
+                    // Open verification modal instead of immediate success
+                    setIsVerificationModalOpen(true)
                 }
             } else {
                 const { error } = await supabase.auth.signInWithPassword({
@@ -76,6 +74,23 @@ export default function LoginPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <VerificationModal
+                isOpen={isVerificationModalOpen}
+                onClose={() => setIsVerificationModalOpen(false)}
+                userPhone={phone}
+                onVerified={() => {
+                    setIsVerificationModalOpen(false)
+                    setSuccess('✅ Phone verified! Account created successfully.')
+                    setTimeout(() => {
+                        setIsSignUp(false)
+                        setEmail('')
+                        setPassword('')
+                        setPhone('')
+                        setDesignation('')
+                        setOrganization('')
+                    }, 3000)
+                }}
+            />
             <div className="max-w-md w-full">
                 {/* Header */}
                 <div className="text-center mb-8">
