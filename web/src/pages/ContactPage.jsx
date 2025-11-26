@@ -51,7 +51,7 @@ export default function ContactPage() {
                                         <div>
                                             <p className="font-medium text-gray-900">Location</p>
                                             <p className="text-gray-600">
-                                                Bangalore, India<br />
+                                                Hyderabad, India<br />
                                                 (Cloud-based operations)
                                             </p>
                                         </div>
