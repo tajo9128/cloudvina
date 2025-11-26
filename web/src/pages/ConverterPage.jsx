@@ -26,7 +26,7 @@ export default function ConverterPage() {
             const formData = new FormData()
             formData.append('file', file)
 
-            const response = await fetch(`${API_URL}/tools/convert-sdf`, {
+            const response = await fetch(`${API_URL}/tools/convert-to-pdbqt`, {
                 method: 'POST',
                 body: formData,
             })
@@ -41,7 +41,7 @@ export default function ConverterPage() {
             const url = window.URL.createObjectURL(blob)
             const a = document.createElement('a')
             a.href = url
-            a.download = file.name.replace('.sdf', '.pdbqt')
+            a.download = file.name.replace(/\.(sdf|mol|pdb|mol2)$/i, '') + '.pdbqt'
             document.body.appendChild(a)
             a.click()
             window.URL.revokeObjectURL(url)
@@ -60,9 +60,9 @@ export default function ConverterPage() {
             <div className="container mx-auto px-4 py-12">
                 <div className="max-w-2xl mx-auto">
                     <div className="text-center mb-10">
-                        <h2 className="text-3xl font-bold text-gray-800 mb-4">SDF to PDBQT Converter</h2>
+                        <h2 className="text-3xl font-bold text-gray-800 mb-4">Molecule to PDBQT Converter</h2>
                         <p className="text-gray-600">
-                            Convert your ligand files from SDF format to PDBQT format instantly.
+                            Convert your ligand files (SDF, PDB, MOL, MOL2) to PDBQT format instantly.
                             Ready for AutoDock Vina docking.
                         </p>
                     </div>
@@ -72,7 +72,7 @@ export default function ConverterPage() {
                             <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-purple-500 transition-colors cursor-pointer relative">
                                 <input
                                     type="file"
-                                    accept=".sdf"
+                                    accept=".sdf,.mol,.pdb,.mol2"
                                     onChange={handleFileChange}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                                 />
@@ -82,8 +82,8 @@ export default function ConverterPage() {
                                         <div className="text-purple-600 font-semibold">{file.name}</div>
                                     ) : (
                                         <>
-                                            <div className="text-gray-600 font-medium">Click to upload SDF file</div>
-                                            <div className="text-sm text-gray-400">or drag and drop</div>
+                                            <div className="text-gray-600 font-medium">Click to upload molecule file</div>
+                                            <div className="text-sm text-gray-400">Supports .sdf, .pdb, .mol, .mol2</div>
                                         </>
                                     )}
                                 </div>
