@@ -53,14 +53,14 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+        <div className="min-h-screen bg-gradient-to-b from-deep-navy-900 to-deep-navy-800">
             <div className="container mx-auto px-4 py-8">
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-                        <p className="text-gray-600">Manage your docking jobs</p>
+                        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+                        <p className="text-blue-200">Manage your docking jobs</p>
                     </div>
-                    <Link to="/dock/new" className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 transition">
+                    <Link to="/dock/new" className="btn-blue-glow">
                         + New Job
                     </Link>
                 </div>
@@ -69,18 +69,23 @@ export default function DashboardPage() {
                 <JobFilters onFilterChange={handleFilterChange} />
 
                 {loading ? (
-                    <div className="text-center py-12">Loading jobs...</div>
+                    <div className="text-center py-12">
+                        <div className="text-white">
+                            <div className="text-5xl mb-4">🧪</div>
+                            <div className="text-xl">Loading jobs...</div>
+                        </div>
+                    </div>
                 ) : jobs.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-xl shadow-sm border border-gray-200">
+                    <div className="glass-card-light p-12 text-center">
                         <div className="text-4xl mb-4">🧪</div>
-                        <h3 className="text-lg font-medium text-gray-900 mb-2">No jobs yet</h3>
-                        <p className="text-gray-500 mb-6">Start your first molecular docking job now.</p>
-                        <Link to="/dock/new" className="text-purple-600 font-bold hover:text-purple-700">
+                        <h3 className="text-lg font-medium text-deep-navy-900 mb-2">No jobs yet</h3>
+                        <p className="text-gray-600 mb-6">Start your first molecular docking job now.</p>
+                        <Link to="/dock/new" className="text-blue-600 font-bold hover:text-blue-700">
                             Create Job →
                         </Link>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-200">
+                    <div className="glass-card-light overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>

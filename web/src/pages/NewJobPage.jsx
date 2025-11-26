@@ -191,7 +191,7 @@ export default function NewJobPage() {
     const remainingSeconds = Math.max(ESTIMATED_DURATION - elapsedTime, 0)
 
     return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+        <div className="min-h-screen bg-gradient-to-b from-deep-navy-900 to-royal-blue-800">
             <VerificationModal
                 isOpen={isVerificationModalOpen}
                 onClose={() => setIsVerificationModalOpen(false)}
@@ -203,8 +203,8 @@ export default function NewJobPage() {
             />
 
             <main className="container mx-auto px-4 py-12">
-                <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
-                    <h1 className="text-2xl font-bold text-gray-900 mb-6">Start New Docking Job</h1>
+                <div className="max-w-2xl mx-auto glass-card-light p-8">
+                    <h1 className="text-2xl font-bold text-deep-navy-900 mb-6">Start New Docking Job</h1>
 
                     {!checkingVerification && !isVerified && (
                         <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
@@ -286,8 +286,7 @@ export default function NewJobPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`w-full py-3 rounded-lg font-bold text-white transition ${loading ? 'bg-gray-400 cursor-not-allowed' : 'bg-purple-600 hover:bg-purple-700 shadow-md'
-                                    }`}
+                                className={`btn-blue-glow w-full ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                             >
                                 {loading ? 'Submitting...' : 'Launch Docking Job'}
                             </button>
