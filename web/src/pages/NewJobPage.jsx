@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import VerificationModal from '../components/VerificationModal'
+
 import { API_URL } from '../config'
 
 export default function NewJobPage() {
@@ -11,43 +11,16 @@ export default function NewJobPage() {
     const [ligandFile, setLigandFile] = useState(null)
     const [error, setError] = useState(null)
 
-    // Verification State
-    const [isVerified, setIsVerified] = useState(false)
-    const [checkingVerification, setCheckingVerification] = useState(true)
-    const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false)
-    const [userPhone, setUserPhone] = useState('')
+
 
     // Job Progress State
     const [submittedJob, setSubmittedJob] = useState(null)
     const [elapsedTime, setElapsedTime] = useState(0)
     const ESTIMATED_DURATION = 300 // 5 minutes
 
-    useEffect(() => {
-        checkVerification()
-    }, [])
 
-    const checkVerification = async () => {
-        try {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (!session) return
 
-            const response = await fetch(`${API_URL}/auth/me`, {
-                headers: {
-                    'Authorization': `Bearer ${session.access_token}`
-                }
-            })
 
-            if (response.ok) {
-                const userData = await response.json()
-                setIsVerified(userData.is_verified)
-                setUserPhone(userData.phone)
-            }
-        } catch (err) {
-            console.error('Error checking verification:', err)
-        } finally {
-            setCheckingVerification(false)
-        }
-    }
 
     useEffect(() => {
         let timer
@@ -106,10 +79,7 @@ export default function NewJobPage() {
     const handleSubmit = async (e) => {
         e.preventDefault()
 
-        if (!isVerified) {
-            setIsVerificationModalOpen(true)
-            return
-        }
+
 
         if (!receptorFile || !ligandFile) {
             setError('Please select both receptor and ligand files')
@@ -138,11 +108,7 @@ export default function NewJobPage() {
 
             if (!createRes.ok) {
                 const err = await createRes.json()
-                if (createRes.status === 403 && err.detail?.reason === 'phone_not_verified') {
-                    setIsVerified(false)
-                    setIsVerificationModalOpen(true)
-                    throw new Error('Phone verification required')
-                }
+
                 throw new Error(err.detail?.message || err.detail || 'Failed to create job')
             }
 
@@ -192,40 +158,13 @@ export default function NewJobPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-deep-navy-900 to-royal-blue-800">
-            <VerificationModal
-                isOpen={isVerificationModalOpen}
-                onClose={() => setIsVerificationModalOpen(false)}
-                userPhone={userPhone}
-                onVerified={() => {
-                    setIsVerified(true)
-                    setIsVerificationModalOpen(false)
-                }}
-            />
+
 
             <main className="container mx-auto px-4 py-12">
                 <div className="max-w-2xl mx-auto glass-card-light p-8">
                     <h1 className="text-2xl font-bold text-deep-navy-900 mb-6">Start New Docking Job</h1>
 
-                    {!checkingVerification && !isVerified && (
-                        <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
-                            <div className="flex items-center">
-                                <div className="flex-shrink-0">
-                                    ⚠️
-                                </div>
-                                <div className="ml-3">
-                                    <p className="text-sm text-yellow-700">
-                                        Phone verification is required to submit jobs.
-                                    </p>
-                                    <button
-                                        onClick={() => setIsVerificationModalOpen(true)}
-                                        className="mt-2 text-sm font-bold text-yellow-700 hover:text-yellow-800 underline"
-                                    >
-                                        Verify Now
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+
 
                     <form onSubmit={handleSubmit} className="space-y-6">
                         {/* Receptor Upload */}
