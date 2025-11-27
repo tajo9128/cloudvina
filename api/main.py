@@ -157,29 +157,9 @@ async def signup(request: SignupRequest):
         })
         
         if response.user:
-            # Initialize user credits (free tier with signup bonus)
-            from datetime import datetime, timedelta
-            
-            supabase.table('user_credits').insert({
-                'user_id': response.user.id,
-                'plan': 'free',
-                'bonus_credits': 100,  # One-time signup bonus (expires in 30 days)
-                'bonus_expiry': (datetime.now() + timedelta(days=30)).isoformat(),
-                'monthly_credits': 30,  # Monthly recurring credits (1 per day)
-                'last_monthly_reset': datetime.now().date().isoformat(),
-                'paid_credits': 0,
-                'account_created_at': datetime.now().isoformat(),
-                'credits': 130  # Legacy field (bonus + monthly)
-            }).execute()
-            
-            # Create user profile
-            supabase.table('user_profiles').insert({
-                'id': response.user.id,
-                'phone': request.phone,
-                'phone_verified': False,  # Needs verification
-                'designation': request.designation,
-                'organization': request.organization
-            }).execute()
+            # User setup is now handled by Supabase Database Triggers (handle_new_user)
+            # This avoids RLS issues and ensures atomicity
+            pass
         
         return {
             "user": {
