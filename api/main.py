@@ -42,7 +42,15 @@ app.add_middleware(
 # CORS middleware for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Update in production to specific domain
+    allow_origins=[
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://cloudvina.in",
+        "https://www.cloudvina.in",
+        "https://cloudvina-3n3v.vercel.app",
+        "https://cloudvina-web.vercel.app",
+        "https://cloudvina.vercel.app"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
