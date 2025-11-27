@@ -128,6 +128,9 @@ class RateLimiter:
             
         except Exception as e:
             # In case of error, deny access for safety
+            print(f"CRITICAL ERROR in RateLimiter: {str(e)}")  # Added for debugging
+            import traceback
+            traceback.print_exc()  # Print full stack trace
             return {
                 "allowed": False,
                 "message": f"Error checking submission eligibility: {str(e)}",
