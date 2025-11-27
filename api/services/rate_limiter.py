@@ -82,8 +82,28 @@ class RateLimiter:
                     "reason": "init_failed"
                 }
 
-            user_data = credits_response.data[0]
+            # EXEMPTION: Admins and Paid Users
+            # 1. Check if admin (by email for now, or use a role if available)
+            user_email = user_response.user.email
+            if user_email in ['admin@cloudvina.in', 'tajo9128@gmail.com']:  # Add your admin emails here
+                return {
+                    "allowed": True,
+                    "message": "Admin exemption: Unlimited access",
+                    "credits_remaining": 99999,
+                    "daily_limit": None
+                }
+
+            # 2. Check if Paid User
             user_plan = user_data.get('plan', 'free')
+            if user_plan != 'free':
+                 return {
+                    "allowed": True,
+                    "message": "Paid plan exemption: Unlimited access",
+                    "credits_remaining": user_data.get('credits', 99999),
+                    "daily_limit": None
+                }
+
+            # Standard checks for Free Tier
             user_credits = user_data.get('credits', 0)
             account_created_str = user_data.get('account_created_at')
             
@@ -100,15 +120,6 @@ class RateLimiter:
             
             # Get dynamic daily limit
             daily_limit = RateLimiter.get_daily_limit(account_created_at, user_plan)
-            
-            # Paid users: only check credits, no daily limit
-            if user_plan and user_plan != 'free':
-                return {
-                    "allowed": True,
-                    "message": "Job submission allowed",
-                    "credits_remaining": user_credits,
-                    "daily_limit": None
-                }
             
             # Free users: check daily limit
             today = date.today().isoformat()
