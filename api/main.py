@@ -312,7 +312,8 @@ async def verify_otp(
 @app.post("/jobs/submit", status_code=status.HTTP_202_ACCEPTED)
 async def submit_job(
     request: JobSubmitRequest,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security) # Get raw token
 ):
     """
     Submit a new docking job and get upload URLs
@@ -322,9 +323,14 @@ async def submit_job(
     try:
         # Import rate limiter
         from services.rate_limiter import RateLimiter
+        from auth import get_authenticated_client
+        
+        # Create authenticated client for this request
+        auth_client = get_authenticated_client(credentials.credentials)
         
         # Check if user can submit job (verification + rate limit)
-        eligibility = await RateLimiter.check_can_submit(supabase, current_user)
+        # Use auth_client so RLS policies work for user_profiles
+        eligibility = await RateLimiter.check_can_submit(auth_client, current_user)
         
         if not eligibility['allowed']:
             raise HTTPException(

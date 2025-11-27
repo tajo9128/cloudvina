@@ -17,6 +17,10 @@ export default function VerificationModal({ isOpen, onClose, userPhone, onVerifi
         try {
             const { data: { session } } = await supabase.auth.getSession()
 
+            if (!session) {
+                throw new Error('Please log in to verify your phone number.')
+            }
+
             const response = await fetch(`${API_URL}/auth/send-otp`, {
                 method: 'POST',
                 headers: {
@@ -48,6 +52,10 @@ export default function VerificationModal({ isOpen, onClose, userPhone, onVerifi
         setError(null)
         try {
             const { data: { session } } = await supabase.auth.getSession()
+
+            if (!session) {
+                throw new Error('Please log in to verify your phone number.')
+            }
 
             const response = await fetch(`${API_URL}/auth/verify-otp`, {
                 method: 'POST',

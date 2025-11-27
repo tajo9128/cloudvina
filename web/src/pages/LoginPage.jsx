@@ -54,8 +54,22 @@ export default function LoginPage() {
                         throw new Error(data.detail || 'Signup failed')
                     }
 
-                    // Open verification modal instead of immediate success
-                    setIsVerificationModalOpen(true)
+                    // Check if session exists (email verification might be required)
+                    if (authData.session) {
+                        // User is logged in, proceed to phone verification
+                        setIsVerificationModalOpen(true)
+                    } else {
+                        // Email verification required
+                        setSuccess('✅ Account created! Please check your email to verify your account.')
+                        setTimeout(() => {
+                            setIsSignUp(false)
+                            setEmail('')
+                            setPassword('')
+                            setPhone('')
+                            setDesignation('')
+                            setOrganization('')
+                        }, 5000)
+                    }
                 }
             } else {
                 const { error } = await supabase.auth.signInWithPassword({
@@ -272,6 +286,7 @@ export default function LoginPage() {
                     <Link to="/" className="text-sm text-gray-600 hover:text-gray-900">
                         ← Back to Homepage
                     </Link>
+                    <p className="text-xs text-gray-400 mt-4">v1.1.2 (Crash Fixes Applied)</p>
                 </div>
             </div>
         </div>

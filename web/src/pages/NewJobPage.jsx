@@ -138,7 +138,32 @@ export default function NewJobPage() {
             })
 
         } catch (err) {
-            setError(err.message)
+            // Check if it's an email verification error
+            if (err.message.includes('verify your email')) {
+                setError(
+                    <div className="flex flex-col items-start gap-2">
+                        <span>{err.message}</span>
+                        <button
+                            onClick={async () => {
+                                setLoading(true)
+                                const { data, error } = await supabase.auth.refreshSession()
+                                if (!error && data.session?.user?.email_confirmed_at) {
+                                    setError(null)
+                                    alert('Email verified successfully! You can now submit jobs.')
+                                } else {
+                                    alert('Email still not verified. Please check your inbox or try logging out and back in.')
+                                }
+                                setLoading(false)
+                            }}
+                            className="text-sm bg-red-100 text-red-700 px-3 py-1 rounded border border-red-200 hover:bg-red-200 transition"
+                        >
+                            🔄 I have verified my email
+                        </button>
+                    </div>
+                )
+            } else {
+                setError(err.message)
+            }
         } finally {
             setLoading(false)
         }
