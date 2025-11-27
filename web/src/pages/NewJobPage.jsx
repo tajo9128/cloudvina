@@ -108,8 +108,10 @@ export default function NewJobPage() {
 
             if (!createRes.ok) {
                 const err = await createRes.json()
-
-                throw new Error(err.detail?.message || err.detail || 'Failed to create job')
+                const errorMessage = typeof err.detail === 'object'
+                    ? JSON.stringify(err.detail)
+                    : (err.detail?.message || err.detail || 'Failed to create job')
+                throw new Error(errorMessage)
             }
 
             const { job_id, upload_urls } = await createRes.json()
