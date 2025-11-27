@@ -33,6 +33,14 @@ app = FastAPI(
     redoc_url="/redoc"  # ReDoc
 )
 
+@app.on_event("startup")
+async def startup_event():
+    print("="*50)
+    print("🚀 CloudVina API v1.1.0 - Deployed at " + datetime.utcnow().isoformat())
+    print("✓ Fix: RateLimiter Admin API call removed")
+    print("✓ Fix: Signup handled by DB Triggers")
+    print("="*50)
+
 # NEW: Add session middleware for SQLAdmin authentication
 app.add_middleware(
     SessionMiddleware, 
