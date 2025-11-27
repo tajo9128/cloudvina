@@ -53,18 +53,39 @@ class RateLimiter:
             #     }
             
             # Get user credits and account info
-            credits_response = supabase.table('user_credits').select('plan, credits, account_created_at').eq('user_id', user_id).single().execute()
+            credits_response = supabase.table('user_credits').select('plan, credits, account_created_at').eq('user_id', user_id).execute()
             
+            # Self-healing: Create credits record if missing
+            if not credits_response.data or len(credits_response.data) == 0:
+                print(f"WARNING: User {user_id} missing credits record. Creating default free tier.")
+                from datetime import datetime, timedelta
+                now = datetime.now()
+                supabase.table('user_credits').insert({
+                    'user_id': user_id,
+                    'plan': 'free',
+                    'bonus_credits': 100,
+                    'bonus_expiry': (now + timedelta(days=30)).isoformat(),
+                    'monthly_credits': 30,
+                    'last_monthly_reset': now.date().isoformat(),
+                    'paid_credits': 0,
+                    'account_created_at': now.isoformat(),
+                    'credits': 130
+                }).execute()
+                
+                # Fetch again
+                credits_response = supabase.table('user_credits').select('plan, credits, account_created_at').eq('user_id', user_id).execute()
+
             if not credits_response.data:
-                return {
+                 return {
                     "allowed": False,
-                    "message": "User account not properly initialized. Please contact support.",
-                    "reason": "no_credits_record"
+                    "message": "Failed to initialize user credits. Please contact support.",
+                    "reason": "init_failed"
                 }
-            
-            user_plan = credits_response.data.get('plan', 'free')
-            user_credits = credits_response.data.get('credits', 0)
-            account_created_str = credits_response.data.get('account_created_at')
+
+            user_data = credits_response.data[0]
+            user_plan = user_data.get('plan', 'free')
+            user_credits = user_data.get('credits', 0)
+            account_created_str = user_data.get('account_created_at')
             
             # Parse account creation date
             account_created_at = datetime.fromisoformat(account_created_str.replace('Z', '+00:00')) if account_created_str else datetime.now()
