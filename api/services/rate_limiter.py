@@ -28,15 +28,17 @@ class RateLimiter:
             return 1
     
     @staticmethod
-    async def check_can_submit(supabase: Client, user_id: str) -> dict:
+    async def check_can_submit(supabase: Client, user: any) -> dict:
         """
         Check if user can submit a job
         Returns: dict with 'allowed' boolean and 'message' string
         """
         try:
-            # Check email verification
-            user_response = supabase.auth.admin.get_user_by_id(user_id)
-            if not user_response.user.email_confirmed_at:
+            user_id = user.id
+            
+            # Check email verification (using user object directly to avoid Admin API call)
+            # user.email_confirmed_at is usually a string or None
+            if not user.email_confirmed_at:
                 return {
                     "allowed": False,
                     "message": "Please verify your email address before submitting jobs. Check your inbox for verification link.",

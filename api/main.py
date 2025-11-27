@@ -336,7 +336,7 @@ async def submit_job(
         from services.rate_limiter import RateLimiter
         
         # Check if user can submit job (verification + rate limit)
-        eligibility = await RateLimiter.check_can_submit(supabase, current_user.id)
+        eligibility = await RateLimiter.check_can_submit(supabase, current_user)
         
         if not eligibility['allowed']:
             raise HTTPException(
