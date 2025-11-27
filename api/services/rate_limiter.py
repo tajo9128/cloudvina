@@ -47,10 +47,10 @@ class RateLimiter:
             
             # Check phone verification (SELF-HEALING: create profile if missing)
             try:
-                profile_response = supabase.table('user_profiles').select('phone_verified').eq('id', user_id).maybe_single().execute()
+                profile_response = supabase.table('user_profiles').select('phone_verified').eq('id', user_id).execute()
                 
-                # If profile doesn't exist, create it
-                if not profile_response.data:
+                # If no data returned, create profile
+                if not profile_response.data or len(profile_response.data) == 0:
                     print(f"WARNING: User {user_id} has no profile. Auto-creating...")
                     supabase.table('user_profiles').insert({
                         'id': user_id,
@@ -64,7 +64,7 @@ class RateLimiter:
                     }
                 
                 # Profile exists, check if phone is verified
-                if not profile_response.data.get('phone_verified'):
+                if not profile_response.data[0].get('phone_verified'):
                     return {
                         "allowed": False,
                         "message": "Please verify your phone number before submitting jobs. You can verify it in your Dashboard.",
