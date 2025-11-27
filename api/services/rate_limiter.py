@@ -45,13 +45,37 @@ class RateLimiter:
                     "reason": "email_not_verified"
                 }
             
-            # Check phone verification
-            profile_response = supabase.table('user_profiles').select('phone_verified').eq('id', user_id).single().execute()
-            if not profile_response.data or not profile_response.data.get('phone_verified'):
+            # Check phone verification (SELF-HEALING: create profile if missing)
+            try:
+                profile_response = supabase.table('user_profiles').select('phone_verified').eq('id', user_id).maybe_single().execute()
+                
+                # If profile doesn't exist, create it
+                if not profile_response.data:
+                    print(f"WARNING: User {user_id} has no profile. Auto-creating...")
+                    supabase.table('user_profiles').insert({
+                        'id': user_id,
+                        'phone_verified': False
+                    }).execute()
+                    # Profile now exists but phone not verified
+                    return {
+                        "allowed": False,
+                        "message": "Please verify your phone number before submitting jobs. You can verify it in your Dashboard.",
+                        "reason": "phone_not_verified"
+                    }
+                
+                # Profile exists, check if phone is verified
+                if not profile_response.data.get('phone_verified'):
+                    return {
+                        "allowed": False,
+                        "message": "Please verify your phone number before submitting jobs. You can verify it in your Dashboard.",
+                        "reason": "phone_not_verified"
+                    }
+            except Exception as e:
+                print(f"ERROR checking phone verification: {str(e)}")
                 return {
                     "allowed": False,
-                    "message": "Please verify your phone number before submitting jobs. You can verify it in your Dashboard.",
-                    "reason": "phone_not_verified"
+                    "message": f"Error checking phone verification: {str(e)}",
+                    "reason": "error"
                 }
             
             # Get user credits and account info
