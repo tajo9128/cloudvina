@@ -26,7 +26,7 @@ export default function ExportButtons({ jobId = null, className = "" }) {
 
             // Get filename from Content-Disposition header or create default
             const contentDisposition = response.headers.get('Content-Disposition')
-            let filename = `cloudvina_export.${format}`
+            let filename = `BioDockify_export.${format}`
             if (contentDisposition) {
                 const filenameMatch = contentDisposition.match(/filename="?(.+)"?/)
                 if (filenameMatch) {

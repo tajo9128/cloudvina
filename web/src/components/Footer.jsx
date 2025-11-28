@@ -8,7 +8,7 @@ export default function Footer() {
                     <div>
                         <div className="flex items-center space-x-2 mb-4">
                             <div className="text-2xl">🧬</div>
-                            <h2 className="text-xl font-bold">CloudVina</h2>
+                            <h2 className="text-xl font-bold">BioDockify</h2>
                         </div>
                         <p className="text-gray-400 text-sm">
                             Democratizing drug discovery with cloud-native molecular docking tools.
@@ -40,7 +40,7 @@ export default function Footer() {
                     </div>
                 </div>
                 <div className="border-t border-gray-800 pt-8 text-center text-gray-500 text-sm">
-                    © {new Date().getFullYear()} CloudVina. All rights reserved.
+                    © {new Date().getFullYear()} BioDockify. All rights reserved.
                 </div>
             </div>
         </footer>

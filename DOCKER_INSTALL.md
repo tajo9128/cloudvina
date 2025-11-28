@@ -1,6 +1,6 @@
 # Docker Installation Guide for Windows
 
-Docker is required to build and test the CloudVina container locally.
+Docker is required to build and test the BioDockify container locally.
 
 ## Step 1: Download Docker Desktop
 
@@ -70,4 +70,4 @@ If you cannot install Docker locally, you can:
 
 ---
 
-**Once Docker is installed, come back and we'll test the CloudVina container!**
+**Once Docker is installed, come back and we'll test the BioDockify container!**

@@ -1,5 +1,5 @@
 """
-SQLAlchemy models for CloudVina
+SQLAlchemy models for BioDockify
 Maps to existing Supabase database schema
 """
 from sqlalchemy import Column, String, Integer, Float, Boolean, DateTime, ForeignKey, Text, ARRAY

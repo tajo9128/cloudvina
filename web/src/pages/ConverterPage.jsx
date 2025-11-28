@@ -10,7 +10,7 @@ export default function ConverterPage() {
 
     // SEO: Set Title and Meta Tags
     useEffect(() => {
-        document.title = "Free SDF to PDBQT Converter | CloudVina"
+        document.title = "Free SDF to PDBQT Converter | BioDockify"
 
         // Helper to set meta tag
         const setMeta = (name, content) => {
@@ -24,7 +24,7 @@ export default function ConverterPage() {
         }
 
         setMeta('description', 'Convert SDF, MOL, PDB, and MOL2 files to PDBQT format instantly for AutoDock Vina. Free online tool for researchers and students.')
-        setMeta('keywords', 'sdf to pdbqt, pdbqt converter, molecular docking, autodock vina, ligand preparation, zinc15, pubchem, rcsb pdb, cloudvina')
+        setMeta('keywords', 'sdf to pdbqt, pdbqt converter, molecular docking, autodock vina, ligand preparation, zinc15, pubchem, rcsb pdb, BioDockify')
     }, [])
 
     const handleFileChange = (e) => {
@@ -182,7 +182,7 @@ export default function ConverterPage() {
                                 <li><strong>Rotatable Bonds:</strong> Defines which parts of the molecule can flex and move during docking.</li>
                             </ul>
                             <p>
-                                Most chemical databases provide files in 2D or 3D SDF format. CloudVina's converter bridges this gap, automatically preparing your files for high-accuracy docking.
+                                Most chemical databases provide files in 2D or 3D SDF format. BioDockify's converter bridges this gap, automatically preparing your files for high-accuracy docking.
                             </p>
                         </div>
                     </div>
@@ -256,7 +256,7 @@ export default function ConverterPage() {
                     <div className="mt-16 text-center">
                         <h2 className="text-3xl font-bold text-white mb-6">Ready to Run Your Docking Simulation?</h2>
                         <p className="text-blue-200 mb-8 text-lg">
-                            Now that you have your PDBQT files, start your molecular docking job on CloudVina.
+                            Now that you have your PDBQT files, start your molecular docking job on BioDockify.
                         </p>
                         <Link to="/dock/new" className="btn-blue-glow text-lg px-10 py-4 rounded-xl inline-block">
                             Start Docking Job →

@@ -28,7 +28,7 @@ export default function BlogPage() {
             title: 'New Feature: SDF to PDBQT Converter',
             excerpt: 'We have just released a free tool to help you prepare your ligands for docking.',
             date: 'Nov 15, 2025',
-            author: 'CloudVina Team',
+            author: 'BioDockify Team',
             category: 'Updates',
             image: 'https://images.unsplash.com/photo-1581093458791-9f3c3900df4b?auto=format&fit=crop&q=80&w=1000'
         },

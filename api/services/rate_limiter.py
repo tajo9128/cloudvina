@@ -84,7 +84,7 @@ class RateLimiter:
             # EXEMPTION: Admins and Paid Users
             # 1. Check if admin (by email for now, or use a role if available)
             user_email = user.email
-            if user_email in ['admin@cloudvina.in', 'tajo9128@gmail.com']:  # Add your admin emails here
+            if user_email in ['admin@BioDockify.in', 'tajo9128@gmail.com']:  # Add your admin emails here
                 return {
                     "allowed": True,
                     "message": "Admin exemption: Unlimited access",

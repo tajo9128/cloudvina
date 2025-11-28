@@ -9,22 +9,22 @@ export default function TermsPage() {
 
                         <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">1. Acceptance of Terms</h3>
                         <p className="mb-4">
-                            By accessing or using CloudVina, you agree to be bound by these Terms of Service.
+                            By accessing or using BioDockify, you agree to be bound by these Terms of Service.
                         </p>
 
                         <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">2. Use of Service</h3>
                         <p className="mb-4">
-                            You agree to use CloudVina only for lawful purposes and in accordance with these Terms. You are responsible for all activities that occur under your account.
+                            You agree to use BioDockify only for lawful purposes and in accordance with these Terms. You are responsible for all activities that occur under your account.
                         </p>
 
                         <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">3. Intellectual Property</h3>
                         <p className="mb-4">
-                            You retain all rights to the data and files you upload. CloudVina claims no ownership over your research data.
+                            You retain all rights to the data and files you upload. BioDockify claims no ownership over your research data.
                         </p>
 
                         <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">4. Limitation of Liability</h3>
                         <p className="mb-4">
-                            CloudVina is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the service.
+                            BioDockify is provided "as is" without warranties of any kind. We are not liable for any damages arising from your use of the service.
                         </p>
                     </div>
                 </div>

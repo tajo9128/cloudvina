@@ -1,10 +1,10 @@
 # Trigger Netlify Deploy
 
-## Quick Fix for cloudvina.in Not Updating
+## Quick Fix for BioDockify.in Not Updating
 
 ### Method 1: Via Netlify Dashboard (Fastest)
 1. Go to https://app.netlify.com/
-2. Select **CloudVina** site
+2. Select **BioDockify** site
 3. Click **Deploys** tab
 4. Click **"Trigger deploy"** → **"Clear cache and deploy site"**
 
@@ -29,8 +29,8 @@ Make sure Netlify is watching the correct branch:
 ---
 
 ## Why This Happens
-- **Vercel** (cloudvina-3n3v.vercel.app) auto-deploys from every commit
-- **Netlify** (cloudvina.in) might have:
+- **Vercel** (BioDockify-3n3v.vercel.app) auto-deploys from every commit
+- **Netlify** (BioDockify.in) might have:
   - Build failures (check deploy logs)
   - Different branch configured
   - Caching issues
@@ -38,5 +38,5 @@ Make sure Netlify is watching the correct branch:
 ## Prevention
 Consider using **only one hosting service** to avoid this confusion:
 - Keep Vercel for preview URLs
-- Move production (`cloudvina.in`) to Vercel OR
+- Move production (`BioDockify.in`) to Vercel OR
 - Move everything to Netlify

@@ -111,7 +111,7 @@ export default function LoginPage() {
                         {isSignUp ? 'Create your account' : 'Welcome back'}
                     </h2>
                     <p className="mt-2 text-sm text-slate-600">
-                        {isSignUp ? 'Start your molecular docking journey' : 'Sign in to continue to CloudVina'}
+                        {isSignUp ? 'Start your molecular docking journey' : 'Sign in to continue to BioDockify'}
                     </p>
                 </div>
 

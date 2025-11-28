@@ -3,7 +3,7 @@ import os
 
 # AWS Configuration
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-S3_BUCKET = os.getenv("S3_BUCKET", "cloudvina-jobs-use1-1763775915")
+S3_BUCKET = os.getenv("S3_BUCKET", "BioDockify-jobs-use1-1763775915")
 
 def configure_cors():
     s3 = boto3.client('s3', region_name=AWS_REGION)

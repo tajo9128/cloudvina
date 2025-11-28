@@ -361,7 +361,7 @@ async def fix_s3_cors(admin_user: dict = Depends(get_admin_user)):
     
     try:
         AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-        S3_BUCKET = os.getenv("S3_BUCKET", "cloudvina-jobs-use1-1763775915")
+        S3_BUCKET = os.getenv("S3_BUCKET", "BioDockify-jobs-use1-1763775915")
         
         s3 = boto3.client('s3', region_name=AWS_REGION)
         

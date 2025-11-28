@@ -1,6 +1,6 @@
-# GitHub Codespaces Setup for CloudVina Testing
+# GitHub Codespaces Setup for BioDockify Testing
 
-GitHub Codespaces provides a cloud-based development environment with Docker pre-installed. Perfect for testing CloudVina without local installation!
+GitHub Codespaces provides a cloud-based development environment with Docker pre-installed. Perfect for testing BioDockify without local installation!
 
 ## Step 1: Push Your Code to GitHub
 
@@ -9,7 +9,7 @@ GitHub Codespaces provides a cloud-based development environment with Docker pre
 1. Go to [github.com](https://github.com) (create account if needed - it's free!)
 2. Click the **+** icon → **New repository**
 3. Settings:
-   - **Name**: `cloudvina`
+   - **Name**: `BioDockify`
    - **Description**: "Web-based molecular docking platform using AutoDock Vina"
    - **Visibility**: Public (or Private if you prefer)
    - **Don't** initialize with README (we already have one)
@@ -17,10 +17,10 @@ GitHub Codespaces provides a cloud-based development environment with Docker pre
 
 ### 1b. Initialize Git and Push
 
-Open PowerShell in your cloudvina directory:
+Open PowerShell in your BioDockify directory:
 
 ```powershell
-cd c:\Users\tajo9\.gemini\antigravity\playground\exo-pinwheel\cloudvina
+cd c:\Users\tajo9\.gemini\antigravity\playground\exo-pinwheel\BioDockify
 
 # Initialize Git
 git init
@@ -32,7 +32,7 @@ git add .
 git commit -m "Initial commit - Phase 1 Docker container"
 
 # Add remote (replace YOUR_USERNAME with your GitHub username)
-git remote add origin https://github.com/YOUR_USERNAME/cloudvina.git
+git remote add origin https://github.com/YOUR_USERNAME/BioDockify.git
 
 # Push to GitHub
 git branch -M main
@@ -47,7 +47,7 @@ git config --global user.email "your.email@example.com"
 
 ## Step 2: Create a Codespace
 
-1. Go to your GitHub repository: `https://github.com/YOUR_USERNAME/cloudvina`
+1. Go to your GitHub repository: `https://github.com/YOUR_USERNAME/BioDockify`
 2. Click the green **Code** button
 3. Click the **Codespaces** tab
 4. Click **Create codespace on main**
@@ -66,7 +66,7 @@ Once your Codespace loads, open the terminal (it's already open at the bottom) a
 
 ```bash
 cd docker
-docker build -t cloudvina:latest .
+docker build -t BioDockify:latest .
 ```
 
 This will take 3-5 minutes the first time.
@@ -111,14 +111,14 @@ cd ..
 ```bash
 docker run --rm \
   -v $(pwd)/test_data:/app/work \
-  cloudvina:latest \
+  BioDockify:latest \
   python test_local.py
 ```
 
 **Expected output:**
 ```
 ============================================================
-CloudVina - Local Test Mode
+BioDockify - Local Test Mode
 ============================================================
 
 [1/4] Converting ligand to PDBQT...
@@ -212,10 +212,10 @@ wget https://files.rcsb.org/download/1HVR.pdb -O hiv_protease.pdb
 
 ```bash
 # Build image
-docker build -t cloudvina:latest .
+docker build -t BioDockify:latest .
 
 # Run test
-docker run --rm -v $(pwd)/test_data:/app/work cloudvina:latest python test_local.py
+docker run --rm -v $(pwd)/test_data:/app/work BioDockify:latest python test_local.py
 
 # Check Docker status
 docker ps

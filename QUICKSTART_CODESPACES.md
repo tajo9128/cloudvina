@@ -1,6 +1,6 @@
 # Quick Start: GitHub Codespaces
 
-**Fastest way to test CloudVina in the cloud (no local setup needed!)**
+**Fastest way to test BioDockify in the cloud (no local setup needed!)**
 
 ## Step 1: Create GitHub Account
 Go to [github.com](https://github.com) and sign up (free)
@@ -8,7 +8,7 @@ Go to [github.com](https://github.com) and sign up (free)
 ## Step 2: Create Repository
 
 1. Click **+** → **New repository**
-2. Name: `cloudvina`
+2. Name: `BioDockify`
 3. Visibility: Public
 4. Click **Create repository**
 
@@ -17,7 +17,7 @@ Go to [github.com](https://github.com) and sign up (free)
 Copy and run these commands in PowerShell:
 
 ```powershell
-cd c:\Users\tajo9\.gemini\antigravity\playground\exo-pinwheel\cloudvina
+cd c:\Users\tajo9\.gemini\antigravity\playground\exo-pinwheel\BioDockify
 
 # Configure Git (one-time setup)
 git config user.name "Your Name"
@@ -27,7 +27,7 @@ git config user.email "your.email@example.com"
 git commit -m "Phase 1: Docker container for AutoDock Vina"
 
 # Add remote (replace YOUR_USERNAME)
-git remote add origin https://github.com/YOUR_USERNAME/cloudvina.git
+git remote add origin https://github.com/YOUR_USERNAME/BioDockify.git
 
 # Push
 git branch -M main
@@ -36,7 +36,7 @@ git push -u origin main
 
 ## Step 4: Launch Codespace
 
-1. Go to your repo: `github.com/YOUR_USERNAME/cloudvina`
+1. Go to your repo: `github.com/YOUR_USERNAME/BioDockify`
 2. Click green **Code** button → **Codespaces** tab
 3. Click **Create codespace on main**
 4. Wait 2 minutes for setup
@@ -49,7 +49,7 @@ Once VS Code loads in your browser, run in the terminal:
 cd docker
 
 # Build (takes 3-5 mins first time)
-docker build -t cloudvina:latest .
+docker build -t BioDockify:latest .
 
 # Create test files
 cd test_data
@@ -83,7 +83,7 @@ cd ..
 # Run test (1-5 minutes)
 docker run --rm \
   -v $(pwd)/test_data:/app/work \
-  cloudvina:latest \
+  BioDockify:latest \
   python test_local.py
 ```
 

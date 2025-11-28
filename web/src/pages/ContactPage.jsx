@@ -11,9 +11,9 @@ export default function ContactPage() {
     const handleSubmit = (e) => {
         e.preventDefault()
         // For MVP, we'll just open the mail client with the filled details
-        const subject = encodeURIComponent(`[CloudVina Inquiry] ${formData.subject}`)
+        const subject = encodeURIComponent(`[BioDockify Inquiry] ${formData.subject}`)
         const body = encodeURIComponent(`Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`)
-        window.location.href = `mailto:cloudvina2025@gmail.com?subject=${subject}&body=${body}`
+        window.location.href = `mailto:BioDockify2025@gmail.com?subject=${subject}&body=${body}`
     }
 
     return (
@@ -23,7 +23,7 @@ export default function ContactPage() {
                     <div className="text-center mb-12">
                         <h1 className="text-4xl font-bold text-deep-navy-900 mb-4">Contact Us</h1>
                         <p className="text-slate-600 max-w-2xl mx-auto text-lg">
-                            Have questions about CloudVina? Need help with your docking jobs?
+                            Have questions about BioDockify? Need help with your docking jobs?
                             We're here to help.
                         </p>
                     </div>
@@ -38,8 +38,8 @@ export default function ContactPage() {
                                         <div className="text-2xl mr-4 bg-blue-50 w-10 h-10 rounded-lg flex items-center justify-center">📧</div>
                                         <div>
                                             <p className="font-bold text-deep-navy-900">Email</p>
-                                            <a href="mailto:cloudvina2025@gmail.com" className="text-blue-600 hover:text-blue-700 font-medium">
-                                                cloudvina2025@gmail.com
+                                            <a href="mailto:BioDockify2025@gmail.com" className="text-blue-600 hover:text-blue-700 font-medium">
+                                                BioDockify2025@gmail.com
                                             </a>
                                             <p className="text-sm text-slate-500 mt-1">
                                                 We usually respond within 24 hours.

@@ -6,8 +6,8 @@ Environment variables are set in Vercel, but the deployed site still uses placeh
 ## Solution: Delete & Redeploy Production Domain
 
 ### Step 1: Check Current Deployment Assignment
-1. Vercel Dashboard → CloudVina project → **Settings** → **Domains**
-2. Find `cloudvina.in` in the list
+1. Vercel Dashboard → BioDockify project → **Settings** → **Domains**
+2. Find `BioDockify.in` in the list
 3. Note which **Git Branch** it's assigned to (probably `main`)
 4. Note which **Production Deployment** it's pointing to
 
@@ -51,11 +51,11 @@ After deployment completes:
 
 If redeploying doesn't work:
 1. **Settings** → **Domains**
-2. Find `cloudvina.in` → Click **Edit**
+2. Find `BioDockify.in` → Click **Edit**
 3. Temporarily **Remove** the domain assignment
 4. Click **Save**
 5. Force a new production deployment (Option A or B above)
-6. **Re-add** `cloudvina.in` as the production domain
+6. **Re-add** `BioDockify.in` as the production domain
 7. This forces Vercel to route the domain to the fresh build
 
 ---
@@ -71,12 +71,12 @@ If redeploying doesn't work:
 ### Test API from Command Line
 ```bash
 # This should return 200 OK
-curl -I https://cloudvina-api.onrender.com/health
+curl -I https://BioDockify-api.onrender.com/health
 ```
 
 ### Browser Console Test (After Redeploy)
 ```javascript
-// Open console on cloudvina.in
+// Open console on BioDockify.in
 console.log(import.meta.env.VITE_SUPABASE_URL)
 // Should NOT show "placeholder.supabase.co"
 // Should show your actual Supabase URL
@@ -94,7 +94,7 @@ The `--force` flag or unchecking "Use existing Build Cache" ensures Vite rebuild
 
 ## Alternative: Hardcode for Emergency Fix
 
-If you need `cloudvina.in` working IMMEDIATELY while troubleshooting Vercel:
+If you need `BioDockify.in` working IMMEDIATELY while troubleshooting Vercel:
 
 **File:** `web/src/supabaseClient.js`
 ```javascript

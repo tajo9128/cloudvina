@@ -1,6 +1,6 @@
-# CloudVina Phase 1 - AWS Setup Guide
+# BioDockify Phase 1 - AWS Setup Guide
 
-This guide walks you through setting up AWS for CloudVina using the Free Tier.
+This guide walks you through setting up AWS for BioDockify using the Free Tier.
 
 ## Step 1: Create AWS Account (if needed)
 
@@ -41,11 +41,11 @@ You'll need:
 
 ```bash
 # Create bucket (must be globally unique name)
-aws s3 mb s3://cloudvina-jobs-[your-username]
+aws s3 mb s3://BioDockify-jobs-[your-username]
 
 # Enable versioning (optional, for safety)
 aws s3api put-bucket-versioning \
-  --bucket cloudvina-jobs-[your-username] \
+  --bucket BioDockify-jobs-[your-username] \
   --versioning-configuration Status=Enabled
 
 # Set lifecycle policy to delete files after 30 days (save costs)
@@ -61,7 +61,7 @@ cat > lifecycle.json << 'EOF'
 EOF
 
 aws s3api put-bucket-lifecycle-configuration \
-  --bucket cloudvina-jobs-[your-username] \
+  --bucket BioDockify-jobs-[your-username] \
   --lifecycle-configuration file://lifecycle.json
 ```
 
@@ -89,27 +89,27 @@ EOF
 
 # Create role
 aws iam create-role \
-  --role-name CloudVinaJobRole \
+  --role-name BioDockifyJobRole \
   --assume-role-policy-document file://batch-trust-policy.json
 
 # Attach S3 access policy
 aws iam attach-role-policy \
-  --role-name CloudVinaJobRole \
+  --role-name BioDockifyJobRole \
   --policy-arn arn:aws:iam::aws:policy/AmazonS3FullAccess
 
 # Note the Role ARN - you'll need this later
-aws iam get-role --role-name CloudVinaJobRole --query 'Role.Arn'
+aws iam get-role --role-name BioDockifyJobRole --query 'Role.Arn'
 ```
 
 ## Step 5: Create ECR Repository
 
 ```bash
 # Create repo
-aws ecr create-repository --repository-name cloudvina
+aws ecr create-repository --repository-name BioDockify
 
 # Get repo URI (save this)
 aws ecr describe-repositories \
-  --repository-names cloudvina \
+  --repository-names BioDockify \
   --query 'repositories[0].repositoryUri' \
   --output text
 ```
@@ -123,7 +123,7 @@ aws ecr describe-repositories \
 1. Go to [AWS Batch Console](https://console.aws.amazon.com/batch)
 2. Click "Compute environments" → "Create"
 3. Settings:
-   - **Name**: `cloudvina-compute-free-tier`
+   - **Name**: `BioDockify-compute-free-tier`
    - **Provisioning model**: **Managed (recommended)**
    - **Instance type**: `t2.micro` (Free Tier)
    - **Min vCPUs**: `0` (pay only when running)
@@ -136,27 +136,27 @@ aws ecr describe-repositories \
 
 1. Click "Job queues" → "Create"
 2. Settings:
-   - **Name**: `cloudvina-queue-free-tier`
+   - **Name**: `BioDockify-queue-free-tier`
    - **Priority**: `1`
-   - **Compute environment**: Select `cloudvina-compute-free-tier`
+   - **Compute environment**: Select `BioDockify-compute-free-tier`
 3. Click "Create"
 
 ### 6c. Create Job Definition
 
 1. Click "Job definitions" → "Create"
 2. Settings:
-   - **Name**: `cloudvina-job`
+   - **Name**: `BioDockify-job`
    - **Platform**: **Fargate** or **EC2** (choose EC2 for Free Tier)
-   - **Execution role**: Select `CloudVinaJobRole` (created in Step 4)
+   - **Execution role**: Select `BioDockifyJobRole` (created in Step 4)
    - **Image**: `[your-ecr-repo-uri]:latest` (from Step 5)
    - **Command**: Leave empty (uses ENTRYPOINT from Dockerfile)
    - **vCPUs**: `1`
    - **Memory**: `1024` MB
-   - **Job role**: Select `CloudVinaJobRole`
+   - **Job role**: Select `BioDockifyJobRole`
 3. **Environment variables** (add these):
    ```
    JOB_ID = (will be set per job)
-   S3_BUCKET = cloudvina-jobs-[your-username]
+   S3_BUCKET = BioDockify-jobs-[your-username]
    RECEPTOR_S3_KEY = (will be set per job)
    LIGAND_S3_KEY = (will be set per job)
    ```
@@ -167,17 +167,17 @@ aws ecr describe-repositories \
 ### Push Docker Image to ECR
 
 ```bash
-cd cloudvina/docker
+cd BioDockify/docker
 
 # Build
-docker build -t cloudvina:latest .
+docker build -t BioDockify:latest .
 
 # Authenticate to ECR
 aws ecr get-login-password --region us-east-1 | \
   docker login --username AWS --password-stdin [account-id].dkr.ecr.us-east-1.amazonaws.com
 
 # Tag
-docker tag cloudvina:latest [ecr-repo-uri]:latest
+docker tag BioDockify:latest [ecr-repo-uri]:latest
 
 # Push
 docker push [ecr-repo-uri]:latest
@@ -197,8 +197,8 @@ wget https://files.rcsb.org/download/1HVR.pdb -O receptor.pdb
 # For testing, you can use any small molecule in SDF format
 
 # Upload to S3
-aws s3 cp receptor.pdb s3://cloudvina-jobs-[your-username]/test/receptor.pdb
-aws s3 cp ligand.sdf s3://cloudvina-jobs-[your-username]/test/ligand.sdf
+aws s3 cp receptor.pdb s3://BioDockify-jobs-[your-username]/test/receptor.pdb
+aws s3 cp ligand.sdf s3://BioDockify-jobs-[your-username]/test/ligand.sdf
 ```
 
 ### Submit Test Job
@@ -206,8 +206,8 @@ aws s3 cp ligand.sdf s3://cloudvina-jobs-[your-username]/test/ligand.sdf
 ```bash
 aws batch submit-job \
   --job-name test-docking-001 \
-  --job-queue cloudvina-queue-free-tier \
-  --job-definition cloudvina-job \
+  --job-queue BioDockify-queue-free-tier \
+  --job-definition BioDockify-job \
   --container-overrides '{
     "environment": [
       {"name": "JOB_ID", "value": "test-001"},
@@ -224,7 +224,7 @@ aws batch submit-job \
 aws batch describe-jobs --jobs [job-id]
 
 # Check S3 for results
-aws s3 ls s3://cloudvina-jobs-[your-username]/jobs/test-001/
+aws s3 ls s3://BioDockify-jobs-[your-username]/jobs/test-001/
 ```
 
 ## Cost Monitoring
@@ -269,15 +269,15 @@ Once this works:
 ## Quick Reference
 
 **Your Resources:**
-- S3 Bucket: `s3://cloudvina-jobs-[your-username]`
-- ECR Repo: `[account-id].dkr.ecr.us-east-1.amazonaws.com/cloudvina`
-- Job Queue: `cloudvina-queue-free-tier`
-- Compute Env: `cloudvina-compute-free-tier`
+- S3 Bucket: `s3://BioDockify-jobs-[your-username]`
+- ECR Repo: `[account-id].dkr.ecr.us-east-1.amazonaws.com/BioDockify`
+- Job Queue: `BioDockify-queue-free-tier`
+- Compute Env: `BioDockify-compute-free-tier`
 
 **Useful Commands:**
 ```bash
 # List jobs
-aws batch list-jobs --job-queue cloudvina-queue-free-tier
+aws batch list-jobs --job-queue BioDockify-queue-free-tier
 
 # Describe job
 aws batch describe-jobs --jobs [job-id]
@@ -286,5 +286,5 @@ aws batch describe-jobs --jobs [job-id]
 aws batch cancel-job --job-id [job-id] --reason "Testing"
 
 # Check S3 results
-aws s3 ls s3://cloudvina-jobs-[your-username]/jobs/ --recursive
+aws s3 ls s3://BioDockify-jobs-[your-username]/jobs/ --recursive
 ```

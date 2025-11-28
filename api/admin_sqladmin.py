@@ -1,5 +1,5 @@
 """
-SQLAdmin configuration for CloudVina
+SQLAdmin configuration for BioDockify
 Django-style auto-generated admin panel
 """
 from sqladmin import Admin, ModelView
@@ -152,7 +152,7 @@ def setup_admin(app):
     admin = Admin(
         app, 
         engine,
-        title="CloudVina Admin",
+        title="BioDockify Admin",
         authentication_backend=authentication_backend,
         base_url="/sqladmin"
     )

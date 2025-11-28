@@ -6,7 +6,7 @@ The error console shows:
 ERR_NAME_NOT_RESOLVED: https://placeholder.supabase.co/auth/v1/token
 ```
 
-This means `cloudvina.in` is using **placeholder** Supabase credentials instead of your **real** ones!
+This means `BioDockify.in` is using **placeholder** Supabase credentials instead of your **real** ones!
 
 ---
 
@@ -21,7 +21,7 @@ Your actual Supabase project URL (looks like: `https://xxxxx.supabase.co`)
 Your Supabase anonymous/public key (long string starting with `eyJ...`)
 
 ### 3. VITE_API_URL
-`https://cloudvina-api.onrender.com` ✅ (You already added this)
+`https://BioDockify-api.onrender.com` ✅ (You already added this)
 
 ---
 
@@ -29,7 +29,7 @@ Your Supabase anonymous/public key (long string starting with `eyJ...`)
 
 ### Option 1: From Supabase Dashboard
 1. Go to [Supabase Dashboard](https://supabase.com/dashboard)
-2. Select your **CloudVina** project
+2. Select your **BioDockify** project
 3. Go to **Settings** → **API**
 4. Copy:
    - **Project URL** → This is `VITE_SUPABASE_URL`
@@ -52,7 +52,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 ## Steps to Fix
 
 ### 1. Add Variables to Vercel
-1. [Vercel Dashboard](https://vercel.com/dashboard) → CloudVina project
+1. [Vercel Dashboard](https://vercel.com/dashboard) → BioDockify project
 2. **Settings** → **Environment Variables**
 3. Click **Add New**
 4. Add each variable:
@@ -69,7 +69,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
    **Variable 3:** (Already done)
    - Key: `VITE_API_URL`
-   - Value: `https://cloudvina-api.onrender.com`
+   - Value: `https://BioDockify-api.onrender.com`
    - Environments: ✅ Production ✅ Preview ✅ Development
 
 5. Click **Save**
@@ -82,7 +82,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ### 3. Wait & Test
 - Wait **2-3 minutes** for build to complete
-- Go to `https://cloudvina.in/login`
+- Go to `https://BioDockify.in/login`
 - Press `Ctrl + Shift + R` to hard refresh
 - Try logging in → Should work! ✅
 
@@ -90,7 +90,7 @@ VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 
 ## Verification
 
-After redeploying, open browser console (F12) on `cloudvina.in` and check:
+After redeploying, open browser console (F12) on `BioDockify.in` and check:
 
 ```javascript
 // Should NOT show "placeholder.supabase.co"

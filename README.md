@@ -1,8 +1,8 @@
-# CloudVina
+# BioDockify
 
 **Democratizing Molecular Docking for Students and Researchers**
 
-CloudVina is a web-based SaaS platform that makes AutoDock Vina accessible to anyone with a browser. No Linux, no command line, no expensive hardware required.
+BioDockify is a web-based SaaS platform that makes AutoDock Vina accessible to anyone with a browser. No Linux, no command line, no expensive hardware required.
 
 ## 🎯 Problem We Solve
 
@@ -40,7 +40,7 @@ CloudVina is a web-based SaaS platform that makes AutoDock Vina accessible to an
 ## 📁 Project Structure
 
 ```
-cloudvina/
+BioDockify/
 ├── docker/           # AutoDock Vina container (Phase 1) ✅
 ├── backend/          # FastAPI server (Phase 2) 🔄
 ├── frontend/         # React web app (Phase 3) 📋
@@ -62,7 +62,7 @@ See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for details.
 
 ## 📖 Documentation
 
-- **[Master Plan](docs/cloudvina_master_plan.md)** - Complete 7-week development blueprint
+- **[Master Plan](docs/BioDockify_master_plan.md)** - Complete 7-week development blueprint
 - **[Docker README](docker/README.md)** - How to build and run the container
 - **[AWS Setup Guide](AWS_SETUP.md)** - Step-by-step AWS Free Tier configuration
 
@@ -71,7 +71,7 @@ See [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md) for details.
 ```bash
 # 1. Build Docker image
 cd docker
-docker build -t cloudvina:latest .
+docker build -t BioDockify:latest .
 
 # 2. Prepare test data
 mkdir test_data
@@ -83,7 +83,7 @@ docker run --rm \
   -e JOB_ID=test-001 \
   -e RECEPTOR_S3_KEY=receptor.pdb \
   -e LIGAND_S3_KEY=ligand.sdf \
-  cloudvina:latest
+  BioDockify:latest
 ```
 
 ## 💰 Cost Structure

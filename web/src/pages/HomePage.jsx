@@ -77,7 +77,7 @@ export default function HomePage() {
             <section id="features" className="py-20 bg-gradient-to-b from-deep-navy-800 to-royal-blue-700">
                 <div className="container mx-auto px-4">
                     <div className="text-center mb-16">
-                        <h2 className="text-4xl font-bold text-white mb-4">Why CloudVina?</h2>
+                        <h2 className="text-4xl font-bold text-white mb-4">Why BioDockify?</h2>
                         <p className="text-blue-100 max-w-2xl mx-auto">
                             Built for researchers who needspeed, reliability, and flexibility.
                         </p>
@@ -307,7 +307,7 @@ export default function HomePage() {
                                     <span>Custom integrations</span>
                                 </li>
                             </ul>
-                            <a href="mailto:cloudvina2025@gmail.com" className="block w-full py-3 px-6 text-center bg-white text-gray-900 font-bold rounded-xl hover:bg-gray-100 transition">
+                            <a href="mailto:BioDockify2025@gmail.com" className="block w-full py-3 px-6 text-center bg-white text-gray-900 font-bold rounded-xl hover:bg-gray-100 transition">
                                 Contact Sales
                             </a>
                         </div>

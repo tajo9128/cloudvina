@@ -8,9 +8,9 @@ from typing import Tuple
 
 # AWS Configuration
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-S3_BUCKET = os.getenv("S3_BUCKET", "cloudvina-jobs-use1-1763775915")
-BATCH_JOB_QUEUE = os.getenv("BATCH_JOB_QUEUE", "cloudvina-fargate-queue")
-BATCH_JOB_DEFINITION = os.getenv("BATCH_JOB_DEFINITION", "cloudvina-fargate-job-v10")
+S3_BUCKET = os.getenv("S3_BUCKET", "BioDockify-jobs-use1-1763775915")
+BATCH_JOB_QUEUE = os.getenv("BATCH_JOB_QUEUE", "BioDockify-fargate-queue")
+BATCH_JOB_DEFINITION = os.getenv("BATCH_JOB_DEFINITION", "BioDockify-fargate-job-v10")
 
 # Initialize clients
 s3_client = boto3.client('s3', region_name=AWS_REGION)
@@ -97,7 +97,7 @@ def submit_batch_job(job_id: str, receptor_key: str, ligand_key: str) -> str:
     """
     try:
         response = batch_client.submit_job(
-            jobName=f'cloudvina-{job_id}',
+            jobName=f'BioDockify-{job_id}',
             jobQueue=BATCH_JOB_QUEUE,
             jobDefinition=BATCH_JOB_DEFINITION,
             containerOverrides={

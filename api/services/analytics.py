@@ -1,5 +1,5 @@
 """
-Analytics Service for CloudVina
+Analytics Service for BioDockify
 Provides dashboard statistics and insights
 """
 from sqlalchemy import func, select, and_, or_

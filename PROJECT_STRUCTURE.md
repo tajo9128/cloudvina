@@ -1,7 +1,7 @@
-# CloudVina - Project Structure
+# BioDockify - Project Structure
 
 ```
-cloudvina/
+BioDockify/
 ├── docker/                          # Phase 1: Docker container
 │   ├── Dockerfile                   # AutoDock Vina container definition
 │   ├── run_docking.py              # Python orchestration script
@@ -38,7 +38,7 @@ cloudvina/
 │   └── README.md
 │
 ├── docs/                            # Documentation
-│   ├── cloudvina_master_plan.md    # Complete project blueprint
+│   ├── BioDockify_master_plan.md    # Complete project blueprint
 │   └── api_spec.md                 # API documentation (coming)
 │
 ├── AWS_SETUP.md                     # AWS configuration guide

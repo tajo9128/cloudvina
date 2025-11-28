@@ -1,5 +1,5 @@
 """
-CloudVina API - FastAPI Backend
+BioDockify API - FastAPI Backend
 Handles authentication, job submission, and AWS Batch orchestration
 """
 from fastapi import FastAPI, Depends, HTTPException, status, Security
@@ -27,7 +27,7 @@ from admin import router as admin_router
 from admin_sqladmin import setup_admin
 
 app = FastAPI(
-    title="CloudVina API",
+    title="BioDockify API",
     description="Molecular docking as a service with AutoDock Vina",
     version="1.0.0",
     docs_url="/docs",  # Swagger UI
@@ -37,7 +37,7 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event():
     print("="*50)
-    print("🚀 CloudVina API v1.1.0 - Deployed at " + datetime.utcnow().isoformat())
+    print("🚀 BioDockify API v1.1.0 - Deployed at " + datetime.utcnow().isoformat())
     print("✓ Fix: RateLimiter Admin API call removed")
     print("✓ Fix: Signup handled by DB Triggers")
     print("="*50)
@@ -54,11 +54,11 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
-        "https://cloudvina.in",
-        "https://www.cloudvina.in",
-        "https://cloudvina-3n3v.vercel.app",
-        "https://cloudvina-web.vercel.app",
-        "https://cloudvina.vercel.app"
+        "https://BioDockify.in",
+        "https://www.BioDockify.in",
+        "https://BioDockify-3n3v.vercel.app",
+        "https://BioDockify-web.vercel.app",
+        "https://BioDockify.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -85,7 +85,7 @@ security = HTTPBearer()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-S3_BUCKET = os.getenv("S3_BUCKET", "cloudvina-jobs-use1-1763775915")
+S3_BUCKET = os.getenv("S3_BUCKET", "BioDockify-jobs-use1-1763775915")
 
 # ============================================================================
 # Pydantic Models
@@ -127,7 +127,7 @@ def root():
     """Health check endpoint"""
     return {
         "status": "ok",
-        "service": "CloudVina API",
+        "service": "BioDockify API",
         "version": "1.0.0",
         "timestamp": datetime.utcnow().isoformat()
     }

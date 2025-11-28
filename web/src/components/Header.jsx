@@ -6,7 +6,7 @@ export default function Header() {
             <div className="container mx-auto px-4 py-4 flex justify-between items-center">
                 <Link to="/" className="flex items-center space-x-2 text-gray-800 hover:text-purple-600 transition">
                     <div className="text-2xl">🧬</div>
-                    <h1 className="text-xl font-bold">CloudVina</h1>
+                    <h1 className="text-xl font-bold">BioDockify</h1>
                 </Link>
                 <nav className="hidden md:flex space-x-8">
                     <Link to="/#features" className="text-gray-600 hover:text-purple-600 font-medium">Features</Link>
