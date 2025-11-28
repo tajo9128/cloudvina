@@ -78,9 +78,12 @@ class RateLimiter:
                     "reason": "init_failed"
                 }
 
+            user_data = credits_response.data[0]
+            user_plan = user_data.get('plan', 'free')
+            
             # EXEMPTION: Admins and Paid Users
             # 1. Check if admin (by email for now, or use a role if available)
-            user_email = user_response.user.email
+            user_email = user.email
             if user_email in ['admin@cloudvina.in', 'tajo9128@gmail.com']:  # Add your admin emails here
                 return {
                     "allowed": True,
@@ -90,7 +93,6 @@ class RateLimiter:
                 }
 
             # 2. Check if Paid User
-            user_plan = user_data.get('plan', 'free')
             if user_plan != 'free':
                  return {
                     "allowed": True,
