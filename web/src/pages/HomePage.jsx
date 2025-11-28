@@ -307,7 +307,7 @@ export default function HomePage() {
                                     <span>Custom integrations</span>
                                 </li>
                             </ul>
-                            <a href="mailto:BioDockify2025@gmail.com" className="block w-full py-3 px-6 text-center bg-white text-gray-900 font-bold rounded-xl hover:bg-gray-100 transition">
+                            <a href="mailto:biodockify@hotmail.com" className="block w-full py-3 px-6 text-center bg-white text-gray-900 font-bold rounded-xl hover:bg-gray-100 transition">
                                 Contact Sales
                             </a>
                         </div>

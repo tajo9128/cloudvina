@@ -24,7 +24,7 @@ export default function PrivacyPage() {
 
                         <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4">4. Contact Us</h3>
                         <p className="mb-4">
-                            If you have any questions about this Privacy Policy, please contact us at BioDockify2025@gmail.com.
+                            If you have any questions about this Privacy Policy, please contact us at biodockify@hotmail.com.
                         </p>
                     </div>
                 </div>
