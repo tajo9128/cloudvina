@@ -75,7 +75,25 @@ export default function LoginPage() {
                 navigate('/dashboard')
             }
         } catch (error) {
-            setError(error.message)
+            // Handle specific error cases with user-friendly messages
+            let errorMessage = error.message
+
+            // Supabase rate limiting
+            if (errorMessage.includes('For security purposes') || errorMessage.includes('request this after')) {
+                setError('⏱️ Please wait a moment before trying again. This security measure protects against spam.')
+            }
+            // Email already exists
+            else if (errorMessage.includes('already registered') || errorMessage.includes('already exists')) {
+                setError('📧 This email is already registered. Please try logging in instead.')
+            }
+            // Password too weak
+            else if (errorMessage.includes('password') && (errorMessage.includes('weak') || errorMessage.includes('short'))) {
+                setError('🔒 Password must be at least 6 characters long.')
+            }
+            // Generic fallback
+            else {
+                setError(errorMessage)
+            }
         } finally {
             setLoading(false)
         }
