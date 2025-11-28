@@ -84,6 +84,154 @@ AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 S3_BUCKET = os.getenv("S3_BUCKET", "cloudvina-jobs-use1-1763775915")
 
 # ============================================================================
+# Pydantic Models
+# ============================================================================
+
+class SignupRequest(BaseModel):
+    email: EmailStr
+    password: str
+    designation: str
+    organization: str
+
+class LoginRequest(BaseModel):
+    email: EmailStr
+    password: str
+
+class DockingConfig(BaseModel):
+    center_x: float = 0.0
+    center_y: float = 0.0
+    center_z: float = 0.0
+    size_x: float = 20.0
+    size_y: float = 20.0
+    size_z: float = 20.0
+    exhaustiveness: int = 8
+
+class JobSubmitRequest(BaseModel):
+    receptor_filename: str
+    ligand_filename: str
+    config: Optional[DockingConfig] = DockingConfig()
+
+class JobStartRequest(BaseModel):
+    pass  # No body needed, job_id comes from path
+
+# ============================================================================
+# Health Check Routes
+# ============================================================================
+
+@app.get("/")
+def root():
+    """Health check endpoint"""
+    return {
+        "status": "ok",
+        "service": "CloudVina API",
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+@app.get("/health")
+def health_check():
+    """Detailed health check"""
+    return {
+        "status": "healthy",
+        "checks": {
+            "supabase": "configured" if SUPABASE_URL else "missing",
+            "aws": "configured" if os.getenv("AWS_ACCESS_KEY_ID") else "missing"
+        }
+    }
+
+# ============================================================================
+# Authentication Routes
+# ============================================================================
+
+@app.post("/auth/signup", status_code=status.HTTP_201_CREATED)
+async def signup(request: SignupRequest):
+    """
+    Create a new user account with verification required
+    """
+    try:
+        # Create auth user
+        response = supabase.auth.sign_up({
+            "email": request.email,
+            "password": request.password,
+            "options": {
+                "data": {
+                    "designation": request.designation,
+                    "organization": request.organization
+                }
+            }
+        })
+        
+        if response.user:
+            # User setup is now handled by Supabase Database Triggers (handle_new_user)
+            # This avoids RLS issues and ensures atomicity
+            pass
+
+class DockingConfig(BaseModel):
+    center_x: float = 0.0
+    center_y: float = 0.0
+    center_z: float = 0.0
+    size_x: float = 20.0
+    size_y: float = 20.0
+    size_z: float = 20.0
+    exhaustiveness: int = 8
+
+class JobSubmitRequest(BaseModel):
+    receptor_filename: str
+    ligand_filename: str
+    config: Optional[DockingConfig] = DockingConfig()
+
+class JobStartRequest(BaseModel):
+    pass  # No body needed, job_id comes from path
+
+# ============================================================================
+# Health Check Routes
+# ============================================================================
+
+@app.get("/")
+def root():
+    """Health check endpoint"""
+    return {
+        "status": "ok",
+        "service": "CloudVina API",
+        "version": "1.0.0",
+        "timestamp": datetime.utcnow().isoformat()
+    }
+
+@app.get("/health")
+def health_check():
+    """Detailed health check"""
+    return {
+        "status": "healthy",
+        "checks": {
+            "supabase": "configured" if SUPABASE_URL else "missing",
+            "aws": "configured" if os.getenv("AWS_ACCESS_KEY_ID") else "missing"
+        }
+    }
+
+# ============================================================================
+# Authentication Routes
+# ============================================================================
+
+@app.post("/auth/signup", status_code=status.HTTP_201_CREATED)
+async def signup(request: SignupRequest):
+    """
+    Create a new user account with verification required
+    """
+    try:
+        # Create auth user
+        response = supabase.auth.sign_up({
+            "email": request.email,
+            "password": request.password,
+            "options": {
+                "data": {
+                    "designation": request.designation,
+                    "organization": request.organization
+                }
+            }
+        })
+        
+        if response.user:
+            # User setup is now handled by Supabase Database Triggers (handle_new_user)
             # This avoids RLS issues and ensures atomicity
             pass
         
