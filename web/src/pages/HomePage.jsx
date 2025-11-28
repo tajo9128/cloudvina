@@ -111,7 +111,7 @@ export default function HomePage() {
                             <div className="text-5xl mb-4">🔒</div>
                             <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Secure & Verified</h3>
                             <p className="text-gray-700">
-                                Email and phone verification required for all users.
+                                Email verification required for all users.
                                 Your data is encrypted and containers destroyed after use.
                             </p>
                         </div>
@@ -171,7 +171,7 @@ export default function HomePage() {
                                 </li>
                                 <li className="flex items-start text-sm">
                                     <span className="text-green-600 mr-2 mt-0.5">✓</span>
-                                    <span>Email & phone verification</span>
+                                    <span>Email verification</span>
                                 </li>
                             </ul>
                             <Link to="/login" className="block w-full py-3 px-6 text-center border-2 border-purple-600 text-purple-600 font-bold rounded-xl hover:bg-purple-50 transition">
