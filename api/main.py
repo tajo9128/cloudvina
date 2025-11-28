@@ -3,6 +3,7 @@ CloudVina API - FastAPI Backend
 Handles authentication, job submission, and AWS Batch orchestration
 """
 from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
 from pydantic import BaseModel, EmailStr
@@ -77,6 +78,9 @@ app.include_router(admin_router)
 # ============================================================================
 # Configuration
 # ============================================================================
+
+# Security
+security = HTTPBearer()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
