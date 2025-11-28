@@ -84,7 +84,7 @@ export default function LoginPage() {
             }
             // Email already exists
             else if (errorMessage.includes('already registered') || errorMessage.includes('already exists')) {
-                setError('📧 This email is already registered. Please try logging in instead.')
+                setError('📧 Email already registered. Check your Email to click Confirmation link, Click it once, You are Ready to login even if you get error in confirmation.')
             }
             // Password too weak
             else if (errorMessage.includes('password') && (errorMessage.includes('weak') || errorMessage.includes('short'))) {
