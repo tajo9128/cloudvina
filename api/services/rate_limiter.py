@@ -45,31 +45,8 @@ class RateLimiter:
                     "reason": "email_not_verified"
                 }
             
-            # Check phone verification
-            try:
-                profile_response = supabase.table('user_profiles').select('phone_verified').eq('id', user_id).execute()
-                
-                # Check if profile exists and is verified
-                if not profile_response.data or len(profile_response.data) == 0:
-                    return {
-                        "allowed": False,
-                        "message": "User profile not found. Please contact support.",
-                        "reason": "no_profile"
-                    }
-                
-                if not profile_response.data[0].get('phone_verified'):
-                    return {
-                        "allowed": False,
-                        "message": "Please verify your phone number before submitting jobs.",
-                        "reason": "phone_not_verified"
-                    }
-            except Exception as e:
-                print(f"ERROR checking phone verification: {str(e)}")
-                return {
-                    "allowed": False,
-                    "message": f"Error checking phone verification: {str(e)}",
-                    "reason": "error"
-                }
+            # Phone verification check REMOVED as per user request
+            # Only email verification is required now
             
             # Get user credits and account info
             credits_response = supabase.table('user_credits').select('plan, credits, account_created_at').eq('user_id', user_id).execute()
