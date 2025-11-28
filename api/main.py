@@ -54,11 +54,11 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:5173",
         "http://localhost:3000",
-        "https://BioDockify.in",
-        "https://www.BioDockify.in",
-        "https://BioDockify-3n3v.vercel.app",
-        "https://BioDockify-web.vercel.app",
-        "https://BioDockify.vercel.app"
+        "https://biodockify.com",
+        "https://www.biodockify.com",
+        "https://biodockify-3n3v.vercel.app",
+        "https://biodockify-web.vercel.app",
+        "https://biodockify.vercel.app"
     ],
     allow_credentials=True,
     allow_methods=["*"],
