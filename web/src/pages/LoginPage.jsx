@@ -56,7 +56,7 @@ export default function LoginPage() {
                         navigate('/dashboard')
                     } else {
                         // Email verification required
-                        setSuccess('✅ Account created! Please check your email to verify your account.')
+                        setSuccess('✅ Account created! Check your email to verify your account. Click the confirmation link once. Even if you see an error, try logging in - your account may be ready.')
                         setTimeout(() => {
                             setIsSignUp(false)
                             setEmail('')
