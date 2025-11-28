@@ -17,6 +17,20 @@ supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
 security = HTTPBearer()
 
+def get_authenticated_client(token: str) -> Client:
+    """
+    Get a Supabase client authenticated with the given token.
+    This ensures RLS policies are respected.
+    """
+    # Create a new client instance to avoid shared state issues
+    # We use the same URL and Key, but inject the user's token
+    client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    
+    # Set the auth token for PostgREST requests
+    client.postgrest.auth(token)
+    
+    return client
+
 async def get_current_user(credentials: HTTPAuthorizationCredentials = Security(security)) -> dict:
     """
     Dependency to get current authenticated user from JWT token
