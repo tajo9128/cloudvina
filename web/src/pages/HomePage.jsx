@@ -30,7 +30,7 @@ export default function HomePage() {
                         <Link to="/login" className="btn-blue-glow text-lg px-10 py-4 rounded-xl font-bold">
                             Start Free with 130 Credits →
                         </Link>
-                        <a href="#pricing" className="glass-card text-white px-10 py-4 rounded-xl text-lg font-bold border-blue-glow hover:bg-white/20 transition">
+                        <a href="#pricing" className="bg-white rounded-2xl shadow-xl border border-gray-100 text-white px-10 py-4 rounded-xl text-lg font-bold border-blue-glow hover:bg-white/20 transition">
                             View Pricing
                         </a>
                     </div>
@@ -47,7 +47,7 @@ export default function HomePage() {
                         </p>
                     </div>
                     <div className="max-w-4xl mx-auto grid md:grid-cols-2 gap-8">
-                        <div className="glass-card-light card-3d p-8">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light card-3d p-8">
                             <div className="text-5xl mb-4">🧪</div>
                             <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">SDF to PDBQT Converter</h3>
                             <p className="text-gray-700 mb-6">
@@ -58,7 +58,7 @@ export default function HomePage() {
                                 Try Converter <span className="ml-2 group-hover:translate-x-1 transition-transform inline-block">→</span>
                             </Link>
                         </div>
-                        <div className="glass-card p-8 opacity-60">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 opacity-60">
                             <div className="text-5xl mb-4">📊</div>
                             <h3 className="text-2xl font-bold text-white mb-3">Results Analyzer</h3>
                             <p className="text-blue-200 mb-6">
@@ -83,7 +83,7 @@ export default function HomePage() {
                         </p>
                     </div>
                     <div className="grid md:grid-cols-3 gap-8">
-                        <div className="glass-card-light card-3d p-8">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light card-3d p-8">
                             <div className="text-5xl mb-4">🎁</div>
                             <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Generous Free Tier</h3>
                             <p className="text-gray-700">
@@ -91,7 +91,7 @@ export default function HomePage() {
                                 Start with 130 credits for free!
                             </p>
                         </div>
-                        <div className="glass-card-light card-3d p-8">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light card-3d p-8">
                             <div className="text-5xl mb-4">⚡</div>
                             <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Smart Rate Limiting</h3>
                             <p className="text-gray-700">
@@ -99,7 +99,7 @@ export default function HomePage() {
                                 Paid users: <strong className="text-blue-600">unlimited daily jobs</strong> - use credits anytime!
                             </p>
                         </div>
-                        <div className="glass-card-light card-3d p-8">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light card-3d p-8">
                             <div className="text-5xl mb-4">💎</div>
                             <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Credits Never Expire</h3>
                             <p className="text-gray-700">
@@ -107,7 +107,7 @@ export default function HomePage() {
                                 Auto-downgrade to free tier when exhausted.
                             </p>
                         </div>
-                        <div className="glass-card-light card-3d p-8">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light card-3d p-8">
                             <div className="text-5xl mb-4">🔒</div>
                             <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Secure & Verified</h3>
                             <p className="text-gray-700">
@@ -115,7 +115,7 @@ export default function HomePage() {
                                 Your data is encrypted and containers destroyed after use.
                             </p>
                         </div>
-                        <div className="glass-card-light card-3d p-8">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light card-3d p-8">
                             <div className="text-5xl mb-4">🇮🇳</div>
                             <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">Built for India</h3>
                             <p className="text-gray-700">
@@ -123,7 +123,7 @@ export default function HomePage() {
                                 Student plans starting at just ₹99/month. Special rates for institutions.
                             </p>
                         </div>
-                        <div className="glass-card-light card-3d p-8">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light card-3d p-8">
                             <div className="text-5xl mb-4">⚙️</div>
                             <h3 className="text-2xl font-bold text-deep-navy-900 mb-3">AWS Powered</h3>
                             <p className="text-gray-700">

@@ -188,7 +188,7 @@ export default function NewJobPage() {
 
 
             <main className="container mx-auto px-4 py-12">
-                <div className="max-w-2xl mx-auto glass-card-light p-8">
+                <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100-light p-8">
                     <h1 className="text-2xl font-bold text-deep-navy-900 mb-6">Start New Docking Job</h1>
 
 

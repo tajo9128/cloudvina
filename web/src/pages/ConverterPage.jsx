@@ -97,7 +97,7 @@ export default function ConverterPage() {
             {/* Converter Tool */}
             <section className="pb-20 relative z-10">
                 <div className="container mx-auto px-4">
-                    <div className="max-w-2xl mx-auto glass-card p-8 md:p-12 transform transition-all hover:scale-[1.01] duration-500">
+                    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-12 transform transition-all hover:scale-[1.01] duration-500">
                         <form onSubmit={handleConvert} className="space-y-8">
                             <div className="border-2 border-dashed border-blue-400/30 rounded-xl p-10 text-center hover:border-blue-400 hover:bg-blue-500/10 transition-all cursor-pointer relative group">
                                 <input
@@ -196,7 +196,7 @@ export default function ConverterPage() {
 
                         <div className="grid md:grid-cols-3 gap-6">
                             {/* ZINC15 */}
-                            <div className="glass-card-light p-6">
+                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light p-6">
                                 <h3 className="text-xl font-bold text-deep-navy-900 mb-2">1. ZINC15 Database</h3>
                                 <p className="text-sm text-gray-600 mb-4">Best for virtual screening and commercially available compounds.</p>
                                 <ul className="text-sm text-gray-700 space-y-2 mb-4">
@@ -207,7 +207,7 @@ export default function ConverterPage() {
                             </div>
 
                             {/* PubChem */}
-                            <div className="glass-card-light p-6">
+                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light p-6">
                                 <h3 className="text-xl font-bold text-deep-navy-900 mb-2">2. PubChem</h3>
                                 <p className="text-sm text-gray-600 mb-4">World's largest free collection of chemical information.</p>
                                 <ul className="text-sm text-gray-700 space-y-2 mb-4">
@@ -218,7 +218,7 @@ export default function ConverterPage() {
                             </div>
 
                             {/* RCSB PDB */}
-                            <div className="glass-card-light p-6">
+                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light p-6">
                                 <h3 className="text-xl font-bold text-deep-navy-900 mb-2">3. RCSB PDB</h3>
                                 <p className="text-sm text-gray-600 mb-4">For extracting co-crystallized ligands from protein complexes.</p>
                                 <ul className="text-sm text-gray-700 space-y-2 mb-4">
@@ -231,7 +231,7 @@ export default function ConverterPage() {
                     </div>
 
                     {/* Step by Step */}
-                    <div className="glass-card p-8 bg-gradient-to-r from-blue-900/50 to-purple-900/50">
+                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 bg-gradient-to-r from-blue-900/50 to-purple-900/50">
                         <h2 className="text-2xl font-bold text-white mb-6">How to Use This Tool</h2>
                         <div className="grid md:grid-cols-3 gap-8 text-center">
                             <div>

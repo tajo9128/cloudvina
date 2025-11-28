@@ -116,7 +116,7 @@ export default function LoginPage() {
                 </div>
 
                 {/* Form Card */}
-                <div className="glass-card p-8 backdrop-blur-md">
+                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 backdrop-blur-md">
                     <form className="space-y-5" onSubmit={handleAuth}>
                         {/* Email */}
                         <div>

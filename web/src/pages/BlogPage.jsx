@@ -73,7 +73,7 @@ export default function BlogPage() {
                     <div className="lg:col-span-2 space-y-10">
                         <div className="grid md:grid-cols-2 gap-8">
                             {posts.map(post => (
-                                <article key={post.id} className="glass-card group hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden">
+                                <article key={post.id} className="bg-white rounded-2xl shadow-xl border border-gray-100 group hover:shadow-xl transition-all duration-300 flex flex-col h-full overflow-hidden">
                                     {/* Image */}
                                     <div className="h-48 overflow-hidden relative">
                                         <img
@@ -130,7 +130,7 @@ export default function BlogPage() {
                     <aside className="lg:col-span-1 space-y-8">
 
                         {/* Search Widget */}
-                        <div className="glass-card p-6">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
                             <h3 className="text-lg font-bold text-deep-navy-900 mb-4">Search</h3>
                             <div className="relative">
                                 <input
@@ -147,7 +147,7 @@ export default function BlogPage() {
                         </div>
 
                         {/* Categories Widget */}
-                        <div className="glass-card p-6">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
                             <h3 className="text-lg font-bold text-deep-navy-900 mb-4">Categories</h3>
                             <ul className="space-y-3">
                                 {categories.map((cat, idx) => (
@@ -162,7 +162,7 @@ export default function BlogPage() {
                         </div>
 
                         {/* Recent Posts Widget */}
-                        <div className="glass-card p-6">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
                             <h3 className="text-lg font-bold text-deep-navy-900 mb-6">Recent Posts</h3>
                             <div className="space-y-6">
                                 {posts.slice(0, 3).map(post => (
@@ -182,7 +182,7 @@ export default function BlogPage() {
                         </div>
 
                         {/* Tags Widget */}
-                        <div className="glass-card p-6">
+                        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
                             <h3 className="text-lg font-bold text-deep-navy-900 mb-4">Popular Tags</h3>
                             <div className="flex flex-wrap gap-2">
                                 {tags.map((tag, idx) => (

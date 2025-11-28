@@ -76,7 +76,7 @@ export default function DashboardPage() {
                         </div>
                     </div>
                 ) : jobs.length === 0 ? (
-                    <div className="glass-card-light p-12 text-center">
+                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light p-12 text-center">
                         <div className="text-4xl mb-4">🧪</div>
                         <h3 className="text-lg font-medium text-deep-navy-900 mb-2">No jobs yet</h3>
                         <p className="text-gray-600 mb-6">Start your first molecular docking job now.</p>
@@ -85,7 +85,7 @@ export default function DashboardPage() {
                         </Link>
                     </div>
                 ) : (
-                    <div className="glass-card-light overflow-hidden">
+                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light overflow-hidden">
                         <table className="min-w-full divide-y divide-gray-200">
                             <thead className="bg-gray-50">
                                 <tr>
