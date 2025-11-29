@@ -76,26 +76,29 @@ export default function NewJobPage() {
         return `${mins}m ${secs}s`
     }
 
-    // Helper: Fetch with retry logic for cold starts
-    const fetchWithRetry = async (url, options, retries = 3, backoff = 1000) => {
+    // Helper: Fetch with retry logic for cold starts (up to 90s wait)
+    const fetchWithRetry = async (url, options, retries = 15, backoff = 2000) => {
         try {
             const res = await fetch(url, options)
             if (!res.ok) {
                 // If 503 or 504 (Service Unavailable/Gateway Timeout), retry
                 if ([503, 504].includes(res.status) && retries > 0) {
-                    console.log(`Retrying ${url}... Attempts left: ${retries}`)
+                    console.log(`Server starting... Retrying ${url} in ${backoff / 1000}s... Attempts left: ${retries}`)
                     await new Promise(r => setTimeout(r, backoff))
-                    return fetchWithRetry(url, options, retries - 1, backoff * 2)
+                    // Cap backoff at 5 seconds to poll frequently
+                    const nextBackoff = Math.min(backoff * 1.5, 5000)
+                    return fetchWithRetry(url, options, retries - 1, nextBackoff)
                 }
-                return res // Return error response to be handled by caller
+                return res
             }
             return res
         } catch (err) {
             // Retry on network errors (like Failed to fetch)
             if (retries > 0) {
-                console.log(`Network error, retrying ${url}... Attempts left: ${retries}`)
+                console.log(`Network error (Server likely sleeping)... Retrying in ${backoff / 1000}s... Attempts left: ${retries}`)
                 await new Promise(r => setTimeout(r, backoff))
-                return fetchWithRetry(url, options, retries - 1, backoff * 2)
+                const nextBackoff = Math.min(backoff * 1.5, 5000)
+                return fetchWithRetry(url, options, retries - 1, nextBackoff)
             }
             throw err
         }
