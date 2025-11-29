@@ -42,6 +42,11 @@ async def startup_event():
     print("✓ Fix: Signup handled by DB Triggers")
     print("="*50)
 
+@app.get("/health")
+async def health_check():
+    """Health check endpoint for UptimeRobot"""
+    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+
 # NEW: Add session middleware for SQLAdmin authentication
 app.add_middleware(
     SessionMiddleware, 

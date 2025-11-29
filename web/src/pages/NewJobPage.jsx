@@ -87,7 +87,7 @@ export default function NewJobPage() {
         }
 
         setLoading(true)
-        setError(null)
+        setError('⏰ Connecting to server... (This may take up to 60s if server is sleeping)')
 
         try {
             const { data: { session } } = await supabase.auth.getSession()
