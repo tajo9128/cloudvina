@@ -408,6 +408,95 @@ async def get_job_status(
         )
 
 
+@app.get("/jobs/{job_id}/analysis", response_model=dict)
+async def get_docking_analysis(
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Get comprehensive docking analysis with parsed Vina results
+    Returns binding affinities, RMSD values, and pose data
+    """
+    try:
+        from auth import get_authenticated_client
+        from services.vina_parser import parse_vina_log
+        import boto3
+        
+        auth_client = get_authenticated_client(credentials.credentials)
+
+        # Get job from database
+        job_response = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
+        
+        if not job_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Job not found"
+            )
+        
+        job = job_response.data[0]
+        
+        # Only parse if job succeeded
+        if job['status'] != 'SUCCEEDED':
+            return {
+                "job_id": job_id,
+                "status": job['status'],
+                "analysis": None,
+                "message": "Analysis only available for completed jobs"
+            }
+        
+        # Check if already parsed
+        if job.get('docking_results'):
+            return {
+                "job_id": job_id,
+                "status": job['status'],
+                "analysis": job['docking_results'],
+                "from_cache": True
+            }
+        
+        # Fetch log from S3
+        s3 = boto3.client('s3')
+        bucket_name = os.getenv('S3_BUCKET_NAME')
+        log_key = f"{job_id}/log.txt"
+        
+        try:
+            log_obj = s3.get_object(Bucket=bucket_name, Key=log_key)
+            log_content = log_obj['Body'].read().decode('utf-8')
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Log file not found: {str(e)}"
+            )
+        
+        # Parse Vina output
+        analysis = parse_vina_log(log_content)
+        
+        # Store in database for future requests
+        auth_client.table('jobs').update({
+            'best_affinity': analysis.get('best_affinity'),
+            'num_poses': analysis.get('num_poses'),
+            'energy_range_min': analysis.get('energy_range_min'),
+            'energy_range_max': analysis.get('energy_range_max'),
+            'docking_results': analysis
+        }).eq('id', job_id).execute()
+        
+        return {
+            "job_id": job_id,
+            "status": job['status'],
+            "analysis": analysis,
+            "from_cache": False
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to analyze docking results: {str(e)}"
+        )
+
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
