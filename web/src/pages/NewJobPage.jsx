@@ -207,7 +207,7 @@ export default function NewJobPage() {
         }
     }
 
-    const upload File = async (url, file) => {
+    const uploadFile = async (url, file) => {
         // Extract content-type from presigned URL query params
         // S3 presigned URLs include the ContentType as a query parameter
         // We MUST use the exact same Content-Type in the PUT request or we get 403
