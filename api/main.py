@@ -64,8 +64,10 @@ app.add_middleware(
 )
 
 # NEW: Activity logging middleware for audit trail
-from middleware.activity_logger import ActivityLoggerMiddleware
-app.add_middleware(ActivityLoggerMiddleware)
+# TEMPORARILY DISABLED due to RLS policy conflicts with Supabase
+# TODO: Re-enable once we implement proper tenant context for SQLAlchemy
+# from middleware.activity_logger import ActivityLoggerMiddleware
+# app.add_middleware(ActivityLoggerMiddleware)
 
 # NEW: Setup SQLAdmin (Django-style admin panel at /sqladmin)
 admin = setup_admin(app)
