@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from supabase import Client
-from datetime import date, datetime, timedelta
+from datetime import date, datetime, timedelta, timezone
 
 class RateLimiter:
     """
@@ -18,7 +18,7 @@ class RateLimiter:
             return 99999  # Paid users: no limit
         
         # Calculate account age in days
-        age_days = (datetime.now() - account_created_at).days
+        age_days = (datetime.now(timezone.utc) - account_created_at).days
         
         # First 30 days: 3 jobs/day
         if age_days < 30:
@@ -105,7 +105,13 @@ class RateLimiter:
             account_created_str = user_data.get('account_created_at')
             
             # Parse account creation date
-            account_created_at = datetime.fromisoformat(account_created_str.replace('Z', '+00:00')) if account_created_str else datetime.now()
+            if account_created_str:
+                # Ensure it has timezone info
+                if 'Z' in account_created_str:
+                    account_created_str = account_created_str.replace('Z', '+00:00')
+                account_created_at = datetime.fromisoformat(account_created_str)
+            else:
+                account_created_at = datetime.now(timezone.utc)
             
             # Check if user has credits
             if user_credits <= 0:
@@ -131,7 +137,7 @@ class RateLimiter:
                 jobs_today = usage_response.data[0].get('job_count', 0)
             
             if jobs_today >= daily_limit:
-                account_age = (datetime.now() - account_created_at).days
+                account_age = (datetime.now(timezone.utc) - account_created_at).days
                 message = f"Daily limit reached. You can submit {daily_limit} job{'s' if daily_limit > 1 else ''} per day "
                 if account_age < 30:
                     message += f"(first month bonus). Try again in 24 hours or upgrade for unlimited access."
