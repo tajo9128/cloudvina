@@ -22,34 +22,21 @@ export default function LoginPage() {
 
         try {
             if (isSignUp) {
-                // 1. Sign up with Supabase
+                // 1. Sign up with Supabase (DB Triggers handle profile creation)
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email,
                     password,
+                    options: {
+                        data: {
+                            designation,
+                            organization
+                        }
+                    }
                 })
 
                 if (authError) throw authError
 
                 if (authData.user) {
-                    // 2. Create user profile in backend
-                    const response = await fetch(`${API_URL}/auth/signup`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            email,
-                            password,
-                            designation,
-                            organization
-                        })
-                    })
-
-                    if (!response.ok) {
-                        const data = await response.json()
-                        throw new Error(data.detail || 'Signup failed')
-                    }
-
                     // Check if session exists (email verification might be required)
                     if (authData.session) {
                         // User is logged in, navigate to dashboard
