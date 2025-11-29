@@ -1,6 +1,6 @@
 from fastapi import HTTPException, status
 from supabase import Client
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 
 class RateLimiter:
     """
@@ -54,7 +54,6 @@ class RateLimiter:
             # Self-healing: Create credits record if missing
             if not credits_response.data or len(credits_response.data) == 0:
                 print(f"WARNING: User {user_id} missing credits record. Creating default free tier.")
-                from datetime import datetime, timedelta
                 now = datetime.now()
                 supabase.table('user_credits').insert({
                     'user_id': user_id,
