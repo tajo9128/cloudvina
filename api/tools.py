@@ -23,9 +23,10 @@ async def convert_to_pdbqt(file: UploadFile = File(...)):
                 content = gzip.decompress(content)
                 if filename.endswith('.gz'):
                     filename = filename[:-3]
-            except Exception:
-                # If decompression fails, assume it's not actually gzip or corrupt
-                pass
+            except Exception as e:
+                # If it looks like gzip but fails, it's likely corrupt.
+                # Raise error instead of falling through to decode error.
+                raise ValueError(f"File appears to be GZIP compressed but failed to decompress: {str(e)}")
         
         # Determine format and parse
         mol = None

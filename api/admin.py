@@ -2,10 +2,11 @@
 Admin Panel API Endpoints
 Provides Django-like admin functionality for managing users, pricing, and system settings.
 """
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Security
+from fastapi.security import HTTPAuthorizationCredentials
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
-from auth import supabase, get_current_user
+from auth import supabase, get_current_user, security, get_authenticated_client
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -39,10 +40,17 @@ class PricingPlan(BaseModel):
 # Admin Middleware
 # ============================================================================
 
-async def get_admin_user(current_user: dict = Depends(get_current_user)):
-    """Verify that the current user has admin role"""
-    # Check if user has admin role in profiles table
-    response = supabase.table('profiles').select('role').eq('id', current_user.id).execute()
+async def get_admin_client(
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Verify that the current user has admin role and return authenticated client.
+    """
+    auth_client = get_authenticated_client(credentials.credentials)
+    
+    # Check if user has admin role in profiles table using auth_client
+    response = auth_client.table('profiles').select('role').eq('id', current_user.id).execute()
     
     if not response.data or response.data[0]['role'] != 'admin':
         raise HTTPException(
@@ -50,17 +58,17 @@ async def get_admin_user(current_user: dict = Depends(get_current_user)):
             detail="Admin access required"
         )
     
-    return current_user
+    return auth_client
 
 # ============================================================================
 # User Management Endpoints
 # ============================================================================
 
 @router.get("/users", response_model=List[UserProfile])
-async def list_users(admin_user: dict = Depends(get_admin_user)):
+async def list_users(auth_client = Depends(get_admin_client)):
     """Get all users with their profiles"""
     try:
-        response = supabase.table('profiles').select('*').execute()
+        response = auth_client.table('profiles').select('*').execute()
         return response.data
     except Exception as e:
         raise HTTPException(
@@ -72,11 +80,11 @@ async def list_users(admin_user: dict = Depends(get_admin_user)):
 async def verify_user(
     user_id: str,
     verified: bool,
-    admin_user: dict = Depends(get_admin_user)
+    auth_client = Depends(get_admin_client)
 ):
     """Verify or unverify a user"""
     try:
-        response = supabase.table('profiles').update({
+        response = auth_client.table('profiles').update({
             'is_verified': verified
         }).eq('id', user_id).execute()
         
@@ -94,7 +102,7 @@ async def verify_user(
 async def update_user_role(
     user_id: str,
     role: str,
-    admin_user: dict = Depends(get_admin_user)
+    auth_client = Depends(get_admin_client)
 ):
     """Update user role (user/admin)"""
     if role not in ['user', 'admin']:
@@ -104,7 +112,7 @@ async def update_user_role(
         )
     
     try:
-        response = supabase.table('profiles').update({
+        response = auth_client.table('profiles').update({
             'role': role
         }).eq('id', user_id).execute()
         
@@ -122,21 +130,21 @@ async def update_user_role(
 async def update_user_credits(
     user_id: str,
     request: UpdateCreditsRequest,
-    admin_user: dict = Depends(get_admin_user)
+    auth_client = Depends(get_admin_client)
 ):
     """Add or remove credits for a user"""
     try:
         # Check if user_credits record exists
-        existing = supabase.table('user_credits').select('*').eq('user_id', user_id).execute()
+        existing = auth_client.table('user_credits').select('*').eq('user_id', user_id).execute()
         
         if existing.data:
             # Update existing record
-            response = supabase.table('user_credits').update({
+            response = auth_client.table('user_credits').update({
                 'credits': request.credits
             }).eq('user_id', user_id).execute()
         else:
             # Create new record
-            response = supabase.table('user_credits').insert({
+            response = auth_client.table('user_credits').insert({
                 'user_id': user_id,
                 'credits': request.credits
             }).execute()
@@ -157,10 +165,10 @@ async def update_user_credits(
 # ============================================================================
 
 @router.get("/pricing", response_model=List[PricingPlan])
-async def list_pricing_plans(admin_user: dict = Depends(get_admin_user)):
+async def list_pricing_plans(auth_client = Depends(get_admin_client)):
     """Get all pricing plans"""
     try:
-        response = supabase.table('pricing_plans').select('*').execute()
+        response = auth_client.table('pricing_plans').select('*').execute()
         return response.data
     except Exception as e:
         raise HTTPException(
@@ -171,11 +179,11 @@ async def list_pricing_plans(admin_user: dict = Depends(get_admin_user)):
 @router.post("/pricing")
 async def create_pricing_plan(
     plan: PricingPlan,
-    admin_user: dict = Depends(get_admin_user)
+    auth_client = Depends(get_admin_client)
 ):
     """Create a new pricing plan"""
     try:
-        response = supabase.table('pricing_plans').insert({
+        response = auth_client.table('pricing_plans').insert({
             'name': plan.name,
             'price': plan.price,
             'credits': plan.credits,
@@ -197,11 +205,11 @@ async def create_pricing_plan(
 async def update_pricing_plan(
     plan_id: str,
     plan: PricingPlan,
-    admin_user: dict = Depends(get_admin_user)
+    auth_client = Depends(get_admin_client)
 ):
     """Update an existing pricing plan"""
     try:
-        response = supabase.table('pricing_plans').update({
+        response = auth_client.table('pricing_plans').update({
             'name': plan.name,
             'price': plan.price,
             'credits': plan.credits,
@@ -222,11 +230,11 @@ async def update_pricing_plan(
 @router.delete("/pricing/{plan_id}")
 async def delete_pricing_plan(
     plan_id: str,
-    admin_user: dict = Depends(get_admin_user)
+    auth_client = Depends(get_admin_client)
 ):
     """Delete a pricing plan"""
     try:
-        response = supabase.table('pricing_plans').delete().eq('id', plan_id).execute()
+        response = auth_client.table('pricing_plans').delete().eq('id', plan_id).execute()
         
         return {
             "message": "Pricing plan deleted successfully",
@@ -243,21 +251,21 @@ async def delete_pricing_plan(
 # ============================================================================
 
 @router.get("/stats")
-async def get_system_stats(admin_user: dict = Depends(get_admin_user)):
+async def get_system_stats(auth_client = Depends(get_admin_client)):
     """Get system statistics"""
     try:
         # Count total users
-        users_response = supabase.table('profiles').select('id', count='exact').execute()
+        users_response = auth_client.table('profiles').select('id', count='exact').execute()
         total_users = users_response.count
         
         # Count total jobs
-        jobs_response = supabase.table('jobs').select('id', count='exact').execute()
+        jobs_response = auth_client.table('jobs').select('id', count='exact').execute()
         total_jobs = jobs_response.count
         
         # Count jobs by status
-        succeeded = supabase.table('jobs').select('id', count='exact').eq('status', 'SUCCEEDED').execute()
-        failed = supabase.table('jobs').select('id', count='exact').eq('status', 'FAILED').execute()
-        running = supabase.table('jobs').select('id', count='exact').in_('status', ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING']).execute()
+        succeeded = auth_client.table('jobs').select('id', count='exact').eq('status', 'SUCCEEDED').execute()
+        failed = auth_client.table('jobs').select('id', count='exact').eq('status', 'FAILED').execute()
+        running = auth_client.table('jobs').select('id', count='exact').in_('status', ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING']).execute()
         
         return {
             "total_users": total_users,
@@ -281,7 +289,7 @@ from models import ActivityLog, async_session_maker
 from sqlalchemy import select
 
 @router.get("/analytics")
-async def get_analytics(admin_user: dict = Depends(get_admin_user)):
+async def get_analytics(auth_client = Depends(get_admin_client)):
     """Get comprehensive analytics dashboard data"""
     try:
         service = AnalyticsService()
@@ -296,7 +304,7 @@ async def get_analytics(admin_user: dict = Depends(get_admin_user)):
 @router.get("/analytics/timeline")
 async def get_job_timeline(
     days: int = 7,
-    admin_user: dict = Depends(get_admin_user)
+    auth_client = Depends(get_admin_client)
 ):
     """Get job submission timeline for charts"""
     try:
@@ -315,7 +323,7 @@ async def get_activity_logs(
     limit: int = 100,
     action: Optional[str] = None,
     resource_type: Optional[str] = None,
-    admin_user: dict = Depends(get_admin_user)
+    auth_client = Depends(get_admin_client)
 ):
     """Get recent activity logs with optional filters"""
     try:
@@ -354,7 +362,7 @@ async def get_activity_logs(
 
 
 @router.post("/fix-s3-cors")
-async def fix_s3_cors(admin_user: dict = Depends(get_admin_user)):
+async def fix_s3_cors(auth_client = Depends(get_admin_client)):
     """Configure S3 CORS to allow uploads from any origin"""
     import boto3
     import os
