@@ -259,7 +259,7 @@ async def submit_job(
         )
         
         # Create job record in database
-        supabase.table('jobs').insert({
+        auth_client.table('jobs').insert({
             'id': job_id,
             'user_id': current_user.id,
             'status': 'PENDING',
@@ -291,14 +291,18 @@ async def submit_job(
 @app.post("/jobs/{job_id}/start")
 async def start_job(
     job_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
 ):
     """
     Start the docking job after files are uploaded
     """
     try:
+        from auth import get_authenticated_client
+        auth_client = get_authenticated_client(credentials.credentials)
+
         # Verify job belongs to user
-        job_response = supabase.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
+        job_response = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
         
         if not job_response.data:
             raise HTTPException(
@@ -316,7 +320,7 @@ async def start_job(
         )
         
         # Update job status
-        supabase.table('jobs').update({
+        auth_client.table('jobs').update({
             'status': 'SUBMITTED',
             'batch_job_id': batch_job_id
         }).eq('id', job_id).execute()
@@ -338,14 +342,18 @@ async def start_job(
 @app.get("/jobs/{job_id}", response_model=dict)
 async def get_job_status(
     job_id: str,
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
 ):
     """
     Get job status and results
     """
     try:
+        from auth import get_authenticated_client
+        auth_client = get_authenticated_client(credentials.credentials)
+
         # Get job from database
-        job_response = supabase.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
+        job_response = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
         
         if not job_response.data:
             raise HTTPException(
@@ -360,7 +368,7 @@ async def get_job_status(
             batch_status = get_batch_job_status(job['batch_job_id'])
             
             # Update DB with latest status
-            supabase.table('jobs').update({
+            auth_client.table('jobs').update({
                 'status': batch_status['status']
             }).eq('id', job_id).execute()
             

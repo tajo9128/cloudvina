@@ -53,14 +53,14 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="min-h-screen bg-gradient-to-b from-deep-navy-900 to-deep-navy-800">
+        <div className="min-h-screen bg-blue-mesh">
             <div className="container mx-auto px-4 py-8">
                 <div className="flex justify-between items-center mb-8">
                     <div>
-                        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+                        <h1 className="text-3xl font-extrabold text-white tracking-tight">Dashboard</h1>
                         <p className="text-blue-200">Manage your docking jobs</p>
                     </div>
-                    <Link to="/dock/new" className="btn-blue-glow">
+                    <Link to="/dock/new" className="btn-cyan px-6 py-2 rounded-xl text-sm font-bold shadow-lg shadow-cyan-500/20">
                         + New Job
                     </Link>
                 </div>
@@ -71,55 +71,59 @@ export default function DashboardPage() {
                 {loading ? (
                     <div className="text-center py-12">
                         <div className="text-white">
-                            <div className="text-5xl mb-4">🧪</div>
-                            <div className="text-xl">Loading jobs...</div>
+                            <div className="text-5xl mb-4 animate-bounce">🧪</div>
+                            <div className="text-xl font-light text-blue-200">Loading jobs...</div>
                         </div>
                     </div>
                 ) : jobs.length === 0 ? (
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light p-12 text-center">
+                    <div className="glass-modern p-12 text-center rounded-2xl">
                         <div className="text-4xl mb-4">🧪</div>
-                        <h3 className="text-lg font-medium text-deep-navy-900 mb-2">No jobs yet</h3>
-                        <p className="text-gray-600 mb-6">Start your first molecular docking job now.</p>
-                        <Link to="/dock/new" className="text-blue-600 font-bold hover:text-blue-700">
+                        <h3 className="text-lg font-bold text-white mb-2">No jobs yet</h3>
+                        <p className="text-blue-200 mb-6">Start your first molecular docking job now.</p>
+                        <Link to="/dock/new" className="text-cyan-400 font-bold hover:text-cyan-300">
                             Create Job →
                         </Link>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
+                    <div className="glass-modern rounded-2xl overflow-hidden">
+                        <table className="min-w-full divide-y divide-blue-800/30">
+                            <thead className="bg-blue-900/40">
                                 <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Job ID</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Created</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Affinity</th>
-                                    <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-blue-200 uppercase tracking-wider">Job ID</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-blue-200 uppercase tracking-wider">Status</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-blue-200 uppercase tracking-wider">Created</th>
+                                    <th className="px-6 py-4 text-left text-xs font-bold text-blue-200 uppercase tracking-wider">Affinity</th>
+                                    <th className="px-6 py-4 text-right text-xs font-bold text-blue-200 uppercase tracking-wider">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
+                            <tbody className="divide-y divide-blue-800/30">
                                 {jobs.map((job) => (
-                                    <tr key={job.id} className="hover:bg-gray-50">
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            <Link to={`/dock/${job.id}`} className="hover:text-purple-600">
+                                    <tr key={job.id} className="hover:bg-white/5 transition-colors">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-white">
+                                            <Link to={`/dock/${job.id}`} className="hover:text-cyan-400 transition-colors font-mono">
                                                 {job.id.slice(0, 8)}...
                                             </Link>
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                            <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                        ${job.status === 'SUCCEEDED' ? 'bg-green-100 text-green-800' :
-                                                    job.status === 'FAILED' ? 'bg-red-100 text-red-800' :
-                                                        'bg-yellow-100 text-yellow-800'}`}>
+                                            <span className={`px-3 py-1 inline-flex text-xs leading-5 font-bold rounded-full 
+                                        ${job.status === 'SUCCEEDED' ? 'bg-green-500/20 text-green-300 border border-green-500/30' :
+                                                    job.status === 'FAILED' ? 'bg-red-500/20 text-red-300 border border-red-500/30' :
+                                                        'bg-yellow-500/20 text-yellow-300 border border-yellow-500/30'}`}>
                                                 {job.status}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-blue-200">
                                             {new Date(job.created_at).toLocaleDateString()}
                                         </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-bold">
-                                            {job.binding_affinity ? `${job.binding_affinity} kcal/mol` : '-'}
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-white font-bold">
+                                            {job.binding_affinity ? (
+                                                <span className="text-cyan-300">{job.binding_affinity} kcal/mol</span>
+                                            ) : (
+                                                <span className="text-blue-400/50">-</span>
+                                            )}
                                         </td>
                                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                            <Link to={`/dock/${job.id}`} className="text-purple-600 hover:text-purple-900">
+                                            <Link to={`/dock/${job.id}`} className="text-cyan-400 hover:text-cyan-300 font-bold">
                                                 View
                                             </Link>
                                         </td>

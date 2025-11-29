@@ -104,19 +104,19 @@ export default function LoginPage() {
             <div className="max-w-md w-full">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl mb-4 shadow-lg shadow-blue-200">
+                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl mb-4 shadow-lg shadow-cyan-500/30">
                         <span className="text-3xl">🧬</span>
                     </div>
-                    <h2 className="text-3xl font-extrabold text-deep-navy-900">
+                    <h2 className="text-3xl font-extrabold text-white tracking-tight">
                         {isSignUp ? 'Create your account' : 'Welcome back'}
                     </h2>
-                    <p className="mt-2 text-sm text-slate-600">
+                    <p className="mt-2 text-sm text-blue-200">
                         {isSignUp ? 'Start your molecular docking journey' : 'Sign in to continue to BioDockify'}
                     </p>
                 </div>
 
                 {/* Form Card */}
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 backdrop-blur-md">
+                <div className="glass-modern p-8 rounded-2xl">
                     <form className="space-y-5" onSubmit={handleAuth}>
                         {/* Email */}
                         <div>
@@ -221,7 +221,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full btn-blue-glow py-3 rounded-xl font-bold text-lg shadow-lg shadow-blue-200/50 flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full btn-cyan py-3 rounded-xl font-bold text-lg flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {loading ? (
                                 <span className="flex items-center">
@@ -254,10 +254,10 @@ export default function LoginPage() {
 
                 {/* Footer */}
                 <div className="mt-8 text-center">
-                    <Link to="/" className="text-sm text-slate-500 hover:text-blue-600 transition font-medium">
+                    <Link to="/" className="text-sm text-blue-300 hover:text-cyan-400 transition font-medium">
                         ← Back to Homepage
                     </Link>
-                    <p className="text-xs text-slate-400 mt-4">v1.1.2 (Blue Theme)</p>
+                    <p className="text-xs text-blue-400/50 mt-4">v1.2.0 (Modern Theme)</p>
                 </div>
             </div>
         </div>

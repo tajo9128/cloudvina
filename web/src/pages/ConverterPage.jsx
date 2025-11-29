@@ -80,14 +80,14 @@ export default function ConverterPage() {
             {/* Hero Section */}
             <section className="pt-24 pb-12 text-center relative z-10">
                 <div className="container mx-auto px-4">
-                    <div className="inline-block bg-blue-500/20 border border-blue-400 text-blue-200 px-4 py-1 rounded-full text-sm font-semibold mb-6">
+                    <div className="inline-block bg-blue-900/50 border border-cyan-400/30 text-cyan-400 px-4 py-1 rounded-full text-sm font-semibold mb-6 backdrop-blur-sm">
                         🧪 Free Research Tool
                     </div>
-                    <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight">
+                    <h1 className="text-4xl md:text-6xl font-extrabold mb-6 leading-tight tracking-tight">
                         Convert Molecules to <br />
-                        <span className="text-blue-gradient">PDBQT Format Instantly</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">PDBQT Format Instantly</span>
                     </h1>
-                    <p className="text-xl text-blue-100 mb-8 max-w-2xl mx-auto">
+                    <p className="text-xl text-blue-200 mb-8 max-w-2xl mx-auto font-light">
                         Prepare your ligands for AutoDock Vina. Supports SDF, PDB, MOL, and MOL2 formats.
                         Adds polar hydrogens and partial charges automatically.
                     </p>
@@ -97,9 +97,9 @@ export default function ConverterPage() {
             {/* Converter Tool */}
             <section className="pb-20 relative z-10">
                 <div className="container mx-auto px-4">
-                    <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-gray-100 p-8 md:p-12 transform transition-all hover:scale-[1.01] duration-500">
+                    <div className="max-w-2xl mx-auto glass-modern rounded-2xl p-8 md:p-12 transform transition-all hover:scale-[1.01] duration-500">
                         <form onSubmit={handleConvert} className="space-y-8">
-                            <div className="border-2 border-dashed border-blue-400/30 rounded-xl p-10 text-center hover:border-blue-400 hover:bg-blue-500/10 transition-all cursor-pointer relative group">
+                            <div className="border-2 border-dashed border-blue-700/50 rounded-xl p-10 text-center hover:border-cyan-400/50 hover:bg-blue-900/30 transition-all cursor-pointer relative group bg-blue-900/10">
                                 <input
                                     type="file"
                                     accept=".sdf,.mol,.pdb,.mol2"
@@ -107,16 +107,16 @@ export default function ConverterPage() {
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
                                 />
                                 <div className="space-y-4 relative z-10">
-                                    <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform duration-300">📄</div>
+                                    <div className="text-6xl mb-4 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(0,217,255,0.3)]">📄</div>
                                     {file ? (
                                         <div>
                                             <div className="text-xl font-bold text-white mb-1">{file.name}</div>
-                                            <div className="text-sm text-blue-200">Ready to convert</div>
+                                            <div className="text-sm text-cyan-400">Ready to convert</div>
                                         </div>
                                     ) : (
                                         <>
                                             <div className="text-xl font-bold text-white">Click to Upload Molecule</div>
-                                            <div className="text-sm text-blue-200">Supports .sdf, .pdb, .mol, .mol2</div>
+                                            <div className="text-sm text-blue-200/70">Supports .sdf, .pdb, .mol, .mol2</div>
                                         </>
                                     )}
                                 </div>
@@ -138,8 +138,8 @@ export default function ConverterPage() {
                                 type="submit"
                                 disabled={!file || loading}
                                 className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg ${!file || loading
-                                    ? 'bg-gray-600/50 text-gray-400 cursor-not-allowed'
-                                    : 'btn-blue-glow hover:shadow-blue-glow-lg'
+                                    ? 'bg-blue-900/50 text-blue-400/50 cursor-not-allowed border border-blue-800'
+                                    : 'btn-cyan hover:shadow-cyan-500/40'
                                     }`}
                             >
                                 {loading ? (
@@ -155,7 +155,7 @@ export default function ConverterPage() {
                                 )}
                             </button>
                         </form>
-                        <div className="mt-6 text-center text-xs text-blue-300/60">
+                        <div className="mt-6 text-center text-xs text-blue-300/40">
                             Powered by RDKit & Meeko • Secure Cloud Processing
                         </div>
                     </div>
@@ -163,23 +163,23 @@ export default function ConverterPage() {
             </section>
 
             {/* Content Section */}
-            <section className="py-20 bg-deep-navy-900/50 relative z-10">
+            <section className="py-20 bg-deep-navy-900/30 relative z-10 backdrop-blur-sm">
                 <div className="container mx-auto px-4 max-w-4xl">
 
                     {/* Importance */}
                     <div className="mb-16">
-                        <h2 className="text-3xl font-bold text-white mb-6 border-l-4 border-blue-500 pl-4">Why is PDBQT Format Important?</h2>
-                        <div className="prose prose-lg prose-invert text-blue-100">
+                        <h2 className="text-3xl font-bold text-white mb-6 border-l-4 border-cyan-400 pl-4">Why is PDBQT Format Important?</h2>
+                        <div className="prose prose-lg prose-invert text-blue-100/80">
                             <p className="mb-4">
-                                <strong>AutoDock Vina</strong>, the industry-standard software for molecular docking, requires both the receptor (protein) and ligand (drug candidate) to be in <strong>PDBQT</strong> format.
+                                <strong className="text-cyan-400">AutoDock Vina</strong>, the industry-standard software for molecular docking, requires both the receptor (protein) and ligand (drug candidate) to be in <strong>PDBQT</strong> format.
                             </p>
                             <p>
                                 PDBQT stands for <em>Protein Data Bank, Partial Charge (Q), and Atom Type (T)</em>. Unlike standard SDF or PDB files, a PDBQT file contains crucial physicochemical information needed for docking simulations:
                             </p>
-                            <ul className="list-disc pl-6 space-y-2 mt-4 mb-6 text-gray-300">
-                                <li><strong>Polar Hydrogens:</strong> Essential for hydrogen bonding interactions.</li>
-                                <li><strong>Partial Charges:</strong> Calculated using the Gasteiger method to simulate electrostatic forces.</li>
-                                <li><strong>Rotatable Bonds:</strong> Defines which parts of the molecule can flex and move during docking.</li>
+                            <ul className="list-disc pl-6 space-y-2 mt-4 mb-6 text-blue-200">
+                                <li><strong className="text-white">Polar Hydrogens:</strong> Essential for hydrogen bonding interactions.</li>
+                                <li><strong className="text-white">Partial Charges:</strong> Calculated using the Gasteiger method to simulate electrostatic forces.</li>
+                                <li><strong className="text-white">Rotatable Bonds:</strong> Defines which parts of the molecule can flex and move during docking.</li>
                             </ul>
                             <p>
                                 Most chemical databases provide files in 2D or 3D SDF format. BioDockify's converter bridges this gap, automatically preparing your files for high-accuracy docking.
@@ -196,33 +196,33 @@ export default function ConverterPage() {
 
                         <div className="grid md:grid-cols-3 gap-6">
                             {/* ZINC15 */}
-                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light p-6">
-                                <h3 className="text-xl font-bold text-deep-navy-900 mb-2">1. ZINC15 Database</h3>
-                                <p className="text-sm text-gray-600 mb-4">Best for virtual screening and commercially available compounds.</p>
-                                <ul className="text-sm text-gray-700 space-y-2 mb-4">
-                                    <li>• Go to <a href="https://zinc15.docking.org" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">zinc15.docking.org</a></li>
+                            <div className="glass-modern p-6 rounded-2xl hover:border-cyan-400/30 transition-colors">
+                                <h3 className="text-xl font-bold text-white mb-2">1. ZINC15 Database</h3>
+                                <p className="text-sm text-blue-200/70 mb-4">Best for virtual screening and commercially available compounds.</p>
+                                <ul className="text-sm text-blue-100 space-y-2 mb-4">
+                                    <li>• Go to <a href="https://zinc15.docking.org" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">zinc15.docking.org</a></li>
                                     <li>• Search for compound</li>
                                     <li>• Download <strong>"3D SDF"</strong></li>
                                 </ul>
                             </div>
 
                             {/* PubChem */}
-                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light p-6">
-                                <h3 className="text-xl font-bold text-deep-navy-900 mb-2">2. PubChem</h3>
-                                <p className="text-sm text-gray-600 mb-4">World's largest free collection of chemical information.</p>
-                                <ul className="text-sm text-gray-700 space-y-2 mb-4">
-                                    <li>• Go to <a href="https://pubchem.ncbi.nlm.nih.gov" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">PubChem</a></li>
+                            <div className="glass-modern p-6 rounded-2xl hover:border-cyan-400/30 transition-colors">
+                                <h3 className="text-xl font-bold text-white mb-2">2. PubChem</h3>
+                                <p className="text-sm text-blue-200/70 mb-4">World's largest free collection of chemical information.</p>
+                                <ul className="text-sm text-blue-100 space-y-2 mb-4">
+                                    <li>• Go to <a href="https://pubchem.ncbi.nlm.nih.gov" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">PubChem</a></li>
                                     <li>• Click "Download"</li>
                                     <li>• Select <strong>"3D Conformer" (SDF)</strong></li>
                                 </ul>
                             </div>
 
                             {/* RCSB PDB */}
-                            <div className="bg-white rounded-2xl shadow-xl border border-gray-100-light p-6">
-                                <h3 className="text-xl font-bold text-deep-navy-900 mb-2">3. RCSB PDB</h3>
-                                <p className="text-sm text-gray-600 mb-4">For extracting co-crystallized ligands from protein complexes.</p>
-                                <ul className="text-sm text-gray-700 space-y-2 mb-4">
-                                    <li>• Go to <a href="https://www.rcsb.org" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">rcsb.org</a></li>
+                            <div className="glass-modern p-6 rounded-2xl hover:border-cyan-400/30 transition-colors">
+                                <h3 className="text-xl font-bold text-white mb-2">3. RCSB PDB</h3>
+                                <p className="text-sm text-blue-200/70 mb-4">For extracting co-crystallized ligands from protein complexes.</p>
+                                <ul className="text-sm text-blue-100 space-y-2 mb-4">
+                                    <li>• Go to <a href="https://www.rcsb.org" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline">rcsb.org</a></li>
                                     <li>• Find PDB Entry</li>
                                     <li>• Download <strong>"Ligand"</strong> file</li>
                                 </ul>
@@ -231,21 +231,21 @@ export default function ConverterPage() {
                     </div>
 
                     {/* Step by Step */}
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 bg-gradient-to-r from-blue-900/50 to-purple-900/50">
+                    <div className="glass-modern p-8 rounded-2xl bg-gradient-to-r from-blue-900/50 to-purple-900/50">
                         <h2 className="text-2xl font-bold text-white mb-6">How to Use This Tool</h2>
                         <div className="grid md:grid-cols-3 gap-8 text-center">
                             <div>
-                                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">1</div>
+                                <div className="w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-blue-900 font-bold text-xl mx-auto mb-4 shadow-lg shadow-cyan-500/50">1</div>
                                 <h3 className="font-bold text-white mb-2">Upload File</h3>
                                 <p className="text-sm text-blue-200">Select your .sdf, .mol, or .pdb file from your computer.</p>
                             </div>
                             <div>
-                                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">2</div>
+                                <div className="w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-blue-900 font-bold text-xl mx-auto mb-4 shadow-lg shadow-cyan-500/50">2</div>
                                 <h3 className="font-bold text-white mb-2">Convert</h3>
                                 <p className="text-sm text-blue-200">Our cloud servers process the file using Meeko & RDKit.</p>
                             </div>
                             <div>
-                                <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center text-white font-bold text-xl mx-auto mb-4">3</div>
+                                <div className="w-12 h-12 bg-cyan-500 rounded-full flex items-center justify-center text-blue-900 font-bold text-xl mx-auto mb-4 shadow-lg shadow-cyan-500/50">3</div>
                                 <h3 className="font-bold text-white mb-2">Download</h3>
                                 <p className="text-sm text-blue-200">Get your .pdbqt file instantly, ready for docking.</p>
                             </div>
@@ -258,7 +258,7 @@ export default function ConverterPage() {
                         <p className="text-blue-200 mb-8 text-lg">
                             Now that you have your PDBQT files, start your molecular docking job on BioDockify.
                         </p>
-                        <Link to="/dock/new" className="btn-blue-glow text-lg px-10 py-4 rounded-xl inline-block">
+                        <Link to="/dock/new" className="btn-cyan text-lg px-10 py-4 rounded-xl inline-block shadow-lg shadow-cyan-500/20">
                             Start Docking Job →
                         </Link>
                     </div>

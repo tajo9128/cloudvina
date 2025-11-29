@@ -6,6 +6,8 @@ from meeko import MoleculePreparation
 
 router = APIRouter(prefix="/tools", tags=["Tools"])
 
+import gzip
+
 @router.post("/convert-to-pdbqt")
 async def convert_to_pdbqt(file: UploadFile = File(...)):
     """
@@ -14,13 +16,26 @@ async def convert_to_pdbqt(file: UploadFile = File(...)):
     try:
         content = await file.read()
         filename = file.filename.lower()
+
+        # Handle GZIP compression
+        if content.startswith(b'\x1f\x8b'):
+            try:
+                content = gzip.decompress(content)
+                if filename.endswith('.gz'):
+                    filename = filename[:-3]
+            except Exception:
+                # If decompression fails, assume it's not actually gzip or corrupt
+                pass
         
         # Determine format and parse
         mol = None
         if filename.endswith('.sdf'):
-            suppl = Chem.SDMolSupplier()
-            suppl.SetData(content)
-            mol = next(suppl)
+            # Use ForwardSDMolSupplier for in-memory bytes
+            suppl = Chem.ForwardSDMolSupplier(io.BytesIO(content))
+            try:
+                mol = next(suppl)
+            except StopIteration:
+                raise ValueError("Empty SDF file")
         elif filename.endswith('.pdb'):
             mol = Chem.MolFromPDBBlock(content.decode('utf-8'))
         elif filename.endswith('.mol'):
@@ -29,7 +44,11 @@ async def convert_to_pdbqt(file: UploadFile = File(...)):
             mol = Chem.MolFromMol2Block(content.decode('utf-8'))
         else:
             # Try generic parsing if extension doesn't match
-            mol = Chem.MolFromMolBlock(content.decode('utf-8'))
+            try:
+                decoded = content.decode('utf-8')
+                mol = Chem.MolFromMolBlock(decoded)
+            except UnicodeDecodeError:
+                 raise ValueError("File is not a valid text molecule file and not a recognized binary format")
             
         if not mol:
             raise ValueError("Could not parse molecule file")
