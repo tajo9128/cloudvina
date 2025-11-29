@@ -266,7 +266,7 @@ async def submit_job(
         }).execute()
         
         # Increment daily usage (for rate limiting)
-        await RateLimiter.increment_usage(supabase, current_user.id)
+        await RateLimiter.increment_usage(auth_client, current_user.id)
         
         return {
             "job_id": job_id,
