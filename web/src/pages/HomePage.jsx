@@ -151,26 +151,26 @@ export default function HomePage() {
                                 <div className="flex items-baseline mb-4">
                                     <span className="text-5xl font-bold text-white">₹0</span>
                                 </div>
-                                <p className="text-blue-200/60 text-sm">Perfect for students getting started</p>
+                                <p className="text-gray-600 text-sm">Perfect for students getting started</p>
                             </div>
                             <ul className="space-y-3 mb-8">
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span><strong>100 bonus credits</strong> (30-day signup bonus)</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span><strong>30 credits/month</strong> (recurring, 1/day)</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span><strong>3 jobs/day</strong> (first month)</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>1 job/day (after 1st month)</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>Email verification</span>
                                 </li>
@@ -191,33 +191,33 @@ export default function HomePage() {
                                     <span className="text-5xl font-bold text-cyan-400">₹99</span>
                                     <span className="text-blue-200 ml-2">/month</span>
                                 </div>
-                                <div className="text-sm text-blue-200/60 mb-4">
+                                <div className="text-sm text-gray-600 mb-4">
                                     or ₹999/year <span className="text-cyan-400 font-semibold">(Save 17%)</span>
                                 </div>
-                                <p className="text-blue-200/60 text-sm">Ideal for students & researchers</p>
+                                <p className="text-gray-600 text-sm">Ideal for students & researchers</p>
                             </div>
                             <ul className="space-y-3 mb-8">
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span><strong>100 jobs/month</strong> (never expire)</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>No daily limit</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>Priority email support</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>Advanced parameters</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>Export to PDF/CSV</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>Activity logs</span>
                                 </li>
@@ -236,33 +236,33 @@ export default function HomePage() {
                                     <span className="text-5xl font-bold text-white">₹499</span>
                                     <span className="text-blue-200 ml-2">/month</span>
                                 </div>
-                                <div className="text-sm text-blue-200/60 mb-4">
+                                <div className="text-sm text-gray-600 mb-4">
                                     or ₹4,999/year <span className="text-cyan-400 font-semibold">(Save 17%)</span>
                                 </div>
-                                <p className="text-blue-200/60 text-sm">For active researchers & labs</p>
+                                <p className="text-gray-600 text-sm">For active researchers & labs</p>
                             </div>
                             <ul className="space-y-3 mb-8">
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span><strong>500 jobs/month</strong> (never expire)</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>No daily limit</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>Priority processing</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>Dedicated support</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>API access</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-cyan-400 mr-2 mt-0.5">✓</span>
                                     <span>Batch uploads & analytics</span>
                                 </li>
@@ -281,29 +281,29 @@ export default function HomePage() {
                                     <span className="text-5xl font-bold text-white">₹3,999</span>
                                     <span className="text-blue-200 ml-2">/month</span>
                                 </div>
-                                <div className="text-sm text-blue-200/60 mb-4">
+                                <div className="text-sm text-gray-600 mb-4">
                                     or ₹39,999/year <span className="text-cyan-400 font-semibold">(Save 17%)</span>
                                 </div>
-                                <p className="text-blue-200/60 text-sm">For universities & institutions</p>
+                                <p className="text-gray-600 text-sm">For universities & institutions</p>
                             </div>
                             <ul className="space-y-3 mb-8">
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-yellow-400 mr-2 mt-0.5">✓</span>
                                     <span><strong>5,000 shared credits</strong></span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-yellow-400 mr-2 mt-0.5">✓</span>
                                     <span>Multi-user access</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-yellow-400 mr-2 mt-0.5">✓</span>
                                     <span>Dedicated support channel</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-yellow-400 mr-2 mt-0.5">✓</span>
                                     <span>Training sessions & SLA</span>
                                 </li>
-                                <li className="flex items-start text-sm text-blue-100">
+                                <li className="flex items-start text-sm text-gray-700">
                                     <span className="text-yellow-400 mr-2 mt-0.5">✓</span>
                                     <span>Custom integrations</span>
                                 </li>
