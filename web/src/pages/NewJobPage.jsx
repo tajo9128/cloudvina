@@ -94,6 +94,7 @@ export default function NewJobPage() {
             if (!session) throw new Error('Not authenticated')
 
             // 1. Create Job
+            console.log('Step 1: Creating job with backend...')
             const createRes = await fetch(`${API_URL}/jobs/submit`, {
                 method: 'POST',
                 headers: {
@@ -105,6 +106,7 @@ export default function NewJobPage() {
                     ligand_filename: ligandFile.name
                 })
             })
+            console.log('Step 1 response:', createRes.status, createRes.ok)
 
             if (!createRes.ok) {
                 const err = await createRes.json()
@@ -115,21 +117,28 @@ export default function NewJobPage() {
             }
 
             const { job_id, upload_urls } = await createRes.json()
+            console.log('Step 1 complete. Job ID:', job_id)
 
             // 2. Upload Files
+            console.log('Step 2: Uploading files to S3...')
             await uploadFile(upload_urls.receptor, receptorFile)
+            console.log('Receptor uploaded')
             await uploadFile(upload_urls.ligand, ligandFile)
+            console.log('Ligand uploaded')
 
             // 3. Start Job
+            console.log('Step 3: Starting job...')
             const startRes = await fetch(`${API_URL}/jobs/${job_id}/start`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
                 }
             })
+            console.log('Step 3 response:', startRes.status, startRes.ok)
 
             if (!startRes.ok) throw new Error('Failed to start job')
 
+            console.log('Job submitted successfully!')
             // Instead of navigating, set state to show progress
             setSubmittedJob({
                 job_id,
