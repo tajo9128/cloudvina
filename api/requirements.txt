@@ -19,3 +19,4 @@ numpy
 itsdangerous==2.1.2
 pandas==2.1.4
 email-validator==2.1.0
+biopython==1.84

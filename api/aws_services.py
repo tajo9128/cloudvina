@@ -37,7 +37,16 @@ def generate_presigned_upload_urls(job_id: str, receptor_filename: str, ligand_f
         '.pdb': 'chemical/x-pdb',
         '.pdbqt': 'chemical/x-pdbqt',
         '.sdf': 'chemical/x-mdl-sdfile',
-        '.mol2': 'chemical/x-mol2'
+        '.mol2': 'chemical/x-mol2',
+        '.mol': 'chemical/x-mdl-molfile',
+        '.cif': 'chemical/x-cif',
+        '.mmcif': 'chemical/x-mmcif',
+        '.pqr': 'chemical/x-pqr',
+        '.xml': 'application/xml',
+        '.pdbml': 'application/xml',
+        '.smi': 'chemical/x-daylight-smiles',
+        '.smiles': 'chemical/x-daylight-smiles',
+        '.gz': 'application/gzip'
     }
     
     receptor_type = content_types.get(receptor_ext, 'application/octet-stream')
