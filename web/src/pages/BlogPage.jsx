@@ -54,15 +54,15 @@ export default function BlogPage() {
     const tags = ['Molecular Docking', 'AutoDock Vina', 'Cloud Computing', 'Drug Discovery', 'Bioinformatics', 'Python', 'SaaS']
 
     return (
-        <div className="min-h-screen bg-blue-mesh pt-24 pb-12">
+        <div className="min-h-screen bg-slate-50 pt-32 pb-20">
             <div className="container mx-auto px-4">
 
                 {/* Page Header */}
                 <div className="text-center mb-16">
-                    <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-4 tracking-tight">
-                        Latest <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-purple-400">Insights</span>
+                    <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
+                        Latest <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-600 to-secondary-500">Insights</span>
                     </h1>
-                    <p className="text-lg text-blue-200 max-w-2xl mx-auto font-light">
+                    <p className="text-lg text-slate-600 max-w-2xl mx-auto">
                         Explore the latest news, tutorials, and scientific breakthroughs in computational drug discovery.
                     </p>
                 </div>
@@ -73,7 +73,7 @@ export default function BlogPage() {
                     <div className="lg:col-span-2 space-y-10">
                         <div className="grid md:grid-cols-2 gap-8">
                             {posts.map(post => (
-                                <article key={post.id} className="glass-modern rounded-2xl group hover:border-cyan-400/50 transition-all duration-300 flex flex-col h-full overflow-hidden">
+                                <article key={post.id} className="bg-white rounded-2xl shadow-sm border border-slate-200 group hover:border-primary-200 transition-all duration-300 flex flex-col h-full overflow-hidden hover:shadow-lg">
                                     {/* Image */}
                                     <div className="h-48 overflow-hidden relative">
                                         <img
@@ -81,33 +81,33 @@ export default function BlogPage() {
                                             alt={post.title}
                                             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-500"
                                         />
-                                        <div className="absolute top-4 left-4 bg-black/60 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-cyan-400 uppercase tracking-wider border border-cyan-400/30">
+                                        <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-primary-600 uppercase tracking-wider shadow-sm">
                                             {post.category}
                                         </div>
                                     </div>
 
                                     {/* Content */}
                                     <div className="p-6 flex-1 flex flex-col">
-                                        <div className="flex items-center text-xs text-blue-300 mb-3 space-x-2">
+                                        <div className="flex items-center text-xs text-slate-400 mb-3 space-x-2">
                                             <span>{post.date}</span>
                                             <span>•</span>
                                             <span>{post.author}</span>
                                         </div>
 
-                                        <h2 className="text-xl font-bold text-white mb-3 group-hover:text-cyan-400 transition-colors line-clamp-2">
+                                        <h2 className="text-xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors line-clamp-2">
                                             <Link to={`/blog/${post.id}`}>{post.title}</Link>
                                         </h2>
 
-                                        <p className="text-blue-200/70 text-sm mb-4 line-clamp-3 flex-1">
+                                        <p className="text-slate-600 text-sm mb-4 line-clamp-3 flex-1">
                                             {post.excerpt}
                                         </p>
 
                                         <Link
                                             to={`/blog/${post.id}`}
-                                            className="inline-flex items-center text-sm font-semibold text-cyan-400 hover:text-cyan-300 transition-colors mt-auto"
+                                            className="inline-flex items-center text-sm font-bold text-primary-600 hover:text-primary-700 transition-colors mt-auto group/link"
                                         >
                                             Read Article
-                                            <svg className="w-4 h-4 ml-1 transform group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <svg className="w-4 h-4 ml-1 transform group-hover/link:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                                             </svg>
                                         </Link>
@@ -118,11 +118,11 @@ export default function BlogPage() {
 
                         {/* Pagination Mockup */}
                         <div className="flex justify-center space-x-2 mt-12">
-                            <button className="w-10 h-10 rounded-lg bg-blue-900/40 border border-blue-700/50 flex items-center justify-center text-blue-300 hover:bg-blue-800 hover:text-white transition">1</button>
-                            <button className="w-10 h-10 rounded-lg bg-cyan-500 text-blue-900 font-bold flex items-center justify-center shadow-lg shadow-cyan-500/20">2</button>
-                            <button className="w-10 h-10 rounded-lg bg-blue-900/40 border border-blue-700/50 flex items-center justify-center text-blue-300 hover:bg-blue-800 hover:text-white transition">3</button>
-                            <span className="w-10 h-10 flex items-center justify-center text-blue-500">...</span>
-                            <button className="w-10 h-10 rounded-lg bg-blue-900/40 border border-blue-700/50 flex items-center justify-center text-blue-300 hover:bg-blue-800 hover:text-white transition">→</button>
+                            <button className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-primary-600 transition">1</button>
+                            <button className="w-10 h-10 rounded-lg bg-primary-600 text-white font-bold flex items-center justify-center shadow-lg shadow-primary-600/20">2</button>
+                            <button className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-primary-600 transition">3</button>
+                            <span className="w-10 h-10 flex items-center justify-center text-slate-400">...</span>
+                            <button className="w-10 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center text-slate-500 hover:bg-slate-50 hover:text-primary-600 transition">→</button>
                         </div>
                     </div>
 
@@ -130,31 +130,31 @@ export default function BlogPage() {
                     <aside className="lg:col-span-1 space-y-8">
 
                         {/* Search Widget */}
-                        <div className="glass-modern p-6 rounded-2xl">
-                            <h3 className="text-lg font-bold text-white mb-4">Search</h3>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-900 mb-4">Search</h3>
                             <div className="relative">
                                 <input
                                     type="text"
                                     placeholder="Search articles..."
-                                    className="w-full pl-10 pr-4 py-3 bg-blue-900/30 border border-blue-700/50 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition outline-none text-sm text-white placeholder-blue-300/30"
+                                    className="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none text-sm text-slate-900 placeholder-slate-400"
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
-                                <svg className="w-5 h-5 text-blue-400 absolute left-3 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <svg className="w-5 h-5 text-slate-400 absolute left-3 top-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
                             </div>
                         </div>
 
                         {/* Categories Widget */}
-                        <div className="glass-modern p-6 rounded-2xl">
-                            <h3 className="text-lg font-bold text-white mb-4">Categories</h3>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-900 mb-4">Categories</h3>
                             <ul className="space-y-3">
                                 {categories.map((cat, idx) => (
                                     <li key={idx}>
                                         <a href="#" className="flex items-center justify-between group">
-                                            <span className="text-blue-200 group-hover:text-cyan-400 transition-colors text-sm font-medium">{cat.name}</span>
-                                            <span className="bg-blue-900/50 text-cyan-400 py-0.5 px-2 rounded-full text-xs font-bold group-hover:bg-cyan-400/20 transition-colors border border-cyan-400/20">{cat.count}</span>
+                                            <span className="text-slate-600 group-hover:text-primary-600 transition-colors text-sm font-medium">{cat.name}</span>
+                                            <span className="bg-slate-100 text-slate-500 py-0.5 px-2 rounded-full text-xs font-bold group-hover:bg-primary-50 group-hover:text-primary-600 transition-colors">{cat.count}</span>
                                         </a>
                                     </li>
                                 ))}
@@ -162,19 +162,19 @@ export default function BlogPage() {
                         </div>
 
                         {/* Recent Posts Widget */}
-                        <div className="glass-modern p-6 rounded-2xl">
-                            <h3 className="text-lg font-bold text-white mb-6">Recent Posts</h3>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-900 mb-6">Recent Posts</h3>
                             <div className="space-y-6">
                                 {posts.slice(0, 3).map(post => (
                                     <div key={post.id} className="flex space-x-4 group cursor-pointer">
-                                        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border border-blue-700/30">
+                                        <div className="w-16 h-16 rounded-lg overflow-hidden flex-shrink-0 border border-slate-200">
                                             <img src={post.image} alt={post.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                                         </div>
                                         <div>
-                                            <h4 className="text-sm font-bold text-white leading-snug mb-1 group-hover:text-cyan-400 transition-colors line-clamp-2">
+                                            <h4 className="text-sm font-bold text-slate-900 leading-snug mb-1 group-hover:text-primary-600 transition-colors line-clamp-2">
                                                 {post.title}
                                             </h4>
-                                            <span className="text-xs text-blue-400">{post.date}</span>
+                                            <span className="text-xs text-slate-400">{post.date}</span>
                                         </div>
                                     </div>
                                 ))}
@@ -182,14 +182,14 @@ export default function BlogPage() {
                         </div>
 
                         {/* Tags Widget */}
-                        <div className="glass-modern p-6 rounded-2xl">
-                            <h3 className="text-lg font-bold text-white mb-4">Popular Tags</h3>
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 className="text-lg font-bold text-slate-900 mb-4">Popular Tags</h3>
                             <div className="flex flex-wrap gap-2">
                                 {tags.map((tag, idx) => (
                                     <a
                                         key={idx}
                                         href="#"
-                                        className="text-xs font-medium bg-blue-900/30 border border-blue-700/50 text-blue-200 px-3 py-1.5 rounded-lg hover:bg-cyan-400/10 hover:text-cyan-400 hover:border-cyan-400/50 transition-all"
+                                        className="text-xs font-medium bg-slate-50 border border-slate-200 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-primary-50 hover:text-primary-600 hover:border-primary-200 transition-all"
                                     >
                                         #{tag}
                                     </a>
@@ -198,16 +198,16 @@ export default function BlogPage() {
                         </div>
 
                         {/* Newsletter Widget */}
-                        <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-2xl p-6 text-white shadow-lg shadow-cyan-500/20">
+                        <div className="bg-slate-900 rounded-2xl p-6 text-white shadow-lg shadow-slate-900/20">
                             <h3 className="text-lg font-bold mb-2">Subscribe to Newsletter</h3>
-                            <p className="text-blue-50 text-sm mb-4">Get the latest updates and tutorials delivered to your inbox.</p>
+                            <p className="text-slate-400 text-sm mb-4">Get the latest updates and tutorials delivered to your inbox.</p>
                             <div className="space-y-3">
                                 <input
                                     type="email"
                                     placeholder="Your email address"
-                                    className="w-full px-4 py-2.5 rounded-lg bg-white/10 border border-white/20 text-white placeholder-blue-100 focus:outline-none focus:bg-white/20 transition text-sm"
+                                    className="w-full px-4 py-2.5 rounded-lg bg-slate-800 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-primary-500 transition text-sm"
                                 />
-                                <button className="w-full py-2.5 bg-white text-blue-600 font-bold rounded-lg hover:bg-blue-50 transition shadow-sm">
+                                <button className="w-full py-2.5 bg-primary-600 text-white font-bold rounded-lg hover:bg-primary-500 transition shadow-sm">
                                     Subscribe
                                 </button>
                             </div>

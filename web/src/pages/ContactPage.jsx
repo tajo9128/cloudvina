@@ -17,12 +17,12 @@ export default function ContactPage() {
     }
 
     return (
-        <div className="min-h-screen bg-blue-mesh pt-24 pb-12">
+        <div className="min-h-screen bg-slate-50 pt-32 pb-20">
             <div className="container mx-auto px-4">
                 <div className="max-w-4xl mx-auto">
-                    <div className="text-center mb-12">
-                        <h1 className="text-4xl font-extrabold text-white mb-4 tracking-tight">Contact Us</h1>
-                        <p className="text-blue-200 max-w-2xl mx-auto text-lg font-light">
+                    <div className="text-center mb-16">
+                        <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6 tracking-tight">Contact Us</h1>
+                        <p className="text-xl text-slate-600 max-w-2xl mx-auto">
                             Have questions about BioDockify? Need help with your docking jobs?
                             We're here to help.
                         </p>
@@ -31,26 +31,26 @@ export default function ContactPage() {
                     <div className="grid md:grid-cols-2 gap-12">
                         {/* Contact Info */}
                         <div className="space-y-8">
-                            <div className="glass-modern p-8 rounded-2xl">
-                                <h3 className="text-xl font-bold text-white mb-6">Get in Touch</h3>
+                            <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                                <h3 className="text-xl font-bold text-slate-900 mb-6">Get in Touch</h3>
                                 <div className="space-y-6">
                                     <div className="flex items-start">
-                                        <div className="text-2xl mr-4 bg-blue-900/50 w-10 h-10 rounded-lg flex items-center justify-center border border-blue-700/50">📧</div>
+                                        <div className="w-10 h-10 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center text-xl mr-4 flex-shrink-0">📧</div>
                                         <div>
-                                            <p className="font-bold text-white">Email</p>
-                                            <a href="mailto:biodockify@hotmail.com" className="text-cyan-400 hover:text-cyan-300 font-medium transition-colors">
+                                            <p className="font-bold text-slate-900">Email</p>
+                                            <a href="mailto:biodockify@hotmail.com" className="text-primary-600 hover:text-primary-700 font-medium transition-colors">
                                                 biodockify@hotmail.com
                                             </a>
-                                            <p className="text-sm text-blue-200/60 mt-1">
+                                            <p className="text-sm text-slate-500 mt-1">
                                                 We usually respond within 24 hours.
                                             </p>
                                         </div>
                                     </div>
                                     <div className="flex items-start">
-                                        <div className="text-2xl mr-4 bg-blue-900/50 w-10 h-10 rounded-lg flex items-center justify-center border border-blue-700/50">📍</div>
+                                        <div className="w-10 h-10 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center text-xl mr-4 flex-shrink-0">📍</div>
                                         <div>
-                                            <p className="font-bold text-white">Location</p>
-                                            <p className="text-blue-200/80">
+                                            <p className="font-bold text-slate-900">Location</p>
+                                            <p className="text-slate-600">
                                                 Hyderabad, India<br />
                                                 (Cloud-based operations)
                                             </p>
@@ -59,73 +59,73 @@ export default function ContactPage() {
                                 </div>
                             </div>
 
-                            <div className="bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl shadow-lg shadow-cyan-500/20 p-8 text-white relative overflow-hidden">
+                            <div className="bg-gradient-to-br from-primary-600 to-secondary-600 rounded-2xl shadow-xl shadow-primary-900/20 p-8 text-white relative overflow-hidden">
                                 <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
                                 <h3 className="text-xl font-bold mb-4 relative z-10">Support for Students</h3>
-                                <p className="mb-4 opacity-90 relative z-10 text-blue-50">
+                                <p className="mb-6 opacity-90 relative z-10 text-primary-50 leading-relaxed">
                                     Are you a student or researcher from an Indian university?
                                     We offer special support and extended credits for academic projects.
                                 </p>
-                                <p className="font-bold relative z-10 bg-white/20 inline-block px-3 py-1 rounded-lg backdrop-blur-sm">
+                                <div className="font-bold relative z-10 bg-white/20 inline-block px-4 py-2 rounded-lg backdrop-blur-sm text-sm">
                                     Mention your institution!
-                                </p>
+                                </div>
                             </div>
                         </div>
 
                         {/* Contact Form */}
-                        <div className="glass-modern p-8 rounded-2xl">
+                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
                             <form onSubmit={handleSubmit} className="space-y-6">
                                 <div>
-                                    <label className="block text-sm font-bold text-white mb-2">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">
                                         Your Name
                                     </label>
                                     <input
                                         type="text"
                                         required
-                                        className="w-full px-4 py-3 bg-blue-900/30 border border-blue-700/50 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition outline-none text-white placeholder-blue-300/30"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none text-slate-900"
                                         placeholder="Dr. Rajesh Kumar"
                                         value={formData.name}
                                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-white mb-2">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">
                                         Email Address
                                     </label>
                                     <input
                                         type="email"
                                         required
-                                        className="w-full px-4 py-3 bg-blue-900/30 border border-blue-700/50 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition outline-none text-white placeholder-blue-300/30"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none text-slate-900"
                                         placeholder="rajesh@iit.ac.in"
                                         value={formData.email}
                                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-white mb-2">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">
                                         Subject
                                     </label>
                                     <select
-                                        className="w-full px-4 py-3 bg-blue-900/30 border border-blue-700/50 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition outline-none text-white"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none text-slate-900"
                                         value={formData.subject}
                                         onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                                     >
-                                        <option value="" disabled className="bg-deep-navy-900">Select a topic</option>
-                                        <option value="General Inquiry" className="bg-deep-navy-900">General Inquiry</option>
-                                        <option value="Technical Support" className="bg-deep-navy-900">Technical Support</option>
-                                        <option value="Billing/Credits" className="bg-deep-navy-900">Billing & Credits</option>
-                                        <option value="Academic Partnership" className="bg-deep-navy-900">Academic Partnership</option>
-                                        <option value="Bug Report" className="bg-deep-navy-900">Bug Report</option>
+                                        <option value="" disabled>Select a topic</option>
+                                        <option value="General Inquiry">General Inquiry</option>
+                                        <option value="Technical Support">Technical Support</option>
+                                        <option value="Billing/Credits">Billing & Credits</option>
+                                        <option value="Academic Partnership">Academic Partnership</option>
+                                        <option value="Bug Report">Bug Report</option>
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-white mb-2">
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">
                                         Message
                                     </label>
                                     <textarea
                                         required
                                         rows="4"
-                                        className="w-full px-4 py-3 bg-blue-900/30 border border-blue-700/50 rounded-xl focus:ring-2 focus:ring-cyan-400 focus:border-cyan-400 transition outline-none text-white placeholder-blue-300/30"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none text-slate-900"
                                         placeholder="How can we help you?"
                                         value={formData.message}
                                         onChange={(e) => setFormData({ ...formData, message: e.target.value })}
@@ -133,7 +133,7 @@ export default function ContactPage() {
                                 </div>
                                 <button
                                     type="submit"
-                                    className="w-full btn-cyan py-3 rounded-xl font-bold text-lg shadow-lg shadow-cyan-500/20"
+                                    className="w-full btn-primary py-3 rounded-xl font-bold text-lg shadow-lg shadow-primary-600/20"
                                 >
                                     Send Message
                                 </button>

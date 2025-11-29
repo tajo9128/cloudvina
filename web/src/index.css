@@ -40,37 +40,6 @@ h5,
 h6 {
   font-family: 'Space Grotesk', sans-serif;
   letter-spacing: -0.02em;
-}
-
-/* Custom Utilities */
-.text-gradient-cyan {
-  background: linear-gradient(135deg, #FFFFFF 0%, #00D9FF 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.bg-blue-mesh {
-  background-color: var(--primary-blue);
-  background-image:
-    radial-gradient(at 0% 0%, rgba(0, 217, 255, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(139, 92, 246, 0.15) 0px, transparent 50%),
-    radial-gradient(at 100% 100%, rgba(0, 217, 255, 0.15) 0px, transparent 50%),
-    radial-gradient(at 0% 100%, rgba(139, 92, 246, 0.15) 0px, transparent 50%);
-  background-attachment: fixed;
-}
-
-/* Modern Button Styles */
-.btn-cyan {
-  background: linear-gradient(135deg, #00D9FF 0%, #00B8D4 100%);
-  color: #0A2463;
-  font-weight: 700;
-  font-family: 'Space Grotesk', sans-serif;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(0, 217, 255, 0.3);
-}
-
-.btn-cyan:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 25px rgba(0, 217, 255, 0.5);
 }

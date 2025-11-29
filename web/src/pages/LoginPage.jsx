@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { supabase } from '../supabaseClient'
-import { API_URL } from '../config'
 import { useNavigate, Link } from 'react-router-dom'
 
 export default function LoginPage() {
@@ -66,14 +65,11 @@ export default function LoginPage() {
             let errorMessage = error.message
 
             // Supabase rate limiting
-            // Supabase rate limiting
             if (errorMessage.includes('For security purposes') || errorMessage.includes('request this after')) {
                 console.warn("Supabase rate limit hit:", errorMessage)
                 if (isSignUp) {
                     setSuccess('✅ Account created! Check your email to verify your account. Click the confirmation link once.')
                 }
-                // Suppress error for login as well, or handle differently if needed.
-                // User explicitly asked to hide the "Please wait" message.
             }
             // Email already exists
             else if (errorMessage.includes('already registered') || errorMessage.includes('already exists')) {
@@ -93,33 +89,39 @@ export default function LoginPage() {
     }
 
     return (
-        <div className="min-h-screen bg-blue-mesh flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full">
+        <div className="min-h-screen bg-slate-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+            {/* Background Decoration */}
+            <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary-200/20 rounded-full blur-3xl"></div>
+                <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-secondary-200/20 rounded-full blur-3xl"></div>
+            </div>
+
+            <div className="max-w-md w-full relative z-10">
                 {/* Header */}
                 <div className="text-center mb-8">
-                    <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl mb-4 shadow-lg shadow-cyan-500/30">
+                    <Link to="/" className="inline-flex items-center justify-center w-16 h-16 bg-white rounded-2xl mb-6 shadow-lg shadow-slate-200 border border-slate-100 hover:scale-105 transition-transform">
                         <span className="text-3xl">🧬</span>
-                    </div>
-                    <h2 className="text-3xl font-extrabold text-white tracking-tight">
+                    </Link>
+                    <h2 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">
                         {isSignUp ? 'Create your account' : 'Welcome back'}
                     </h2>
-                    <p className="mt-2 text-sm text-blue-200">
+                    <p className="text-slate-500">
                         {isSignUp ? 'Start your molecular docking journey' : 'Sign in to continue to BioDockify'}
                     </p>
                 </div>
 
                 {/* Form Card */}
-                <div className="glass-modern p-8 rounded-2xl">
+                <div className="bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
                     <form className="space-y-5" onSubmit={handleAuth}>
                         {/* Email */}
                         <div>
-                            <label className="block text-sm font-bold text-deep-navy-900 mb-2">
-                                Email Address *
+                            <label className="block text-sm font-bold text-slate-700 mb-2">
+                                Email Address <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="email"
                                 required
-                                className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none"
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none text-slate-900"
                                 placeholder="you@university.edu"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -128,19 +130,19 @@ export default function LoginPage() {
 
                         {/* Password */}
                         <div>
-                            <label className="block text-sm font-bold text-deep-navy-900 mb-2">
-                                Password *
+                            <label className="block text-sm font-bold text-slate-700 mb-2">
+                                Password <span className="text-red-500">*</span>
                             </label>
                             <input
                                 type="password"
                                 required
-                                className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none"
+                                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none text-slate-900"
                                 placeholder="••••••••"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                             />
                             {isSignUp && (
-                                <p className="mt-1 text-xs text-slate-500">Minimum 6 characters</p>
+                                <p className="mt-1 text-xs text-slate-400">Minimum 6 characters</p>
                             )}
                         </div>
 
@@ -148,12 +150,12 @@ export default function LoginPage() {
                         {isSignUp && (
                             <>
                                 <div>
-                                    <label className="block text-sm font-bold text-deep-navy-900 mb-2">
-                                        Designation *
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                                        Designation <span className="text-red-500">*</span>
                                     </label>
                                     <select
                                         required
-                                        className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none text-slate-900"
                                         value={designation}
                                         onChange={(e) => setDesignation(e.target.value)}
                                     >
@@ -166,13 +168,13 @@ export default function LoginPage() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-bold text-deep-navy-900 mb-2">
-                                        Organization/University *
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                                        Organization/University <span className="text-red-500">*</span>
                                     </label>
                                     <input
                                         type="text"
                                         required
-                                        className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition outline-none"
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none text-slate-900"
                                         placeholder="e.g., IIT Delhi"
                                         value={organization}
                                         onChange={(e) => setOrganization(e.target.value)}
@@ -180,15 +182,15 @@ export default function LoginPage() {
                                 </div>
 
                                 {/* Info Box */}
-                                <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-4">
+                                <div className="bg-primary-50 border border-primary-100 rounded-xl p-4">
                                     <div className="flex">
                                         <div className="flex-shrink-0">
-                                            <svg className="h-5 w-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                            <svg className="h-5 w-5 text-primary-600" fill="currentColor" viewBox="0 0 20 20">
                                                 <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                                             </svg>
                                         </div>
                                         <div className="ml-3">
-                                            <p className="text-xs text-blue-800">
+                                            <p className="text-xs text-primary-800">
                                                 <strong>Email verification required.</strong> Free users get 3 docking jobs per day. Upgrade anytime for unlimited access.
                                             </p>
                                         </div>
@@ -199,13 +201,15 @@ export default function LoginPage() {
 
                         {/* Error/Success Messages */}
                         {error && (
-                            <div className="bg-red-50 border border-red-200 rounded-xl p-3">
-                                <p className="text-sm text-red-600">❌ {error}</p>
+                            <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
+                                <svg className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <p className="text-sm text-red-600">{error}</p>
                             </div>
                         )}
 
                         {success && (
-                            <div className="bg-green-50 border border-green-200 rounded-xl p-3">
+                            <div className="bg-green-50 border border-green-200 rounded-xl p-3 flex items-start gap-2">
+                                <svg className="w-5 h-5 text-green-500 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
                                 <p className="text-sm text-green-600">{success}</p>
                             </div>
                         )}
@@ -214,7 +218,7 @@ export default function LoginPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className="w-full btn-cyan py-3 rounded-xl font-bold text-lg flex justify-center items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="w-full btn-primary py-3 rounded-xl font-bold text-lg flex justify-center items-center disabled:opacity-70 disabled:cursor-not-allowed shadow-lg shadow-primary-600/20"
                         >
                             {loading ? (
                                 <span className="flex items-center">
@@ -238,7 +242,7 @@ export default function LoginPage() {
                                 setError(null)
                                 setSuccess(null)
                             }}
-                            className="text-sm text-blue-600 hover:text-blue-700 font-bold hover:underline transition"
+                            className="text-sm text-slate-600 hover:text-primary-600 font-bold hover:underline transition"
                         >
                             {isSignUp ? '← Already have an account? Sign in' : "Don't have an account? Sign up →"}
                         </button>
@@ -247,10 +251,10 @@ export default function LoginPage() {
 
                 {/* Footer */}
                 <div className="mt-8 text-center">
-                    <Link to="/" className="text-sm text-blue-300 hover:text-cyan-400 transition font-medium">
+                    <Link to="/" className="text-sm text-slate-500 hover:text-primary-600 transition font-medium">
                         ← Back to Homepage
                     </Link>
-                    <p className="text-xs text-blue-400/50 mt-4">v1.2.0 (Modern Theme)</p>
+                    <p className="text-xs text-slate-400 mt-4">© 2025 BioDockify. All rights reserved.</p>
                 </div>
             </div>
         </div>

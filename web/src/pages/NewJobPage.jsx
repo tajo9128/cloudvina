@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-
 import { API_URL } from '../config'
 
 export default function NewJobPage() {
@@ -11,16 +10,10 @@ export default function NewJobPage() {
     const [ligandFile, setLigandFile] = useState(null)
     const [error, setError] = useState(null)
 
-
-
     // Job Progress State
     const [submittedJob, setSubmittedJob] = useState(null)
     const [elapsedTime, setElapsedTime] = useState(0)
     const ESTIMATED_DURATION = 300 // 5 minutes
-
-
-
-
 
     useEffect(() => {
         let timer
@@ -65,8 +58,8 @@ export default function NewJobPage() {
     }, [submittedJob])
 
     const getProgressColor = (percentage) => {
-        if (percentage < 30) return 'bg-blue-500'
-        if (percentage < 70) return 'bg-purple-500'
+        if (percentage < 30) return 'bg-primary-500'
+        if (percentage < 70) return 'bg-secondary-500'
         return 'bg-green-500'
     }
 
@@ -231,18 +224,24 @@ export default function NewJobPage() {
     const remainingSeconds = Math.max(ESTIMATED_DURATION - elapsedTime, 0)
 
     return (
-        <div className="min-h-screen bg-blue-mesh pt-24 pb-12">
+        <div className="min-h-screen bg-slate-50 pt-24 pb-12">
             <main className="container mx-auto px-4">
-                <div className="max-w-2xl mx-auto glass-modern rounded-2xl p-8">
-                    <h1 className="text-3xl font-extrabold text-white mb-6 tracking-tight">Start New Docking Job</h1>
+                <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
+                    <div className="mb-8 text-center">
+                        <div className="inline-block p-3 rounded-full bg-primary-50 text-primary-600 mb-4">
+                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        </div>
+                        <h1 className="text-3xl font-bold text-slate-900 mb-2">New Docking Simulation</h1>
+                        <p className="text-slate-500">Upload your receptor and ligand files to begin.</p>
+                    </div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
+                    <form onSubmit={handleSubmit} className="space-y-8">
                         {/* Receptor Upload */}
                         <div>
-                            <label className="block text-sm font-bold text-white mb-2">
-                                Receptor (PDB, PDBQT, MOL2, SDF, MOL, CIF, PQR, XML - .gz OK)
+                            <label className="block text-sm font-bold text-slate-700 mb-2">
+                                Receptor File <span className="text-slate-400 font-normal ml-1">(PDB, PDBQT, MOL2, SDF, CIF, XML)</span>
                             </label>
-                            <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all relative group ${submittedJob ? 'bg-blue-900/20 border-blue-800' : 'border-blue-700/50 hover:border-cyan-400/50 hover:bg-blue-900/30 cursor-pointer bg-blue-900/10'}`}>
+                            <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all relative group ${submittedJob ? 'bg-slate-50 border-slate-200' : 'border-slate-300 hover:border-primary-500 hover:bg-primary-50/50 cursor-pointer bg-slate-50'}`}>
                                 <input
                                     type="file"
                                     accept=".pdb,.pdbqt,.mol2,.sdf,.mol,.cif,.mmcif,.pqr,.xml,.pdbml,.gz"
@@ -250,12 +249,18 @@ export default function NewJobPage() {
                                     onChange={(e) => setReceptorFile(e.target.files[0])}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-20"
                                 />
-                                <div className="space-y-2 relative z-10">
-                                    <div className="text-4xl mb-2 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_10px_rgba(0,217,255,0.3)]">🧬</div>
+                                <div className="space-y-3 relative z-10">
+                                    <div className="w-12 h-12 bg-white rounded-full shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-2xl group-hover:scale-110 transition-transform">🧬</div>
                                     {receptorFile ? (
-                                        <div className="text-cyan-400 font-bold text-lg">{receptorFile.name}</div>
+                                        <div className="text-primary-600 font-bold text-lg flex items-center justify-center gap-2">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                            {receptorFile.name}
+                                        </div>
                                     ) : (
-                                        <div className="text-blue-200 font-medium">Upload Receptor (PDB, MOL2, SDF, CIF, PQR, XML, .gz)</div>
+                                        <div>
+                                            <div className="text-slate-900 font-medium">Click to upload receptor</div>
+                                            <div className="text-slate-400 text-sm mt-1">Supports .gz compression</div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
@@ -263,10 +268,10 @@ export default function NewJobPage() {
 
                         {/* Ligand Upload */}
                         <div>
-                            <label className="block text-sm font-bold text-white mb-2">
-                                Ligand (PDBQT, SDF, MOL2, MOL, SMILES - .gz OK)
+                            <label className="block text-sm font-bold text-slate-700 mb-2">
+                                Ligand File <span className="text-slate-400 font-normal ml-1">(PDBQT, SDF, MOL2, SMILES)</span>
                             </label>
-                            <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all relative group ${submittedJob ? 'bg-blue-900/20 border-blue-800' : 'border-blue-700/50 hover:border-cyan-400/50 hover:bg-blue-900/30 cursor-pointer bg-blue-900/10'}`}>
+                            <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all relative group ${submittedJob ? 'bg-slate-50 border-slate-200' : 'border-slate-300 hover:border-secondary-500 hover:bg-secondary-50/50 cursor-pointer bg-slate-50'}`}>
                                 <input
                                     type="file"
                                     accept=".pdbqt,.sdf,.mol2,.mol,.smi,.smiles,.gz"
@@ -274,20 +279,27 @@ export default function NewJobPage() {
                                     onChange={(e) => setLigandFile(e.target.files[0])}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-20"
                                 />
-                                <div className="space-y-2 relative z-10">
-                                    <div className="text-4xl mb-2 transform group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_0_10px_rgba(0,217,255,0.3)]">💊</div>
+                                <div className="space-y-3 relative z-10">
+                                    <div className="w-12 h-12 bg-white rounded-full shadow-sm border border-slate-100 flex items-center justify-center mx-auto text-2xl group-hover:scale-110 transition-transform">💊</div>
                                     {ligandFile ? (
-                                        <div className="text-cyan-400 font-bold text-lg">{ligandFile.name}</div>
+                                        <div className="text-secondary-600 font-bold text-lg flex items-center justify-center gap-2">
+                                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                            {ligandFile.name}
+                                        </div>
                                     ) : (
-                                        <div className="text-blue-200 font-medium">Upload Ligand (PDBQT, SDF, MOL2, SMILES, .gz)</div>
+                                        <div>
+                                            <div className="text-slate-900 font-medium">Click to upload ligand</div>
+                                            <div className="text-slate-400 text-sm mt-1">Supports .gz compression</div>
+                                        </div>
                                     )}
                                 </div>
                             </div>
                         </div>
 
                         {error && (
-                            <div className="bg-red-500/20 border border-red-500/50 text-red-200 p-4 rounded-xl text-sm backdrop-blur-sm">
-                                {error}
+                            <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl text-sm flex items-start gap-3">
+                                <svg className="w-5 h-5 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                <div>{error}</div>
                             </div>
                         )}
 
@@ -295,32 +307,37 @@ export default function NewJobPage() {
                             <button
                                 type="submit"
                                 disabled={loading}
-                                className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg ${loading
-                                    ? 'bg-blue-900/50 text-blue-400/50 cursor-not-allowed border border-blue-800'
-                                    : 'btn-cyan hover:shadow-cyan-500/40'}`}
+                                className={`w-full py-4 rounded-xl font-bold text-lg transition-all duration-300 shadow-lg shadow-primary-600/20 ${loading
+                                    ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
+                                    : 'bg-primary-600 text-white hover:bg-primary-700 hover:-translate-y-1'}`}
                             >
                                 {loading ? (
-                                    <span className="flex items-center justify-center">
-                                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <span className="flex items-center justify-center gap-2">
+                                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                         </svg>
-                                        Submitting...
+                                        Initializing Simulation...
                                     </span>
-                                ) : 'Launch Docking Job'}
+                                ) : 'Launch Docking Simulation'}
                             </button>
                         ) : (
-                            <div className="space-y-4 animate-in fade-in duration-500">
-                                <div className="bg-blue-900/30 rounded-xl p-6 border border-blue-700/50 backdrop-blur-sm">
-                                    <div className="flex justify-between items-center mb-3">
-                                        <span className="font-bold text-white">Status: <span className="text-cyan-400">{submittedJob.status}</span></span>
-                                        <span className="text-sm text-blue-200">Est. Remaining: {formatTime(remainingSeconds)}</span>
+                            <div className="space-y-6 animate-in fade-in duration-500">
+                                <div className="bg-slate-50 rounded-xl p-6 border border-slate-200">
+                                    <div className="flex justify-between items-center mb-4">
+                                        <span className="font-bold text-slate-700 flex items-center gap-2">
+                                            Status:
+                                            <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase ${submittedJob.status === 'SUCCEEDED' ? 'bg-green-100 text-green-700' : 'bg-primary-100 text-primary-700'}`}>
+                                                {submittedJob.status}
+                                            </span>
+                                        </span>
+                                        <span className="text-sm text-slate-500 font-mono">Est. Remaining: {formatTime(remainingSeconds)}</span>
                                     </div>
 
                                     {/* Progress Bar */}
-                                    <div className="w-full bg-blue-900/50 rounded-full h-3 mb-3 overflow-hidden border border-blue-700/30">
+                                    <div className="w-full bg-slate-200 rounded-full h-3 mb-4 overflow-hidden">
                                         <div
-                                            className={`h-full transition-all duration-500 bg-gradient-to-r from-cyan-500 to-blue-500 shadow-[0_0_10px_rgba(0,217,255,0.5)]`}
+                                            className={`h-full transition-all duration-500 bg-gradient-to-r from-primary-500 to-secondary-500`}
                                             style={{ width: `${progressPercentage}%` }}
                                         >
                                             {['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(submittedJob.status) && (
@@ -329,7 +346,7 @@ export default function NewJobPage() {
                                         </div>
                                     </div>
 
-                                    <p className="text-xs text-blue-300/60 text-center font-mono">
+                                    <p className="text-xs text-slate-400 text-center font-mono">
                                         Job ID: {submittedJob.job_id}
                                     </p>
                                 </div>
@@ -338,15 +355,15 @@ export default function NewJobPage() {
                                     <button
                                         type="button"
                                         onClick={() => navigate(`/dock/${submittedJob.job_id}`)}
-                                        className="w-full py-4 rounded-xl font-bold text-white bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-400 hover:to-emerald-500 shadow-lg shadow-green-500/30 transition animate-bounce"
+                                        className="w-full py-4 rounded-xl font-bold text-white bg-green-600 hover:bg-green-700 shadow-lg shadow-green-600/20 transition animate-bounce flex items-center justify-center gap-2"
                                     >
                                         View Results 🎉
                                     </button>
                                 )}
 
                                 {submittedJob.status === 'FAILED' && (
-                                    <div className="text-center text-red-400 font-bold bg-red-500/10 p-4 rounded-xl border border-red-500/30">
-                                        Job Failed. Please try again.
+                                    <div className="text-center text-red-600 font-bold bg-red-50 p-4 rounded-xl border border-red-100">
+                                        Simulation Failed. Please try again.
                                     </div>
                                 )}
                             </div>
