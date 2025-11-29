@@ -240,12 +240,12 @@ export default function NewJobPage() {
                         {/* Receptor Upload */}
                         <div>
                             <label className="block text-sm font-bold text-white mb-2">
-                                Receptor (PDB)
+                                Receptor (PDB, PDBQT, MOL2, SDF)
                             </label>
                             <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all relative group ${submittedJob ? 'bg-blue-900/20 border-blue-800' : 'border-blue-700/50 hover:border-cyan-400/50 hover:bg-blue-900/30 cursor-pointer bg-blue-900/10'}`}>
                                 <input
                                     type="file"
-                                    accept=".pdb"
+                                    accept=".pdb,.pdbqt,.mol2,.sdf"
                                     disabled={!!submittedJob}
                                     onChange={(e) => setReceptorFile(e.target.files[0])}
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed z-20"
@@ -255,7 +255,7 @@ export default function NewJobPage() {
                                     {receptorFile ? (
                                         <div className="text-cyan-400 font-bold text-lg">{receptorFile.name}</div>
                                     ) : (
-                                        <div className="text-blue-200 font-medium">Upload Receptor (.pdb)</div>
+                                        <div className="text-blue-200 font-medium">Upload Receptor (.pdb, .pdbqt, .mol2, .sdf)</div>
                                     )}
                                 </div>
                             </div>
