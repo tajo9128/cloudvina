@@ -76,10 +76,33 @@ export default function NewJobPage() {
         return `${mins}m ${secs}s`
     }
 
+    // Helper: Fetch with retry logic for cold starts
+    const fetchWithRetry = async (url, options, retries = 3, backoff = 1000) => {
+        try {
+            const res = await fetch(url, options)
+            if (!res.ok) {
+                // If 503 or 504 (Service Unavailable/Gateway Timeout), retry
+                if ([503, 504].includes(res.status) && retries > 0) {
+                    console.log(`Retrying ${url}... Attempts left: ${retries}`)
+                    await new Promise(r => setTimeout(r, backoff))
+                    return fetchWithRetry(url, options, retries - 1, backoff * 2)
+                }
+                return res // Return error response to be handled by caller
+            }
+            return res
+        } catch (err) {
+            // Retry on network errors (like Failed to fetch)
+            if (retries > 0) {
+                console.log(`Network error, retrying ${url}... Attempts left: ${retries}`)
+                await new Promise(r => setTimeout(r, backoff))
+                return fetchWithRetry(url, options, retries - 1, backoff * 2)
+            }
+            throw err
+        }
+    }
+
     const handleSubmit = async (e) => {
         e.preventDefault()
-
-
 
         if (!receptorFile || !ligandFile) {
             setError('Please select both receptor and ligand files')
@@ -93,9 +116,9 @@ export default function NewJobPage() {
             const { data: { session } } = await supabase.auth.getSession()
             if (!session) throw new Error('Not authenticated')
 
-            // 1. Create Job
+            // 1. Create Job with Retry
             console.log('Step 1: Creating job with backend...')
-            const createRes = await fetch(`${API_URL}/jobs/submit`, {
+            const createRes = await fetchWithRetry(`${API_URL}/jobs/submit`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -119,16 +142,18 @@ export default function NewJobPage() {
             const { job_id, upload_urls } = await createRes.json()
             console.log('Step 1 complete. Job ID:', job_id)
 
-            // 2. Upload Files
+            // 2. Upload Files (No retry needed usually, S3 is reliable)
             console.log('Step 2: Uploading files to S3...')
+            setError('📤 Uploading files...')
             await uploadFile(upload_urls.receptor, receptorFile)
             console.log('Receptor uploaded')
             await uploadFile(upload_urls.ligand, ligandFile)
             console.log('Ligand uploaded')
 
-            // 3. Start Job
+            // 3. Start Job with Retry
             console.log('Step 3: Starting job...')
-            const startRes = await fetch(`${API_URL}/jobs/${job_id}/start`, {
+            setError('🚀 Starting simulation...')
+            const startRes = await fetchWithRetry(`${API_URL}/jobs/${job_id}/start`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${session.access_token}`
@@ -147,6 +172,7 @@ export default function NewJobPage() {
             })
 
         } catch (err) {
+            console.error('Submission error:', err)
             // Check if it's an email verification error
             if (err.message.includes('verify your email')) {
                 setError(
@@ -171,7 +197,7 @@ export default function NewJobPage() {
                     </div>
                 )
             } else {
-                setError(err.message)
+                setError(`Error: ${err.message}. Please try again.`)
             }
         } finally {
             setLoading(false)
