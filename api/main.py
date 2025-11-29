@@ -56,10 +56,8 @@ app.add_middleware(
         "http://localhost:3000",
         "https://biodockify.com",
         "https://www.biodockify.com",
-        "https://biodockify-3n3v.vercel.app",
-        "https://biodockify-web.vercel.app",
-        "https://biodockify.vercel.app"
     ],
+    allow_origin_regex=r"https://.*\.vercel\.app",  # Allow all Vercel deployments
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
