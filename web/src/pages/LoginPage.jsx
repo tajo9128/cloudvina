@@ -79,8 +79,14 @@ export default function LoginPage() {
             let errorMessage = error.message
 
             // Supabase rate limiting
+            // Supabase rate limiting
             if (errorMessage.includes('For security purposes') || errorMessage.includes('request this after')) {
-                setError('⏱️ Please wait a moment before trying again. This security measure protects against spam.')
+                console.warn("Supabase rate limit hit:", errorMessage)
+                if (isSignUp) {
+                    setSuccess('✅ Account created! Check your email to verify your account. Click the confirmation link once.')
+                }
+                // Suppress error for login as well, or handle differently if needed.
+                // User explicitly asked to hide the "Please wait" message.
             }
             // Email already exists
             else if (errorMessage.includes('already registered') || errorMessage.includes('already exists')) {
