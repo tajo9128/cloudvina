@@ -3,11 +3,13 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import MoleculeViewer from '../components/MoleculeViewer'
 import ExportButtons from '../components/ExportButtons'
+import DockingResultsTable from '../components/DockingResultsTable'
 import { API_URL } from '../config'
 
 export default function JobResultsPage() {
     const { jobId } = useParams()
     const [job, setJob] = useState(null)
+    const [analysis, setAnalysis] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [elapsedTime, setElapsedTime] = useState(0)
@@ -68,6 +70,11 @@ export default function JobResultsPage() {
             const data = await res.json()
             setJob(data)
 
+            // Fetch analysis if job succeeded and not already fetched
+            if (data.status === 'SUCCEEDED' && !analysis) {
+                fetchAnalysis(session.access_token)
+            }
+
             // Fetch PDBQT data if succeeded
             if (data.status === 'SUCCEEDED' && data.download_urls?.output && !pdbqtData) {
                 try {
@@ -82,6 +89,23 @@ export default function JobResultsPage() {
             setError(err.message)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchAnalysis = async (token) => {
+        try {
+            const res = await fetch(`${API_URL}/jobs/${jobId}/analysis`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            if (res.ok) {
+                const data = await res.json()
+                setAnalysis(data.analysis)
+            }
+        } catch (err) {
+            console.error('Failed to fetch analysis:', err)
         }
     }
 
@@ -183,8 +207,15 @@ export default function JobResultsPage() {
 
                             <div className="p-6 text-center">
                                 <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Best Affinity</h2>
-                                {job.binding_affinity ? (
-                                    <div className="text-3xl font-bold text-slate-900">{job.binding_affinity} <span className="text-sm text-slate-500 font-normal">kcal/mol</span></div>
+                                {analysis?.best_affinity ? (
+                                    <>
+                                        <div className="text-3xl font-bold text-green-700">{analysis.best_affinity} <span className="text-sm text-slate-500 font-normal">kcal/mol</span></div>
+                                        {analysis.num_poses > 1 && (
+                                            <div className="text-xs text-slate-500 mt-2">
+                                                Range: {analysis.energy_range_min} to {analysis.energy_range_max}
+                                            </div>
+                                        )}
+                                    </>
                                 ) : (
                                     <div className="text-3xl font-bold text-slate-300">-</div>
                                 )}
@@ -215,6 +246,13 @@ export default function JobResultsPage() {
                                         />
                                     </div>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* Docking Results Table */}
+                        {job.status === 'SUCCEEDED' && analysis?.poses && (
+                            <div className="p-8 bg-white">
+                                <DockingResultsTable poses={analysis.poses} />
                             </div>
                         )}
 
