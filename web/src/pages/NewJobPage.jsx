@@ -207,12 +207,21 @@ export default function NewJobPage() {
         }
     }
 
-    const uploadFile = async (url, file) => {
+    const upload File = async (url, file) => {
+        // Extract content-type from presigned URL query params
+        // S3 presigned URLs include the ContentType as a query parameter
+        // We MUST use the exact same Content-Type in the PUT request or we get 403
+        const urlObj = new URL(url)
+        const contentType = urlObj.searchParams.get('content-type') ||
+            urlObj.searchParams.get('ContentType') ||
+            file.type ||
+            'application/octet-stream'
+
         const res = await fetch(url, {
             method: 'PUT',
             body: file,
             headers: {
-                'Content-Type': file.type || 'application/octet-stream'
+                'Content-Type': contentType
             }
         })
         if (!res.ok) throw new Error(`Failed to upload ${file.name}`)
