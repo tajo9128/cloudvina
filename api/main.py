@@ -570,6 +570,9 @@ async def get_interaction_analysis(
             "from_cache": False
         }
 
+    except HTTPException:
+        raise
+    except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to analyze interactions: {str(e)}"
