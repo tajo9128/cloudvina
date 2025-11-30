@@ -487,12 +487,92 @@ async def get_docking_analysis(
             "from_cache": False
         }
     
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to analyze docking results: {str(e)}"
+        )
+
+
+@app.get("/jobs/{job_id}/interactions", response_model=dict)
+async def get_interaction_analysis(
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Get protein-ligand interaction analysis (H-bonds, hydrophobic contacts)
+    Fetches PDB/PDBQT from S3 and runs geometric analysis
+    """
+    try:
+        from auth import get_authenticated_client
+        from services.interaction_analyzer import InteractionAnalyzer
+        import boto3
+        
+        auth_client = get_authenticated_client(credentials.credentials)
+
+        # Get job from database
+        job_response = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
+        
+        if not job_response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+        
+        job = job_response.data[0]
+        
+        if job['status'] != 'SUCCEEDED':
+            return {"job_id": job_id, "status": job['status'], "interactions": None, "message": "Job not completed"}
+        
+        # Return cached results if available
+        if job.get('interaction_results'):
+            return {
+                "job_id": job_id,
+                "status": job['status'],
+                "interactions": job['interaction_results'],
+                "from_cache": True
+            }
+            
+        # Fetch files from S3
+        s3 = boto3.client('s3')
+        bucket = os.getenv('S3_BUCKET_NAME')
+        
+        try:
+            # Fetch Receptor PDB
+            # Note: We need to know the receptor filename or key. 
+            # Usually stored in job metadata or we assume a standard name if we renamed it.
+            # But the job record has 'receptor_filename'. We stored it in S3 under {job_id}/receptor.pdb usually?
+            # Let's check how submit_job stores it.
+            # Assuming standard keys: {job_id}/receptor.pdb and {job_id}/output.pdbqt
+            
+            receptor_obj = s3.get_object(Bucket=bucket, Key=f"{job_id}/receptor.pdb")
+            receptor_content = receptor_obj['Body'].read().decode('utf-8')
+            
+            output_obj = s3.get_object(Bucket=bucket, Key=f"{job_id}/output.pdbqt")
+            output_content = output_obj['Body'].read().decode('utf-8')
+            
+        except Exception as e:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Files not found in S3: {str(e)}")
+
+        # Run Analysis
+        analyzer = InteractionAnalyzer()
+        interactions = analyzer.analyze_interactions(receptor_content, output_content)
+        
+        # Cache results
+        auth_client.table('jobs').update({
+            'interaction_results': interactions
+        }).eq('id', job_id).execute()
+        
+        return {
+            "job_id": job_id,
+            "status": job['status'],
+            "interactions": interactions,
+            "from_cache": False
+        }
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to analyze docking results: {str(e)}"
+            detail=f"Failed to analyze interactions: {str(e)}"
         )
 
 
