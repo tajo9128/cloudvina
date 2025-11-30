@@ -323,15 +323,29 @@ async def start_job(
         job = job_response.data[0]
         
         # Generate config file
-        from services.config_generator import generate_vina_config
-        config_key = generate_vina_config(job_id, grid_params=None)  # TODO: Accept grid params from frontend
+        try:
+            from services.config_generator import generate_vina_config
+            config_key = generate_vina_config(job_id, grid_params=None)  # TODO: Accept grid params from frontend
+        except Exception as e:
+            print(f"Config generation failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to generate config file: {str(e)}"
+            )
         
         # Submit to AWS Batch
-        batch_job_id = submit_batch_job(
-            job_id,
-            job['receptor_s3_key'],
-            job['ligand_s3_key']
-        )
+        try:
+            batch_job_id = submit_batch_job(
+                job_id,
+                job['receptor_s3_key'],
+                job['ligand_s3_key']
+            )
+        except Exception as e:
+            print(f"Batch submission failed: {str(e)}")
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Failed to submit batch job: {str(e)}"
+            )
         
         # Update job status
         auth_client.table('jobs').update({

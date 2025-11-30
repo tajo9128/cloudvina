@@ -1,9 +1,9 @@
 import os
 import boto3
 from botocore.exceptions import ClientError
+from aws_services import S3_BUCKET
 
 s3_client = boto3.client('s3')
-S3_BUCKET = os.getenv('S3_BUCKET_NAME')
 
 def generate_vina_config(job_id: str, grid_params: dict = None):
     """

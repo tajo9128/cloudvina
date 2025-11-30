@@ -173,7 +173,10 @@ export default function NewJobPage() {
             })
             console.log('Step 3 response:', startRes.status, startRes.ok)
 
-            if (!startRes.ok) throw new Error('Failed to start job')
+            if (!startRes.ok) {
+                const err = await startRes.json()
+                throw new Error(err.detail || 'Failed to start job')
+            }
 
             console.log('Job submitted successfully!')
             // Instead of navigating, set state to show progress
