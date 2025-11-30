@@ -607,10 +607,13 @@ async def export_job_json(
     return await _generate_job_export(job_id, current_user, credentials, 'json')
 
 async def _generate_job_export(job_id, current_user, credentials, format_type):
-    """Helper to generate exports"""
+    """Helper to generate exports - auto-triggers analysis if missing"""
     try:
         from auth import get_authenticated_client
         from services.export import ExportService
+        from services.vina_parser import parse_vina_log
+        from services.interaction_analyzer import InteractionAnalyzer
+        import boto3
         
         auth_client = get_authenticated_client(credentials.credentials)
         job_response = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
@@ -620,9 +623,50 @@ async def _generate_job_export(job_id, current_user, credentials, format_type):
         
         job = job_response.data[0]
         
-        # Get Analysis & Interaction Data for PDF
+        # Get Analysis & Interaction Data
         analysis = job.get('docking_results')
         interactions = job.get('interaction_results')
+        
+        # Auto-trigger analysis if missing and job succeeded
+        if job['status'] == 'SUCCEEDED' and (not analysis or not interactions):
+            s3 = boto3.client('s3')
+            bucket = os.getenv('S3_BUCKET_NAME')
+            
+            try:
+                # Parse docking results if missing
+                if not analysis:
+                    log_obj = s3.get_object(Bucket=bucket, Key=f"{job_id}/log.txt")
+                    log_content = log_obj['Body'].read().decode('utf-8')
+                    analysis = parse_vina_log(log_content)
+                    
+                    # Save to DB
+                    auth_client.table('jobs').update({
+                        'best_affinity': analysis.get('best_affinity'),
+                        'num_poses': analysis.get('num_poses'),
+                        'energy_range_min': analysis.get('energy_range_min'),
+                        'energy_range_max': analysis.get('energy_range_max'),
+                        'docking_results': analysis
+                    }).eq('id', job_id).execute()
+                
+                # Analyze interactions if missing
+                if not interactions:
+                    receptor_obj = s3.get_object(Bucket=bucket, Key=f"{job_id}/receptor.pdb")
+                    receptor_content = receptor_obj['Body'].read().decode('utf-8')
+                    
+                    output_obj = s3.get_object(Bucket=bucket, Key=f"{job_id}/output.pdbqt")
+                    output_content = output_obj['Body'].read().decode('utf-8')
+                    
+                    analyzer = InteractionAnalyzer()
+                    interactions = analyzer.analyze_interactions(receptor_content, output_content)
+                    
+                    # Save to DB
+                    auth_client.table('jobs').update({
+                        'interaction_results': interactions
+                    }).eq('id', job_id).execute()
+                    
+            except Exception as e:
+                # If analysis fails, continue with whatever data we have
+                print(f"Warning: Could not auto-generate analysis: {e}")
 
         if format_type == 'pdf':
             return ExportService.export_job_pdf(job, analysis, interactions)
