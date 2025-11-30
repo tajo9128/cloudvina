@@ -567,12 +567,72 @@ async def get_interaction_analysis(
             "from_cache": False
         }
 
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to analyze interactions: {str(e)}"
+        )
+
+
+@app.get("/jobs/{job_id}/export/pdf")
+async def export_job_pdf(
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """Generate and download comprehensive PDF report"""
+    return await _generate_job_export(job_id, current_user, credentials, 'pdf')
+
+@app.get("/jobs/{job_id}/export/csv")
+async def export_job_csv(
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """Export job details to CSV"""
+    return await _generate_job_export(job_id, current_user, credentials, 'csv')
+
+@app.get("/jobs/{job_id}/export/json")
+async def export_job_json(
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """Export job details to JSON"""
+    return await _generate_job_export(job_id, current_user, credentials, 'json')
+
+async def _generate_job_export(job_id, current_user, credentials, format_type):
+    """Helper to generate exports"""
+    try:
+        from auth import get_authenticated_client
+        from services.export import ExportService
+        
+        auth_client = get_authenticated_client(credentials.credentials)
+        job_response = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
+        
+        if not job_response.data:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+        
+        job = job_response.data[0]
+        
+        # Get Analysis & Interaction Data for PDF
+        analysis = job.get('docking_results')
+        interactions = job.get('interaction_results')
+
+        if format_type == 'pdf':
+            return ExportService.export_job_pdf(job, analysis, interactions)
+        elif format_type == 'csv':
+            return ExportService.export_jobs_csv([job])
+        elif format_type == 'json':
+            return ExportService.export_jobs_json([job])
+        else:
+            raise HTTPException(status_code=400, detail="Invalid format")
+
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to analyze interactions: {str(e)}"
+            detail=f"Failed to export job: {str(e)}"
         )
 
 
