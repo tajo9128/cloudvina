@@ -4,12 +4,14 @@ import { supabase } from '../supabaseClient'
 import MoleculeViewer from '../components/MoleculeViewer'
 import ExportButtons from '../components/ExportButtons'
 import DockingResultsTable from '../components/DockingResultsTable'
+import InteractionTable from '../components/InteractionTable'
 import { API_URL } from '../config'
 
 export default function JobResultsPage() {
     const { jobId } = useParams()
     const [job, setJob] = useState(null)
     const [analysis, setAnalysis] = useState(null)
+    const [interactions, setInteractions] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [elapsedTime, setElapsedTime] = useState(0)
@@ -75,6 +77,11 @@ export default function JobResultsPage() {
                 fetchAnalysis(session.access_token)
             }
 
+            // Fetch interactions if job succeeded and not already fetched
+            if (data.status === 'SUCCEEDED' && !interactions) {
+                fetchInteractions(session.access_token)
+            }
+
             // Fetch PDBQT data if succeeded
             if (data.status === 'SUCCEEDED' && data.download_urls?.output && !pdbqtData) {
                 try {
@@ -106,6 +113,23 @@ export default function JobResultsPage() {
             }
         } catch (err) {
             console.error('Failed to fetch analysis:', err)
+        }
+    }
+
+    const fetchInteractions = async (token) => {
+        try {
+            const res = await fetch(`${API_URL}/jobs/${jobId}/interactions`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            if (res.ok) {
+                const data = await res.json()
+                setInteractions(data.interactions)
+            }
+        } catch (err) {
+            console.error('Failed to fetch interactions:', err)
         }
     }
 
@@ -253,6 +277,13 @@ export default function JobResultsPage() {
                         {job.status === 'SUCCEEDED' && analysis?.poses && (
                             <div className="p-8 bg-white">
                                 <DockingResultsTable poses={analysis.poses} />
+                            </div>
+                        )}
+
+                        {/* Interaction Analysis Table */}
+                        {job.status === 'SUCCEEDED' && interactions && (
+                            <div className="p-8 bg-white border-t border-slate-100">
+                                <InteractionTable interactions={interactions} />
                             </div>
                         )}
 
