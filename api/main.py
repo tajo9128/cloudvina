@@ -320,6 +320,10 @@ async def start_job(
         
         job = job_response.data[0]
         
+        # Generate config file
+        from services.config_generator import generate_vina_config
+        config_key = generate_vina_config(job_id, grid_params=None)  # TODO: Accept grid params from frontend
+        
         # Submit to AWS Batch
         batch_job_id = submit_batch_job(
             job_id,
@@ -414,7 +418,8 @@ async def get_job_status(
         if job['status'] == 'SUCCEEDED':
             download_urls = {
                 'output': generate_presigned_download_url(job_id, 'output.pdbqt'),
-                'log': generate_presigned_download_url(job_id, 'log.txt')
+                'log': generate_presigned_download_url(job_id, 'log.txt'),
+                'config': generate_presigned_download_url(job_id, 'config.txt')
             }
         
         return {
