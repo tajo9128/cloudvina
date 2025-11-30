@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
+import PreparationProgress from '../components/PreparationProgress'
 
 export default function NewJobPage() {
     const navigate = useNavigate()
@@ -9,6 +10,7 @@ export default function NewJobPage() {
     const [receptorFile, setReceptorFile] = useState(null)
     const [ligandFile, setLigandFile] = useState(null)
     const [error, setError] = useState(null)
+    const [preparationStep, setPreparationStep] = useState(0) // 0=not started, 1-4=prep steps
 
     // Job Progress State
     const [submittedJob, setSubmittedJob] = useState(null)
@@ -145,6 +147,20 @@ export default function NewJobPage() {
             console.log('Receptor uploaded')
             await uploadFile(upload_urls.ligand, ligandFile)
             console.log('Ligand uploaded')
+
+            // 2.5 Show preparation progress
+            setError(null)
+            setPreparationStep(1) // Protein preparation
+            await new Promise(r => setTimeout(r, 1500))
+
+            setPreparationStep(2) // Ligand preparation
+            await new Promise(r => setTimeout(r, 1500))
+
+            setPreparationStep(3) // Config generation
+            await new Promise(r => setTimeout(r, 1000))
+
+            setPreparationStep(4) // Grid file ready
+            await new Promise(r => setTimeout(r, 1000))
 
             // 3. Start Job with Retry
             console.log('Step 3: Starting job...')
@@ -295,6 +311,11 @@ export default function NewJobPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Preparation Progress */}
+                        {preparationStep > 0 && !submittedJob && (
+                            <PreparationProgress currentStep={preparationStep} />
+                        )}
 
                         {error && (
                             <div className="bg-red-50 border border-red-100 text-red-600 p-4 rounded-xl text-sm flex items-start gap-3">
