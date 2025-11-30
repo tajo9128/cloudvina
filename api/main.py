@@ -347,6 +347,33 @@ async def start_job(
             detail=f"Failed to start job: {str(e)}"
         )
 
+@app.get("/jobs", response_model=list)
+async def list_jobs(
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """Get all jobs for the current user"""
+    try:
+        from auth import get_authenticated_client
+        
+        auth_client = get_authenticated_client(credentials.credentials)
+        
+        # Fetch all jobs for this user, ordered by creation date
+        response = auth_client.table('jobs')\
+            .select('*')\
+            .eq('user_id', current_user.id)\
+            .order('created_at', desc=True)\
+            .execute()
+        
+        return response.data if response.data else []
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch jobs: {str(e)}"
+        )
+
+
 @app.get("/jobs/{job_id}", response_model=dict)
 async def get_job_status(
     job_id: str,
