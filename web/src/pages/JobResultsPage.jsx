@@ -110,9 +110,14 @@ export default function JobResultsPage() {
             if (res.ok) {
                 const data = await res.json()
                 setAnalysis(data.analysis)
+            } else {
+                // Set empty analysis to prevent retrying
+                console.error('Analysis fetch failed:', res.status)
+                setAnalysis({ error: true })
             }
         } catch (err) {
             console.error('Failed to fetch analysis:', err)
+            setAnalysis({ error: true })
         }
     }
 
@@ -127,9 +132,13 @@ export default function JobResultsPage() {
             if (res.ok) {
                 const data = await res.json()
                 setInteractions(data.interactions)
+            } else {
+                console.error('Interactions fetch failed:', res.status)
+                setInteractions({ error: true })
             }
         } catch (err) {
             console.error('Failed to fetch interactions:', err)
+            setInteractions({ error: true })
         }
     }
 
@@ -274,16 +283,32 @@ export default function JobResultsPage() {
                         )}
 
                         {/* Docking Results Table */}
-                        {job.status === 'SUCCEEDED' && analysis?.poses && (
+                        {job.status === 'SUCCEEDED' && analysis && !analysis.error && analysis.poses && (
                             <div className="p-8 bg-white">
                                 <DockingResultsTable poses={analysis.poses} />
                             </div>
                         )}
+                        {job.status === 'SUCCEEDED' && analysis?.error && (
+                            <div className="p-8 bg-white">
+                                <div className="text-center py-8 text-slate-500">
+                                    <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <p>Docking results analysis unavailable</p>
+                                </div>
+                            </div>
+                        )}
 
                         {/* Interaction Analysis Table */}
-                        {job.status === 'SUCCEEDED' && interactions && (
+                        {job.status === 'SUCCEEDED' && interactions && !interactions.error && (
                             <div className="p-8 bg-white border-t border-slate-100">
                                 <InteractionTable interactions={interactions} />
+                            </div>
+                        )}
+                        {job.status === 'SUCCEEDED' && interactions?.error && (
+                            <div className="p-8 bg-white border-t border-slate-100">
+                                <div className="text-center py-8 text-slate-500">
+                                    <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <p>Interaction analysis unavailable</p>
+                                </div>
                             </div>
                         )}
 

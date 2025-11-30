@@ -104,8 +104,8 @@ class ExportService:
             ['Job ID', job.get('job_id', 'N/A')],
             ['Status', job.get('status', 'N/A')],
             ['Date', job.get('created_at', 'N/A')],
-            ['Receptor', job.get('receptor_filename', 'Unknown')],
-            ['Ligand', job.get('ligand_filename', 'Unknown')]
+            ['Receptor', job.get('receptor_filename') or (job.get('receptor_s3_key', '').split('/')[-1] if job.get('receptor_s3_key') else 'Unknown')],
+            ['Ligand', job.get('ligand_filename') or (job.get('ligand_s3_key', '').split('/')[-1] if job.get('ligand_s3_key') else 'Unknown')]
         ]
         
         if analysis:

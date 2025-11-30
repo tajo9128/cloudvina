@@ -272,7 +272,9 @@ async def submit_job(
             'user_id': current_user.id,
             'status': 'PENDING',
             'receptor_s3_key': receptor_key,
-            'ligand_s3_key': ligand_key
+            'ligand_s3_key': ligand_key,
+            'receptor_filename': request.receptor_filename,
+            'ligand_filename': request.ligand_filename
         }).execute()
         
         # Increment daily usage (for rate limiting)
