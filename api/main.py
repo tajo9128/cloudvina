@@ -20,6 +20,8 @@ from aws_services import (
     submit_batch_job,
     get_batch_job_status
 )
+from fastapi.responses import StreamingResponse
+from services.ai_explainer import AIExplainer
 from tools import router as tools_router
 from admin import router as admin_router
 
@@ -625,6 +627,48 @@ async def get_interaction_analysis(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to analyze interactions: {str(e)}"
         )
+
+
+@app.post("/jobs/{job_id}/explain")
+async def explain_results(
+    job_id: str,
+    request: dict,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Get AI explanation of docking results
+    """
+    auth_client = get_authenticated_client(credentials.credentials)
+    
+    # Get job from database
+    job_response = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
+    
+    if not job_response.data:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found"
+        )
+    
+    job = job_response.data[0]
+    
+    # Get analysis and interactions
+    analysis = job.get('docking_results')
+    interactions = job.get('interaction_results')
+    
+    explainer = AIExplainer()
+    user_question = request.get('question')
+    
+    async def generate():
+        async for chunk in explainer.explain_results(
+            job, analysis, interactions, user_question
+        ):
+            yield chunk
+    
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream"
+    )
 
 
 @app.get("/jobs/{job_id}/export/pdf")

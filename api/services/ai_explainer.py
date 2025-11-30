@@ -1,0 +1,139 @@
+import os
+import httpx
+from typing import Dict, AsyncGenerator
+
+class AIExplainer:
+    """AI service for explaining docking results"""
+    
+    def __init__(self):
+        self.api_key = os.getenv('OPENROUTER_API_KEY')
+        self.base_url = "https://openrouter.ai/api/v1"
+        self.model = "x-ai/grok-beta"  # Grok model
+    
+    async def explain_results(
+        self, 
+        job_data: Dict,
+        analysis: Dict,
+        interactions: Dict,
+        user_question: str = None
+    ) -> AsyncGenerator[str, None]:
+        """
+        Generate student-friendly explanation
+        Streams response for real-time display
+        """
+        if not self.api_key:
+            yield "data: Error: OpenRouter API key not configured."
+            return
+
+        prompt = self._create_prompt(
+            job_data, analysis, interactions, user_question
+        )
+        
+        try:
+            async with httpx.AsyncClient() as client:
+                response = await client.post(
+                    f"{self.base_url}/chat/completions",
+                    headers={
+                        "Authorization": f"Bearer {self.api_key}",
+                        "HTTP-Referer": "https://biodockify.com",
+                        "X-Title": "BioDockify"
+                    },
+                    json={
+                        "model": self.model,
+                        "messages": [
+                            {
+                                "role": "system",
+                                "content": self._get_system_prompt()
+                            },
+                            {
+                                "role": "user",
+                                "content": prompt
+                            }
+                        ],
+                        "stream": True,
+                        "temperature": 0.7,
+                        "max_tokens": 1000
+                    },
+                    timeout=30.0
+                )
+                
+                if response.status_code != 200:
+                    yield f"data: Error: API returned status {response.status_code}"
+                    return
+
+                # Stream response
+                async for line in response.aiter_lines():
+                    if line.startswith("data: "):
+                        yield line[6:]  # Remove "data: " prefix
+        except Exception as e:
+            yield f"data: Error: {str(e)}"
+    
+    def _get_system_prompt(self) -> str:
+        """System prompt for educational context"""
+        return """You are a friendly molecular docking tutor for pharmacy and chemistry students.
+Your job is to explain docking results in simple, clear language.
+
+Guidelines:
+1. Avoid jargon - when you must use technical terms, explain them
+2. Use analogies (lock-and-key, puzzle pieces, etc.)
+3. Focus on practical drug discovery meaning
+4. Be encouraging and educational
+5. Keep responses concise (2-3 paragraphs max)
+6. Use emojis sparingly but appropriately
+
+Remember: These are students learning drug design, not experts."""
+    
+    def _create_prompt(
+        self,
+        job_data: Dict,
+        analysis: Dict,
+        interactions: Dict,
+        user_question: str = None
+    ) -> str:
+        """Create detailed prompt with results"""
+        
+        # Extract key data
+        best_affinity = analysis.get('best_affinity', 'N/A') if analysis else 'N/A'
+        num_poses = analysis.get('num_poses', 0) if analysis else 0
+        receptor = job_data.get('receptor_filename', 'Unknown')
+        ligand = job_data.get('ligand_filename', 'Unknown')
+        
+        # Interaction counts
+        h_bonds = len(interactions.get('hydrogen_bonds', [])) if interactions else 0
+        hydrophobic = len(interactions.get('hydrophobic_contacts', [])) if interactions else 0
+        
+        if user_question:
+            # Answering specific question
+            prompt = f"""Student Question: {user_question}
+
+Docking Results Context:
+- Protein: {receptor}
+- Ligand: {ligand}
+- Best Binding Affinity: {best_affinity} kcal/mol
+- Docking Poses Found: {num_poses}
+- Hydrogen Bonds: {h_bonds}
+- Hydrophobic Contacts: {hydrophobic}
+
+Please answer their question using this data."""
+        else:
+            # General explanation
+            prompt = f"""Explain this molecular docking result to a pharmacy student:
+
+**Experiment:**
+- Protein Target: {receptor}
+- Drug Candidate: {ligand}
+
+**Results:**
+- Best Binding Affinity: {best_affinity} kcal/mol
+- Number of Docking Poses: {num_poses}
+- Hydrogen Bonds Formed: {h_bonds}
+- Hydrophobic Contacts: {hydrophobic}
+
+**Please explain:**
+1. What does this binding affinity mean? Is it good or bad?
+2. What do the interactions tell us about how well the drug binds?
+3. Would this be a promising drug candidate based on these results?
+
+Keep it simple and educational!"""
+        
+        return prompt

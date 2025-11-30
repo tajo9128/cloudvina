@@ -6,6 +6,7 @@ import ExportButtons from '../components/ExportButtons'
 import DockingResultsTable from '../components/DockingResultsTable'
 import InteractionTable from '../components/InteractionTable'
 import { API_URL } from '../config'
+import AIExplainer from '../components/AIExplainer'
 
 export default function JobResultsPage() {
     const { jobId } = useParams()
@@ -297,6 +298,12 @@ export default function JobResultsPage() {
                             </div>
                         )}
 
+
+
+                        // ... existing imports
+
+                        // ... inside component
+
                         {/* Interaction Analysis Table */}
                         {job.status === 'SUCCEEDED' && interactions && !interactions.error && (
                             <div className="p-8 bg-white border-t border-slate-100">
@@ -309,6 +316,13 @@ export default function JobResultsPage() {
                                     <svg className="w-12 h-12 mx-auto mb-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                                     <p>Interaction analysis unavailable</p>
                                 </div>
+                            </div>
+                        )}
+
+                        {/* AI Explainer */}
+                        {job.status === 'SUCCEEDED' && (
+                            <div className="p-8 bg-slate-50 border-t border-slate-200">
+                                <AIExplainer jobId={jobId} />
                             </div>
                         )}
 
