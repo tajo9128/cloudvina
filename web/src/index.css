@@ -2,99 +2,44 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary-blue: #0A2463;
-  --primary-blue-dark: #051430;
-  --primary-blue-light: #1e3a8a;
-
-  --accent-cyan: #00D9FF;
-  --accent-cyan-glow: #00B8D4;
-  --accent-purple: #8B5CF6;
-
-  --text-white: #FFFFFF;
-  --text-light: #E2E8F0;
-  --text-gray: #94A3B8;
-}
-
-body {
-  margin: 0;
-  font-family: 'Inter', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background-color: var(--primary-blue);
-  color: var(--text-light);
-}
-
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: 'Space Grotesk', sans-serif;
-  letter-spacing: -0.02em;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 217, 255, 0.5);
-}
-
-.btn-cyan-outline {
-  background: transparent;
-  border: 2px solid #00D9FF;
-  color: #00D9FF;
-  font-weight: 700;
-  font-family: 'Space Grotesk', sans-serif;
-  transition: all 0.3s ease;
-}
-
-.btn-cyan-outline:hover {
-  background: rgba(0, 217, 255, 0.1);
-  box-shadow: 0 0 20px rgba(0, 217, 255, 0.2);
-}
-
-.glass-modern {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-
-.glass-dark {
-  background: rgba(10, 36, 99, 0.6);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(0px);
+@layer base {
+  html {
+    font-family: 'Inter', sans-serif;
+    scroll-behavior: smooth;
   }
 
-  50% {
-    transform: translateY(-10px);
-  }
-
-  100% {
-    transform: translateY(0px);
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
   }
 }
 
-.animate-float {
-  animation: float 6s ease-in-out infinite;
+@layer components {
+  .btn-primary {
+    @apply px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors font-medium shadow-sm hover:shadow;
+  }
+
+  .btn-secondary {
+    @apply px-4 py-2 bg-white text-slate-700 border border-slate-300 rounded-lg hover:bg-slate-50 transition-colors font-medium shadow-sm;
+  }
+
+  .card {
+    @apply bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden;
+  }
+
+  .input-field {
+    @apply w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none transition-all;
+  }
 }
 
+/* Custom Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #051430;
+  @apply bg-slate-100;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1e3a8a;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #00D9FF;
+  @apply bg-slate-300 rounded-full hover:bg-slate-400 transition-colors;
 }
