@@ -20,6 +20,7 @@ export default function JobResultsPage() {
     const ESTIMATED_DURATION = 300 // 5 minutes in seconds
 
     useEffect(() => {
+        console.log('JobResultsPage mounted, checking for updates...')
         let timer
         if (job && ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(job.status)) {
             // Calculate elapsed time based on created_at if available, otherwise start from 0
