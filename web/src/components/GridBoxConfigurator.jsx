@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function GridBoxConfigurator({ onGridChange }) {
+export default function GridBoxConfigurator({ onGridChange, onConfigChange }) {
     const [method, setMethod] = useState('auto')
     const [center, setCenter] = useState({ x: 0, y: 0, z: 0 })
     const [size, setSize] = useState({ x: 20, y: 20, z: 20 })
@@ -19,14 +19,16 @@ export default function GridBoxConfigurator({ onGridChange }) {
     }
 
     const updateGrid = (newCenter, newSize) => {
-        if (onGridChange) {
-            onGridChange({
-                grid_center_x: newCenter.x,
-                grid_center_y: newCenter.y,
-                grid_center_z: newCenter.z,
-                grid_size_x: newSize.x,
-                grid_size_y: newSize.y,
-                grid_size_z: newSize.z
+        // Support both prop names for compatibility
+        const callback = onConfigChange || onGridChange
+        if (callback) {
+            callback({
+                center_x: newCenter.x,
+                center_y: newCenter.y,
+                center_z: newCenter.z,
+                size_x: newSize.x,
+                size_y: newSize.y,
+                size_z: newSize.z
             })
         }
     }
