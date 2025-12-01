@@ -133,14 +133,16 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
             }
         } catch (error) {
             console.error('AI explanation error:', error)
+            const errorMessage = error.message || 'Unknown error'
+
             setMessages(prev => {
                 const newMsgs = [...prev]
                 if (newMsgs.length > 0 && newMsgs[newMsgs.length - 1].role === 'assistant') {
-                    newMsgs[newMsgs.length - 1].content = '❌ Sorry, I encountered an error. Please try again.'
+                    newMsgs[newMsgs.length - 1].content = `❌ Sorry, I encountered an error: ${errorMessage}\n\nPlease ensure:\n- You are logged in\n- The API server is running\n- The OpenRouter API key is configured\n\nTry reloading the page and clicking "Explain My Results" again.`
                 } else {
                     newMsgs.push({
                         role: 'assistant',
-                        content: '❌ Sorry, I encountered an error. Please try again.'
+                        content: `❌ Sorry, I encountered an error: ${errorMessage}\n\nPlease ensure:\n- You are logged in\n- The API server is running\n- The OpenRouter API key is configured\n\nTry reloading the page and clicking "Explain My Results" again.`
                     })
                 }
                 return newMsgs
@@ -249,8 +251,8 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
                                 className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
                             >
                                 <div className={`max-w-[80%] rounded-lg p-3 whitespace-pre-wrap ${msg.role === 'user'
-                                        ? 'bg-blue-600 text-white'
-                                        : 'bg-slate-100 text-slate-900'
+                                    ? 'bg-blue-600 text-white'
+                                    : 'bg-slate-100 text-slate-900'
                                     }`}>
                                     {msg.content}
                                 </div>
