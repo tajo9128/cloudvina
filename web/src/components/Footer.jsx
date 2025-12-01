@@ -65,6 +65,12 @@ export default function Footer() {
                                 </Link>
                             </li>
                             <li>
+                                <Link to="/tools/converter" className="text-slate-400 hover:text-primary-500 transition-colors text-sm flex items-center gap-2 group">
+                                    <span className="w-0 h-px bg-primary-500 group-hover:w-4 transition-all duration-300"></span>
+                                    File Converter
+                                </Link>
+                            </li>
+                            <li>
                                 <Link to="/dashboard" className="text-slate-400 hover:text-primary-500 transition-colors text-sm flex items-center gap-2 group">
                                     <span className="w-0 h-px bg-primary-500 group-hover:w-4 transition-all duration-300"></span>
                                     Dashboard
@@ -138,7 +144,7 @@ export default function Footer() {
                             </button>
                         </form>
                         <p className="text-xs text-slate-500 mt-3">
-                            By subscribing, you agree to our Privacy Policy
+                            By subscribing, you agree to our <Link to="/privacy" className="text-primary-500 hover:underline">Privacy Policy</Link>
                         </p>
                     </div>
                 </div>
@@ -149,8 +155,12 @@ export default function Footer() {
                 <div className="container mx-auto px-4 py-6">
                     <div className="flex flex-col md:flex-row justify-between items-center gap-4">
                         {/* Copyright */}
-                        <div className="text-sm text-slate-500 text-center md:text-left">
-                            © {new Date().getFullYear()} BioDockify. All rights reserved. | Powered by AutoDock Vina
+                        <div className="text-sm text-slate-500 text-center md:text-left flex flex-col md:flex-row gap-2 md:gap-6">
+                            <span>© {new Date().getFullYear()} BioDockify. All rights reserved.</span>
+                            <div className="flex gap-4">
+                                <Link to="/privacy" className="hover:text-primary-500 transition-colors">Privacy Policy</Link>
+                                <Link to="/terms" className="hover:text-primary-500 transition-colors">Terms of Service</Link>
+                            </div>
                         </div>
 
                         {/* Social Media Icons */}
