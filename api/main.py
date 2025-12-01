@@ -2,7 +2,7 @@
 BioDockify API - FastAPI Backend
 Handles authentication, job submission, and AWS Batch orchestration
 """
-from fastapi import FastAPI, Depends, HTTPException, status, Security, Body
+from fastapi import FastAPI, Depends, HTTPException, status, Security, Body, UploadFile, File
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
