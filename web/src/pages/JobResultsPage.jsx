@@ -102,7 +102,7 @@ export default function JobResultsPage() {
 
     const fetchAnalysis = async (token) => {
         try {
-            const res = await fetch(`${API_URL}/jobs/${jobId}/analysis`, {
+            const res = await fetch(`${API_URL}/jobs/${jobId}/analyze`, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }

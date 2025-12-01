@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import PreparationProgress from '../components/PreparationProgress'
+import GridBoxConfigurator from '../components/GridBoxConfigurator'
 
 export default function NewJobPage() {
     const navigate = useNavigate()
@@ -11,6 +12,16 @@ export default function NewJobPage() {
     const [ligandFile, setLigandFile] = useState(null)
     const [error, setError] = useState(null)
     const [preparationStep, setPreparationStep] = useState(0) // 0=not started, 1-4=prep steps
+
+    // Grid Box State
+    const [gridParams, setGridParams] = useState({
+        center_x: 0,
+        center_y: 0,
+        center_z: 0,
+        size_x: 20,
+        size_y: 20,
+        size_z: 20
+    })
 
     // Job Progress State
     const [submittedJob, setSubmittedJob] = useState(null)
@@ -127,7 +138,6 @@ export default function NewJobPage() {
                     ligand_filename: ligandFile.name
                 })
             })
-            console.log('Step 1 response:', createRes.status, createRes.ok)
 
             if (!createRes.ok) {
                 const err = await createRes.json()
@@ -140,13 +150,11 @@ export default function NewJobPage() {
             const { job_id, upload_urls } = await createRes.json()
             console.log('Step 1 complete. Job ID:', job_id)
 
-            // 2. Upload Files (No retry needed usually, S3 is reliable)
+            // 2. Upload Files
             console.log('Step 2: Uploading files to S3...')
             setError('📤 Uploading files...')
             await uploadFile(upload_urls.receptor, receptorFile)
-            console.log('Receptor uploaded')
             await uploadFile(upload_urls.ligand, ligandFile)
-            console.log('Ligand uploaded')
 
             // 2.5 Show preparation progress
             setError(null)
@@ -162,16 +170,27 @@ export default function NewJobPage() {
             setPreparationStep(4) // Grid file ready
             await new Promise(r => setTimeout(r, 1000))
 
-            // 3. Start Job with Retry
+            // 3. Start Job with Grid Params
             console.log('Step 3: Starting job...')
             setError('🚀 Starting simulation...')
+
             const startRes = await fetchWithRetry(`${API_URL}/jobs/${job_id}/start`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${session.access_token}`
-                }
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    grid_params: {
+                        grid_center_x: parseFloat(gridParams.center_x),
+                        grid_center_y: parseFloat(gridParams.center_y),
+                        grid_center_z: parseFloat(gridParams.center_z),
+                        grid_size_x: parseFloat(gridParams.size_x),
+                        grid_size_y: parseFloat(gridParams.size_y),
+                        grid_size_z: parseFloat(gridParams.size_z)
+                    }
+                })
             })
-            console.log('Step 3 response:', startRes.status, startRes.ok)
 
             if (!startRes.ok) {
                 const err = await startRes.json()
@@ -179,7 +198,6 @@ export default function NewJobPage() {
             }
 
             console.log('Job submitted successfully!')
-            // Instead of navigating, set state to show progress
             setSubmittedJob({
                 job_id,
                 status: 'SUBMITTED',
@@ -188,7 +206,6 @@ export default function NewJobPage() {
 
         } catch (err) {
             console.error('Submission error:', err)
-            // Check if it's an email verification error
             if (err.message.includes('verify your email')) {
                 setError(
                     <div className="flex flex-col items-start gap-2">
@@ -220,9 +237,6 @@ export default function NewJobPage() {
     }
 
     const uploadFile = async (url, file) => {
-        // Extract content-type from presigned URL query params
-        // S3 presigned URLs include the ContentType as a query parameter
-        // We MUST use the exact same Content-Type in the PUT request or we get 403
         const urlObj = new URL(url)
         const contentType = urlObj.searchParams.get('content-type') ||
             urlObj.searchParams.get('ContentType') ||
@@ -313,6 +327,18 @@ export default function NewJobPage() {
                                     )}
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Grid Box Configuration */}
+                        <div className="mb-8">
+                            <h3 className="text-lg font-bold text-slate-800 mb-4">Grid Box Configuration</h3>
+                            <p className="text-slate-500 text-sm mb-4">
+                                Define the search space for docking. The box should be centered on the binding site and large enough to contain the ligand.
+                            </p>
+                            <GridBoxConfigurator
+                                onConfigChange={setGridParams}
+                                initialConfig={gridParams}
+                            />
                         </div>
 
                         {/* Preparation Progress */}

@@ -2,7 +2,7 @@
 BioDockify API - FastAPI Backend
 Handles authentication, job submission, and AWS Batch orchestration
 """
-from fastapi import FastAPI, Depends, HTTPException, status, Security
+from fastapi import FastAPI, Depends, HTTPException, status, Security, Body
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.sessions import SessionMiddleware
@@ -303,6 +303,7 @@ async def submit_job(
 @app.post("/jobs/{job_id}/start")
 async def start_job(
     job_id: str,
+    request: dict = Body(default={}),
     current_user: dict = Depends(get_current_user),
     credentials: HTTPAuthorizationCredentials = Security(security)
 ):
@@ -324,10 +325,13 @@ async def start_job(
         
         job = job_response.data[0]
         
+        # Extract grid parameters from request
+        grid_params = request.get('grid_params', None)
+        
         # Generate config file
         try:
             from services.config_generator import generate_vina_config
-            config_key = generate_vina_config(job_id, grid_params=None)  # TODO: Accept grid params from frontend
+            config_key = generate_vina_config(job_id, grid_params=grid_params)
         except Exception as e:
             print(f"Config generation failed: {str(e)}")
             raise HTTPException(
