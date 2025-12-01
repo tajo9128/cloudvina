@@ -432,6 +432,50 @@ export default function HomePage() {
                 </div>
             </section>
 
+            {/* FAQ Section */}
+            <section className="py-24 bg-slate-50 border-t border-slate-200">
+                <div className="container mx-auto px-4">
+                    <div className="text-center max-w-3xl mx-auto mb-16">
+                        <h2 className="text-primary-600 font-bold tracking-wide uppercase text-sm mb-3">Common Questions</h2>
+                        <h3 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">Frequently Asked Questions</h3>
+                        <p className="text-slate-600 text-lg">
+                            Everything you need to know about running AutoDock Vina in the cloud.
+                        </p>
+                    </div>
+
+                    <div className="max-w-3xl mx-auto space-y-6">
+                        {[
+                            {
+                                q: "Is BioDockify really free for students?",
+                                a: "Yes! BioDockify offers 130 free credits monthly for all users, which is enough for dozens of molecular docking simulations. Students can use AutoDock Vina online completely free with no credit card required."
+                            },
+                            {
+                                q: "What file formats does BioDockify support?",
+                                a: "BioDockify supports PDBQT, PDB, SDF, MOL2, and SMILES formats with automatic conversion. Upload any format and we'll convert it to PDBQT for AutoDock Vina docking."
+                            },
+                            {
+                                q: "How accurate is online molecular docking compared to local installations?",
+                                a: "BioDockify uses official AutoDock Vina 1.2.5, providing identical accuracy to local installations. Results are publication-ready and suitable for thesis work, journal submissions, and academic research."
+                            },
+                            {
+                                q: "Can I use BioDockify for my M.Pharm or PhD research?",
+                                a: "Absolutely! BioDockify is designed for academic research. You get AI-powered explanations, publication-ready PDF reports with proper citations, and all the features needed for thesis work and journal publications."
+                            }
+                        ].map((faq, i) => (
+                            <div key={i} className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 hover:border-primary-200 transition-all">
+                                <h4 className="text-xl font-bold text-slate-900 mb-3 flex items-start gap-3">
+                                    <span className="text-primary-500 text-2xl leading-none">Q.</span>
+                                    {faq.q}
+                                </h4>
+                                <p className="text-slate-600 leading-relaxed pl-8">
+                                    {faq.a}
+                                </p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
             {/* CTA Section */}
             <section className="py-24 bg-primary-600 relative overflow-hidden">
                 <div className="absolute inset-0 opacity-20 bg-[url('/assets/images/hero-molecular.png')] bg-cover bg-center mix-blend-overlay"></div>
