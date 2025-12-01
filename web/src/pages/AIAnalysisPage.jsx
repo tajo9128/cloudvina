@@ -1,48 +1,78 @@
 import { Helmet } from 'react-helmet-async'
 import AIExplainer from '../components/AIExplainer'
+import SEOHelmet from '../components/SEOHelmet'
 
 export default function AIAnalysisPage() {
+    const schemaMarkup = {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "AI Molecular Docking Explainer",
+        "description": "AI-powered tool to analyze and explain AutoDock Vina docking results",
+        "applicationCategory": "EducationalApplication",
+        "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+        },
+        "featureList": [
+            "Upload AutoDock Vina results",
+            "AI-powered explanations",
+            "Educational content for students",
+            "Free to use"
+        ],
+        "provider": {
+            "@type": "Organization",
+            "name": "BioDockify"
+        }
+    }
+
     return (
         <>
             {/* SEO Optimization */}
-            <Helmet>
-                <title>AI Molecular Docking Explainer | Free AutoDock Vina Analysis Tool</title>
-                <meta name="description" content="Upload your AutoDock Vina docking results and get instant AI-powered explanations. Free molecular docking analysis tool powered by Grok AI. Perfect for students and researchers." />
-                <meta name="keywords" content="molecular docking, AutoDock Vina, AI analysis, drug discovery, binding affinity, docking results, protein-ligand interaction, computational chemistry, bioinformatics, free docking tool" />
+            <SEOHelmet
+                title="AI Molecular Docking Explainer | Free AutoDock Vina Analysis Tool"
+                description="Upload your AutoDock Vina docking results and get instant AI-powered explanations. Free molecular docking analysis tool powered by Grok AI. Perfect for students and researchers."
+                keywords="molecular docking, AutoDock Vina, AI analysis, drug discovery, binding affinity explanation, docking results analyzer, ai explainer, computational chemistry"
+                canonical="https://biodockify.com/ai-analysis"
+                schema={schemaMarkup}
+            />
+            <title>AI Molecular Docking Explainer | Free AutoDock Vina Analysis Tool</title>
+            <meta name="description" content="Upload your AutoDock Vina docking results and get instant AI-powered explanations. Free molecular docking analysis tool powered by Grok AI. Perfect for students and researchers." />
+            <meta name="keywords" content="molecular docking, AutoDock Vina, AI analysis, drug discovery, binding affinity, docking results, protein-ligand interaction, computational chemistry, bioinformatics, free docking tool" />
 
-                {/* Open Graph for social media */}
-                <meta property="og:title" content="AI Molecular Docking Explainer - Free Analysis Tool" />
-                <meta property="og:description" content="Upload your AutoDock Vina results and get instant AI-powered explanations. Educational tool for students and researchers." />
-                <meta property="og:type" content="website" />
-                <meta property="og:url" content="https://biodockify.com/ai-analysis" />
+            {/* Open Graph for social media */}
+            <meta property="og:title" content="AI Molecular Docking Explainer - Free Analysis Tool" />
+            <meta property="og:description" content="Upload your AutoDock Vina results and get instant AI-powered explanations. Educational tool for students and researchers." />
+            <meta property="og:type" content="website" />
+            <meta property="og:url" content="https://biodockify.com/ai-analysis" />
 
-                {/* Twitter Card */}
-                <meta name="twitter:card" content="summary_large_image" />
-                <meta name="twitter:title" content="AI Molecular Docking Explainer" />
-                <meta name="twitter:description" content="Free AI tool to analyze and explain your AutoDock Vina docking results" />
+            {/* Twitter Card */}
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="AI Molecular Docking Explainer" />
+            <meta name="twitter:description" content="Free AI tool to analyze and explain your AutoDock Vina docking results" />
 
-                {/* Structured Data for Google */}
-                <script type="application/ld+json">
-                    {JSON.stringify({
-                        "@context": "https://schema.org",
-                        "@type": "WebApplication",
-                        "name": "AI Molecular Docking Explainer",
-                        "description": "AI-powered tool to analyze and explain AutoDock Vina docking results",
-                        "applicationCategory": "ScienceApplication",
-                        "offers": {
-                            "@type": "Offer",
-                            "price": "0",
-                            "priceCurrency": "USD"
-                        },
-                        "featureList": [
-                            "Upload AutoDock Vina results",
-                            "AI-powered explanations",
-                            "Educational content",
-                            "Free to use"
-                        ]
-                    })}
-                </script>
-            </Helmet>
+            {/* Structured Data for Google */}
+            <script type="application/ld+json">
+                {JSON.stringify({
+                    "@context": "https://schema.org",
+                    "@type": "WebApplication",
+                    "name": "AI Molecular Docking Explainer",
+                    "description": "AI-powered tool to analyze and explain AutoDock Vina docking results",
+                    "applicationCategory": "ScienceApplication",
+                    "offers": {
+                        "@type": "Offer",
+                        "price": "0",
+                        "priceCurrency": "USD"
+                    },
+                    "featureList": [
+                        "Upload AutoDock Vina results",
+                        "AI-powered explanations",
+                        "Educational content",
+                        "Free to use"
+                    ]
+                })}
+            </script>
+        </Helmet >
 
             <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white pt-24 pb-16">
                 <div className="container mx-auto px-4">
