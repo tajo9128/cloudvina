@@ -127,6 +127,31 @@ class ExportService:
         story.append(t_info)
         story.append(Spacer(1, 0.3*inch))
         
+        # Methodology Section (for publications)
+        story.append(Paragraph("<b>Computational Methodology</b>", styles['Heading2']))
+        story.append(Spacer(1, 0.1*inch))
+        
+        method_text = f"""
+        <b>Molecular Docking Protocol:</b> Molecular docking simulations were performed using AutoDock Vina {analysis.get('vina_version', 'latest')} 
+        as implemented in the BioDockify cloud platform. The receptor protein ({job.get('receptor_filename', 'Unknown')}) and ligand molecule 
+        ({job.get('ligand_filename', 'Unknown')}) were prepared in PDBQT format following standard protocols.
+        <br/><br/>
+        <b>Grid Box Configuration:</b> The search space grid box was centered at coordinates (X: {analysis.get('center_x', '0.0')}, 
+        Y: {analysis.get('center_y', '0.0')}, Z: {analysis.get('center_z', '0.0')}) Angstroms with dimensions of 
+        {analysis.get('size_x', '20')} × {analysis.get('size_y', '20')} × {analysis.get('size_z', '20')} Angstroms.
+        <br/><br/>
+        <b>Docking Parameters:</b> The exhaustiveness parameter was set to {analysis.get('exhaustiveness', '8')}, and a maximum of 
+        {analysis.get('num_modes', '9')} binding modes were generated. The energy range for pose clustering was 
+        {analysis.get('energy_range', '3')} kcal/mol.
+        <br/><br/>
+        <b>Analysis:</b> Binding affinities were calculated using the Vina scoring function. Root mean square deviation (RMSD) values 
+        were computed for pose clustering. Protein-ligand interactions including hydrogen bonds and hydrophobic contacts were analyzed 
+        for the best-scoring pose.
+        """
+        
+        story.append(Paragraph(method_text, styles['Normal']))
+        story.append(Spacer(1, 0.3*inch))
+        
         # Docking Poses Section
         if analysis and analysis.get('poses'):
             story.append(Paragraph("<b>Docking Results</b>", styles['Heading2']))
@@ -221,6 +246,27 @@ class ExportService:
             else:
                 story.append(Paragraph("No hydrophobic contacts detected.", styles['Normal']))
         
+        story.append(Spacer(1, 0.3*inch))
+        
+        # Citation Section (for publications)
+        story.append(Paragraph("<b>How to Cite This Work</b>", styles['Heading2']))
+        story.append(Spacer(1, 0.1*inch))
+        
+        citation_text = """
+        <b>If you use BioDockify in your research, please cite:</b><br/>
+        BioDockify: A Cloud-Based Molecular Docking Platform. Available at: https://biodockify.com<br/>
+        Job ID: """ + job.get('job_id', 'N/A') + """ (Accessed: """ + datetime.now().strftime('%Y-%m-%d') + """)<br/><br/>
+        
+        <b>AutoDock Vina Citation:</b><br/>
+        Trott, O., & Olson, A. J. (2010). AutoDock Vina: improving the speed and accuracy of docking with a new scoring function, 
+        efficient optimization, and multithreading. Journal of computational chemistry, 31(2), 455-461.<br/><br/>
+        
+        <b>Acknowledgment:</b><br/>
+        Molecular docking calculations were performed using the BioDockify cloud platform, which utilizes AutoDock Vina for 
+        protein-ligand binding affinity prediction.
+        """
+        
+        story.append(Paragraph(citation_text, styles['Normal']))
         story.append(Spacer(1, 0.3*inch))
         
         # Footer
