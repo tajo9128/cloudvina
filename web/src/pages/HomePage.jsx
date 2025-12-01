@@ -126,7 +126,7 @@ export default function HomePage() {
                                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
                                 <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
                             </span>
-                            v2.0 Now Live: Multi-Format Support
+                            v2.1 Now Live: AI Analysis & Blog
                         </div>
 
                         <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-white leading-tight mb-6">
