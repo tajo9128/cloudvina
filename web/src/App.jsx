@@ -17,6 +17,7 @@ import AboutPage from './pages/AboutPage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
+import AIAnalysisPage from './pages/AIAnalysisPage'
 import Layout from './components/Layout'
 
 const queryClient = new QueryClient()
@@ -70,6 +71,7 @@ function App() {
                         />
                         {/* <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} /> */}
                         <Route path="/tools/converter" element={<ConverterPage />} />
+                        <Route path="/ai-analysis" element={<AIAnalysisPage />} />
                         <Route path="/blog" element={<BlogPage />} />
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/privacy" element={<PrivacyPage />} />
