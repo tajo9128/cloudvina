@@ -18,9 +18,9 @@ export default function Footer() {
                         </p>
                         <div className="flex gap-4">
                             {['twitter', 'github', 'linkedin'].map((social) => (
-                                <a 
-                                    key={social} 
-                                    href={`#${social}`} 
+                                <a
+                                    key={social}
+                                    href={`#${social}`}
                                     className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-primary-600 hover:text-white transition-all duration-300"
                                 >
                                     <span className="sr-only">{social}</span>
@@ -36,14 +36,24 @@ export default function Footer() {
                     <div>
                         <h3 className="text-white font-bold text-lg mb-6">Company</h3>
                         <ul className="space-y-4">
-                            {['About Us', 'Careers', 'Blog', 'Contact'].map((item) => (
-                                <li key={item}>
-                                    <Link to="#" className="hover:text-primary-500 transition-colors flex items-center gap-2 group">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                                        {item}
-                                    </Link>
-                                </li>
-                            ))}
+                            <li>
+                                <Link to="/about" className="hover:text-primary-500 transition-colors flex items-center gap-2 group">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                    About Us
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/blog" className="hover:text-primary-500 transition-colors flex items-center gap-2 group">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                    Blog
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/contact" className="hover:text-primary-500 transition-colors flex items-center gap-2 group">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                    Contact
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 
@@ -51,14 +61,18 @@ export default function Footer() {
                     <div>
                         <h3 className="text-white font-bold text-lg mb-6">Resources</h3>
                         <ul className="space-y-4">
-                            {['Documentation', 'API Reference', 'Pricing', 'Support Center'].map((item) => (
-                                <li key={item}>
-                                    <Link to="#" className="hover:text-primary-500 transition-colors flex items-center gap-2 group">
-                                        <span className="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                                        {item}
-                                    </Link>
-                                </li>
-                            ))}
+                            <li>
+                                <Link to="/privacy" className="hover:text-primary-500 transition-colors flex items-center gap-2 group">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                    Privacy Policy
+                                </Link>
+                            </li>
+                            <li>
+                                <Link to="/terms" className="hover:text-primary-500 transition-colors flex items-center gap-2 group">
+                                    <span className="w-1.5 h-1.5 rounded-full bg-primary-500 opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                                    Terms of Service
+                                </Link>
+                            </li>
                         </ul>
                     </div>
 
@@ -69,13 +83,13 @@ export default function Footer() {
                             Get the latest updates on molecular docking and drug discovery.
                         </p>
                         <form className="relative">
-                            <input 
-                                type="email" 
-                                placeholder="Enter your email" 
+                            <input
+                                type="email"
+                                placeholder="Enter your email"
                                 className="w-full bg-slate-800 border border-slate-700 rounded-lg py-3 px-4 text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all placeholder-slate-500"
                             />
-                            <button 
-                                type="submit" 
+                            <button
+                                type="submit"
                                 className="absolute right-1 top-1 bottom-1 bg-primary-600 hover:bg-primary-500 text-white px-3 rounded-md transition-colors"
                             >
                                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>

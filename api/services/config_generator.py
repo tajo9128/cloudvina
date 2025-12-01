@@ -57,7 +57,7 @@ out = output.pdbqt
 """
     
     # Store in S3
-    config_key = f"{job_id}/config.txt"
+    config_key = f"jobs/{job_id}/config.txt"
     
     try:
         s3_client.put_object(

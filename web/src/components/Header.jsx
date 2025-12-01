@@ -27,7 +27,12 @@ export default function Header() {
                     {['Features', 'Pricing', 'Tools', 'Blog', 'Dashboard'].map((item) => (
                         <Link
                             key={item}
-                            to={item === 'Tools' ? '/tools/converter' : item === 'Dashboard' ? '/dashboard' : `/#${item.toLowerCase()}`}
+                            to={
+                                item === 'Tools' ? '/tools/converter' :
+                                    item === 'Dashboard' ? '/dashboard' :
+                                        item === 'Blog' ? '/blog' :
+                                            `/#${item.toLowerCase()}`
+                            }
                             className={`font-medium text-sm uppercase tracking-wide transition-colors ${scrolled ? 'text-slate-600 hover:text-primary-600' : 'text-slate-700 hover:text-primary-600'}`}
                         >
                             {item}
