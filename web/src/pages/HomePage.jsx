@@ -85,6 +85,73 @@ export default function HomePage() {
                 </div>
             </section>
 
+            {/* SEO Content Section - Student Pain Points & Benefits */}
+            <section className="py-20 bg-gradient-to-b from-white to-slate-50">
+                <div className="container mx-auto px-4">
+                    <div className="max-w-4xl mx-auto">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                                Free Molecular Docking Online For Students & Researchers
+                            </h2>
+                            <p className="text-xl text-slate-600">
+                                AutoDock Vina Made Simple, Powerful, and Completely Free
+                            </p>
+                        </div>
+
+                        <div className="prose max-w-none text-slate-700 space-y-6">
+                            <div className="bg-white rounded-xl p-8 shadow-sm border border-slate-200">
+                                <h3 className="text-2xl font-bold text-slate-900 mb-4">Why M.Pharm & PhD Students Choose BioDockify</h3>
+
+                                <p className="mb-4">
+                                    <strong>Molecular docking is essential for modern drug discovery</strong>, but M.Pharm and PhD students face significant challenges. Installing AutoDock Vina locally requires complex dependencies, command-line expertise, and powerful computer hardware. Research labs often have limited computational resources, forcing students to wait days or weeks for cluster access. BioDockify solves these pain points by providing <strong>free molecular docking online</strong> with zero installation and instant access from any web browser.
+                                </p>
+
+                                <p className="mb-4">
+                                    <strong>Traditional molecular docking workflows are frustrating for students.</strong> You spend hours troubleshooting installation errors, learning obscure command syntax, and manually converting file formats. When your simulation finally runs, a single crash means starting over. BioDockify eliminates these frustrations with an intuitive web interface, automatic file conversion (SMILES, SDF, MOL2 to PDBQT), and cloud-based execution that never crashes your laptop. Focus on science, not software debugging.
+                                </p>
+
+                                <h4 className="text-xl font-bold text-slate-900 mt-6 mb-3">The Power of AutoDock Vina Online</h4>
+
+                                <p className="mb-4">
+                                    <strong>AutoDock Vina online</strong> through BioDockify brings professional-grade molecular docking to everyone. Our platform runs authentic AutoDock Vina 1.2.5 on AWS cloud infrastructure, delivering the same accuracy as local installations but with superior speed and convenience. Upload your protein receptor and ligand molecules, configure the binding site search space with our visual grid box tool, and launch simulations in seconds. No Python environments, no MGL Tools, no headaches.
+                                </p>
+
+                                <p className="mb-4">
+                                    Whether you're screening compound libraries for your thesis, validating binding modes for publications, or learning computational drug design fundamentals, BioDockify's <strong>free molecular docking online</strong> platform accelerates your research. Students get 130 free credits monthly—enough for dozens of docking jobs. Each job runs on dedicated cloud compute, completing typical simulations in 3-5 minutes instead of hours on shared university servers.
+                                </p>
+
+                                <h4 className="text-xl font-bold text-slate-900 mt-6 mb-3">Educational Features Built for Students</h4>
+
+                                <p className="mb-4">
+                                    <strong>Learning molecular docking shouldn't require reading 100-page manuals.</strong> BioDockify includes AI-powered results explanation powered by Grok AI. Ask questions like "What does my binding affinity of -8.5 kcal/mol mean?" and get instant, educational answers. Download publication-ready PDF reports with comprehensive methodology sections, interaction tables, and proper citations—perfect for thesis work and journal submissions.
+                                </p>
+
+                                <p className="mb-4">
+                                    Our visual grid box configurator shows the 3D search space in real-time, helping you understand how docking parameters affect results. Automatic interaction analysis identifies hydrogen bonds and hydrophobic contacts without running separate software. For M.Pharm students preparing presentations or PhD candidates writing dissertations, these features transform raw docking data into publishable insights.
+                                </p>
+
+                                <h4 className="text-xl font-bold text-slate-900 mt-6 mb-3">Premium Membership: Unlimited Research Potential</h4>
+
+                                <p className="mb-4">
+                                    <strong>Serious researchers need unlimited access.</strong> BioDockify Premium removes all credit limits, enabling high-throughput virtual screening of thousands of compounds. Run parallel batch jobs to screen entire drug libraries overnight. Priority queue execution means your jobs start immediately, crucial when facing thesis deadlines or conference submission dates. Premium members get advanced features like flexible docking modes, custom exhaustiveness settings, and API access for programmatic job submission.
+                                </p>
+
+                                <p className="mb-4">
+                                    <strong>Premium membership costs less than one month of AWS compute</strong> if you ran Vina yourself, but includes expert support, guaranteed uptime, and automatic backups of all your docking data. Perfect for PhD students conducting extensive virtual screening campaigns or research labs needing reliable, scalable docking infrastructure. Cancel anytime—no long-term contracts or complicated pricing tiers.
+                                </p>
+
+                                <div className="bg-blue-50 border-l-4 border-blue-600 p-4 mt-6">
+                                    <p className="font-semibold text-blue-900 mb-2">🎯 Start Your Research Today</p>
+                                    <p className="text-blue-800 text-sm">
+                                        Join thousands of M.Pharm and PhD students worldwide who trust BioDockify for molecular docking online free. No installation, no credit card, no barriers—just powerful computational drug discovery at your fingertips.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
             {/* Features Section - Alternating Layout */}
             <section id="features" className="py-24 overflow-hidden">
                 <div className="container mx-auto px-4">
