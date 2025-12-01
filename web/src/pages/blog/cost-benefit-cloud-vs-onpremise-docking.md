@@ -527,6 +527,8 @@ Early adopters accelerate research, preserve capital, and outcompete slower riva
 
 ---
 
-**Ready to save $80,000+/year on computational chemistry?** Run your TCO analysis with BioDockify's cost calculator and see your actual savings. Most labs discover they can afford 100x more virtual screening by switching to cloud.
+**Ready to save $80,000+/year on computational chemistry?** [Start your free simulation](/dock/new) today or use our [AI Analysis tool](/ai-analysis) to interpret your existing results. Most labs discover they can afford 100x more virtual screening by switching to cloud.
+
+Need to prepare your files first? Use our [free PDBQT Converter](/tools/converter) to get started instantly.
 
 **Keywords**: cloud docking cost analysis, on-premise vs cloud molecular docking, computational chemistry TCO, drug discovery infrastructure costs, ROI cloud computing, HPC vs cloud, molecular docking budget, bioinformatics cost savings

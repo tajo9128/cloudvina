@@ -404,6 +404,8 @@ The difference between a 5% and a 20% experimental hit rate often comes down to 
 
 ---
 
-**Ready to put these best practices into action?** Try BioDockify's integrated ligand preparation tools and visual grid box configurator. Upload your library and see optimized docking results in hours, not days.
+**Ready to put these best practices into action?** Try BioDockify's [integrated ligand preparation tools](/tools/converter) and visual grid box configurator. [Upload your library](/dock/new) and see optimized docking results in hours, not days.
+
+Interested in the financial impact? Read our [Cost-Benefit Analysis of Cloud Docking](/blog/cost-benefit-cloud-vs-onpremise-docking) to see how much you can save.
 
 **Keywords**: AutoDock Vina optimization, ligand preparation best practices, grid box definition, PDBQT conversion, molecular docking accuracy, drug discovery workflow, computational chemistry protocols
