@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
-import MoleculeViewer from '../components/MoleculeViewer'
+
 import ExportButtons from '../components/ExportButtons'
 import DockingResultsTable from '../components/DockingResultsTable'
 import InteractionTable from '../components/InteractionTable'
@@ -263,25 +263,7 @@ export default function JobResultsPage() {
                             </div>
                         </div>
 
-                        {/* 3D Molecule Viewer */}
-                        {job.status === 'SUCCEEDED' && pdbqtData && (
-                            <div className="p-8 border-b border-slate-200 bg-slate-50/50">
-                                <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                                    <div className="p-4 border-b border-slate-100 flex justify-between items-center">
-                                        <h3 className="font-bold text-slate-700">3D Visualization</h3>
-                                        <span className="text-xs text-slate-400">Powered by NGL Viewer</span>
-                                    </div>
-                                    <div className="h-[500px] w-full">
-                                        <MoleculeViewer
-                                            pdbqtData={pdbqtData}
-                                            width="100%"
-                                            height="100%"
-                                            title="Docking Result Visualization"
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        )}
+
 
                         {/* Docking Results Table */}
                         {job.status === 'SUCCEEDED' && analysis && !analysis.error && analysis.poses && (
@@ -300,9 +282,7 @@ export default function JobResultsPage() {
 
 
 
-                        // ... existing imports
 
-                        // ... inside component
 
                         {/* Interaction Analysis Table */}
                         {job.status === 'SUCCEEDED' && interactions && !interactions.error && (
