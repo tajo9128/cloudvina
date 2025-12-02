@@ -200,7 +200,7 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
                         </div>
                         <h4 className="text-xl font-bold text-slate-900 mb-2">Upload Your Docking Results</h4>
                         <p className="text-slate-600 mb-6">
-                            Upload your AutoDock Vina output files to get AI-powered explanations
+                            Upload any files to get AI-powered analysis and explanations
                         </p>
                     </div>
 
@@ -213,7 +213,6 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
                                 ref={fileInputRef}
                                 type="file"
                                 multiple
-                                accept=".txt,.log,.pdbqt"
                                 onChange={handleFileUpload}
                                 className="hidden"
                             />
@@ -221,11 +220,8 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
                                 <p className="font-medium text-slate-700 mb-2">
                                     Click to upload or drag and drop
                                 </p>
-                                <p className="text-sm text-slate-500 mb-3">
-                                    <span className="font-semibold">Required:</span> Vina log file (.txt or .log)
-                                </p>
                                 <p className="text-sm text-slate-500">
-                                    <span className="font-semibold">Optional:</span> Output PDBQT file
+                                    Supports all file types - Upload any files related to your analysis
                                 </p>
                             </div>
                         </div>

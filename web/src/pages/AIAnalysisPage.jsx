@@ -70,7 +70,7 @@ export default function AIAnalysisPage() {
                                 </div>
                                 <h3 className="text-lg font-bold text-slate-900 mb-2">1. Upload Files</h3>
                                 <p className="text-slate-600 text-sm">
-                                    Drag and drop your AutoDock Vina log file. Optionally include the PDBQT output file.
+                                    Drag and drop any files related to your molecular docking analysis - log files, PDBQT outputs, or other relevant data.
                                 </p>
                             </div>
 
@@ -161,7 +161,7 @@ export default function AIAnalysisPage() {
                             <div className="space-y-6">
                                 <div>
                                     <h3 className="font-bold text-slate-900 mb-2">What file formats are supported?</h3>
-                                    <p className="text-slate-600">We support AutoDock Vina log files (.txt, .log) and PDBQT output files (.pdbqt). The log file is required, while the PDBQT file is optional.</p>
+                                    <p className="text-slate-600">We support all file types! Upload AutoDock Vina log files (.txt, .log), PDBQT files (.pdbqt), or any other files related to your molecular docking analysis. The AI will analyze the content and provide explanations.</p>
                                 </div>
 
                                 <div>
