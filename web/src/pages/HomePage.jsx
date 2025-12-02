@@ -182,7 +182,7 @@ export default function HomePage() {
             {/* SEO Content Section - Student Pain Points & Benefits */}
             <section className="py-20 bg-gradient-to-b from-white to-slate-50">
                 <div className="container mx-auto px-4">
-                    <div className="max-w-4xl mx-auto">
+                    <div className="max-w-7xl mx-auto">
                         <div className="text-center mb-12">
                             <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
                                 Free Molecular Docking Online For Students & Researchers
@@ -192,7 +192,7 @@ export default function HomePage() {
                             </p>
                         </div>
 
-                        <div className="grid md:grid-cols-2 gap-6">
+                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                             {/* Card 1 */}
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:border-primary-200 transition-all group hover:shadow-md">
                                 <div className="w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
