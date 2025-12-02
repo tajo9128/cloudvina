@@ -254,157 +254,161 @@ export default function HomePage() {
                         <h3 className="text-3xl md:text-4xl font-bold text-slate-900">Enterprise-grade docking infrastructure</h3>
                     </div>
 
-                    <div className="space-y-24">
+                    <div className="grid md:grid-cols-3 gap-8">
                         {/* Feature 1 */}
-                        <div className="grid lg:grid-cols-2 gap-16 items-center">
-                            <div className="relative">
-                                <div className="absolute inset-0 bg-primary-200 rounded-full blur-3xl opacity-20 transform -translate-x-10"></div>
-                                <img src="/assets/images/dashboard-interface.png" alt="Cloud Scalability" className="relative rounded-2xl shadow-2xl border border-slate-200" />
+                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100 hover:shadow-xl transition-all text-center group">
+                            <div className="relative mb-6 mx-auto w-full max-w-[280px] h-48 overflow-hidden rounded-xl">
+                                <div className="absolute inset-0 bg-primary-200/20 group-hover:bg-primary-200/30 transition-colors"></div>
+                                <img
+                                    src="/assets/images/dashboard-interface.png"
+                                    alt="Cloud Scalability"
+                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
                             </div>
-                            <div>
-                                <div className="w-12 h-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center text-2xl mb-6">
-                                    ☁️
-                                </div>
-                                <h3 className="text-3xl font-bold text-slate-900 mb-4">Infinite Cloud Scalability</h3>
-                                <p className="text-lg text-slate-600 leading-relaxed mb-6">
-                                    Forget queuing on local clusters. BioDockify leverages AWS Batch to spin up thousands of instances instantly. Run massive virtual screens in hours, not weeks.
-                                </p>
-                                <ul className="space-y-3">
-                                    {[
-                                        "Auto-scaling infrastructure",
-                                        "Zero maintenance required",
-                                        "Pay only for compute used"
-                                    ].map((item, i) => (
-                                        <li key={i} className="flex items-center gap-3 text-slate-700">
-                                            <svg className="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                                            {item}
-                                        </li>
-                                    ))}
-                                </ul>
+                            <div className="w-12 h-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center text-2xl mb-4 mx-auto">
+                                ☁️
                             </div>
+                            <h3 className="text-xl font-bold text-slate-900 mb-3">Infinite Cloud Scalability</h3>
+                            <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                                Forget queuing on local clusters. BioDockify leverages AWS Batch to spin up thousands of instances instantly.
+                            </p>
                         </div>
 
                         {/* Feature 2 */}
-                        <div className="grid lg:grid-cols-2 gap-16 items-center">
-                            <div className="order-2 lg:order-1">
-                                <div className="w-12 h-12 rounded-xl bg-secondary-100 text-secondary-600 flex items-center justify-center text-2xl mb-6">
-                                    🧬
-                                </div>
-                                <h3 className="text-3xl font-bold text-slate-900 mb-4">Universal Format Support</h3>
-                                <p className="text-lg text-slate-600 leading-relaxed mb-6">
-                                    We handle the messy work of file conversion. Upload your receptors and ligands in almost any format, and our automated pipelines prepare them for AutoDock Vina.
-                                </p>
-                                <div className="flex flex-wrap gap-2">
-                                    {['PDB', 'PDBQT', 'SDF', 'MOL2', 'CIF', 'XML', 'SMILES'].map((fmt) => (
-                                        <span key={fmt} className="px-3 py-1 rounded-lg bg-slate-100 text-slate-600 text-sm font-bold border border-slate-200">
-                                            {fmt}
-                                        </span>
-                                    ))}
-                                </div>
+                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100 hover:shadow-xl transition-all text-center group">
+                            <div className="relative mb-6 mx-auto w-full max-w-[280px] h-48 overflow-hidden rounded-xl">
+                                <div className="absolute inset-0 bg-secondary-200/20 group-hover:bg-secondary-200/30 transition-colors"></div>
+                                <img
+                                    src="/assets/images/hero-molecular.png"
+                                    alt="Format Support"
+                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
                             </div>
-                            <div className="order-1 lg:order-2 relative">
-                                <div className="absolute inset-0 bg-secondary-200 rounded-full blur-3xl opacity-20 transform translate-x-10"></div>
-                                <img src="/assets/images/hero-molecular.png" alt="Format Support" className="relative rounded-2xl shadow-2xl border border-slate-200" />
+                            <div className="w-12 h-12 rounded-xl bg-secondary-100 text-secondary-600 flex items-center justify-center text-2xl mb-4 mx-auto">
+                                🧬
                             </div>
+                            <h3 className="text-xl font-bold text-slate-900 mb-3">Universal Format Support</h3>
+                            <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                                We handle the messy work of file conversion. Upload PDB, SDF, MOL2, or SMILES and we automate the rest.
+                            </p>
                         </div>
 
                         {/* Feature 3 */}
-                        <div className="grid lg:grid-cols-2 gap-16 items-center">
-                            <div className="relative">
-                                <div className="absolute inset-0 bg-teal-200 rounded-full blur-3xl opacity-20 transform -translate-y-10"></div>
-                                {/* Placeholder for analysis image - reusing dashboard for now but styled differently */}
-                                <div className="relative rounded-2xl shadow-2xl border border-slate-200 bg-slate-900 p-2 overflow-hidden">
-                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent z-10"></div>
-                                    <img src="/assets/images/dashboard-interface.png" alt="Analysis" className="rounded-xl opacity-80" />
-                                    <div className="absolute bottom-6 left-6 right-6 z-20">
-                                        <div className="bg-white/10 backdrop-blur-md rounded-xl p-4 border border-white/20 text-white">
-                                            <div className="flex justify-between items-center mb-2">
-                                                <span className="font-bold">Binding Affinity</span>
-                                                <span className="text-green-400 font-mono">-9.4 kcal/mol</span>
-                                            </div>
-                                            <div className="w-full bg-white/20 rounded-full h-1.5">
-                                                <div className="bg-green-400 h-1.5 rounded-full" style={{ width: '85%' }}></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100 hover:shadow-xl transition-all text-center group">
+                            <div className="relative mb-6 mx-auto w-full max-w-[280px] h-48 overflow-hidden rounded-xl">
+                                <div className="absolute inset-0 bg-teal-200/20 group-hover:bg-teal-200/30 transition-colors"></div>
+                                <img
+                                    src="/assets/images/dashboard-interface.png"
+                                    alt="Analysis"
+                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                                />
                             </div>
-                            <div>
-                                <div className="w-12 h-12 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center text-2xl mb-6">
-                                    🔬
-                                </div>
-                                <h3 className="text-3xl font-bold text-slate-900 mb-4">Interactive 3D Analysis</h3>
-                                <p className="text-lg text-slate-600 leading-relaxed mb-6">
-                                    Visualize your docking results directly in the browser. No need to download massive files or install complex desktop software just to check a pose.
-                                </p>
-                                <Link to="/signup" className="text-primary-600 font-bold hover:text-primary-700 inline-flex items-center gap-2 group">
-                                    Start Analyzing <span className="transform group-hover:translate-x-1 transition-transform">→</span>
-                                </Link>
+                            <div className="w-12 h-12 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center text-2xl mb-4 mx-auto">
+                                🔬
                             </div>
+                            <h3 className="text-xl font-bold text-slate-900 mb-3">Interactive 3D Analysis</h3>
+                            <p className="text-slate-600 text-sm leading-relaxed mb-4">
+                                Visualize your docking results directly in the browser. No need to download massive files or install complex software.
+                            </p>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Testimonials Section */}
-            <section className="py-24 bg-white relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-                    <div className="absolute top-[20%] right-[10%] w-[300px] h-[300px] bg-primary-100/50 rounded-full blur-3xl"></div>
-                    <div className="absolute bottom-[10%] left-[5%] w-[250px] h-[250px] bg-secondary-100/50 rounded-full blur-3xl"></div>
-                </div>
-
-                <div className="container mx-auto px-4 relative z-10">
-                    <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-primary-600 font-bold tracking-wide uppercase text-sm mb-3">Community Love</h2>
-                        <h3 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">Trusted by Researchers Worldwide</h3>
-                        <p className="text-slate-600 text-lg">
-                            Join thousands of students and scientists who have accelerated their drug discovery workflow with BioDockify.
-                        </p>
-                    </div>
-
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {[
-                            {
-                                name: "Sarah Jenkins",
-                                role: "M.Pharm Student",
-                                university: "University of Manchester",
-                                content: "BioDockify saved my thesis! I spent weeks trying to install AutoDock Vina on my laptop with no luck. With BioDockify, I was running simulations in minutes. The free credits were more than enough for my project.",
-                                initial: "S"
-                            },
-                            {
-                                name: "Dr. Michael Chen",
-                                role: "Postdoctoral Researcher",
-                                university: "Stanford University",
-                                content: "The cloud scalability is a game changer. I screened 5,000 compounds in a single afternoon using the batch processing feature. Doing this on our local lab cluster would have taken at least two weeks.",
-                                initial: "M"
-                            },
-                            {
-                                name: "Prof. Emily Rodriguez",
-                                role: "Computational Chemistry Dept.",
-                                university: "University of Toronto",
-                                content: "A fantastic teaching tool. My students can focus on drug design concepts instead of fighting with Linux command lines. The AI explanations help them understand the 'why' behind their results.",
-                                initial: "E"
-                            }
-                        ].map((testimonial, i) => (
-                            <div key={i} className="bg-slate-50 p-8 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all">
-                                <div className="flex items-center gap-1 text-yellow-400 mb-4">
-                                    {[...Array(5)].map((_, j) => (
-                                        <svg key={j} className="w-5 h-5 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                    ))}
-                                </div>
-                                <p className="text-slate-700 mb-6 leading-relaxed italic">"{testimonial.content}"</p>
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-white font-bold text-xl">
-                                        {testimonial.initial}
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-slate-900">{testimonial.name}</div>
-                                        <div className="text-sm text-slate-500">{testimonial.role}</div>
-                                        <div className="text-xs text-primary-600 font-medium">{testimonial.university}</div>
-                                    </div>
-                                </div>
+            {/* Combined Testimonials & FAQ Section */}
+            <section className="py-24 bg-slate-50 border-t border-slate-200">
+                <div className="container mx-auto px-4">
+                    <div className="grid lg:grid-cols-2 gap-16 items-start">
+                        {/* Left Column: Testimonials */}
+                        <div>
+                            <div className="mb-10">
+                                <h2 className="text-primary-600 font-bold tracking-wide uppercase text-sm mb-3">Community Love</h2>
+                                <h3 className="text-3xl font-bold text-slate-900">Trusted by Researchers</h3>
                             </div>
-                        ))}
+
+                            <div className="space-y-6">
+                                {[
+                                    {
+                                        name: "Sarah Jenkins",
+                                        role: "M.Pharm Student",
+                                        university: "University of Manchester",
+                                        content: "BioDockify saved my thesis! I spent weeks trying to install AutoDock Vina on my laptop with no luck. With BioDockify, I was running simulations in minutes.",
+                                        initial: "S"
+                                    },
+                                    {
+                                        name: "Dr. Michael Chen",
+                                        role: "Postdoctoral Researcher",
+                                        university: "Stanford University",
+                                        content: "The cloud scalability is a game changer. I screened 5,000 compounds in a single afternoon using the batch processing feature.",
+                                        initial: "M"
+                                    },
+                                    {
+                                        name: "Prof. Emily Rodriguez",
+                                        role: "Computational Chemistry Dept.",
+                                        university: "University of Toronto",
+                                        content: "A fantastic teaching tool. My students can focus on drug design concepts instead of fighting with Linux command lines.",
+                                        initial: "E"
+                                    }
+                                ].map((testimonial, i) => (
+                                    <div key={i} className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all">
+                                        <div className="flex items-center gap-1 text-yellow-400 mb-3">
+                                            {[...Array(5)].map((_, j) => (
+                                                <svg key={j} className="w-4 h-4 fill-current" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                            ))}
+                                        </div>
+                                        <p className="text-slate-700 mb-4 text-sm leading-relaxed italic">"{testimonial.content}"</p>
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center text-white font-bold text-sm">
+                                                {testimonial.initial}
+                                            </div>
+                                            <div>
+                                                <div className="font-bold text-slate-900 text-sm">{testimonial.name}</div>
+                                                <div className="text-xs text-slate-500">{testimonial.role}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Right Column: FAQs */}
+                        <div>
+                            <div className="mb-10">
+                                <h2 className="text-primary-600 font-bold tracking-wide uppercase text-sm mb-3">Common Questions</h2>
+                                <h3 className="text-3xl font-bold text-slate-900">Frequently Asked Questions</h3>
+                            </div>
+
+                            <div className="space-y-4">
+                                {[
+                                    {
+                                        q: "Is BioDockify really free for students?",
+                                        a: "Yes! BioDockify offers 130 free credits monthly for all users, which is enough for dozens of molecular docking simulations."
+                                    },
+                                    {
+                                        q: "What file formats are supported?",
+                                        a: "We support PDBQT, PDB, SDF, MOL2, and SMILES formats with automatic conversion. Upload any format and we'll handle it."
+                                    },
+                                    {
+                                        q: "How accurate is the docking?",
+                                        a: "We use official AutoDock Vina 1.2.5, providing identical accuracy to local installations. Results are publication-ready."
+                                    },
+                                    {
+                                        q: "Can I use this for my thesis?",
+                                        a: "Absolutely! BioDockify is designed for academic research. You get AI-powered explanations and PDF reports for your thesis."
+                                    }
+                                ].map((faq, i) => (
+                                    <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:border-primary-200 transition-all">
+                                        <h4 className="font-bold text-slate-900 mb-2 flex items-start gap-3 text-sm md:text-base">
+                                            <span className="text-primary-500 text-lg leading-none">Q.</span>
+                                            {faq.q}
+                                        </h4>
+                                        <p className="text-slate-600 text-sm leading-relaxed pl-7">
+                                            {faq.a}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -490,50 +494,6 @@ export default function HomePage() {
                             </ul>
                             <Link to="/contact" className="w-full btn-secondary bg-slate-700 hover:bg-slate-600 border-none text-white">Contact Sales</Link>
                         </div>
-                    </div>
-                </div>
-            </section>
-
-            {/* FAQ Section */}
-            <section className="py-24 bg-slate-50 border-t border-slate-200">
-                <div className="container mx-auto px-4">
-                    <div className="text-center max-w-3xl mx-auto mb-16">
-                        <h2 className="text-primary-600 font-bold tracking-wide uppercase text-sm mb-3">Common Questions</h2>
-                        <h3 className="text-3xl md:text-4xl font-bold text-slate-900 mb-6">Frequently Asked Questions</h3>
-                        <p className="text-slate-600 text-lg">
-                            Everything you need to know about running AutoDock Vina in the cloud.
-                        </p>
-                    </div>
-
-                    <div className="max-w-3xl mx-auto space-y-6">
-                        {[
-                            {
-                                q: "Is BioDockify really free for students?",
-                                a: "Yes! BioDockify offers 130 free credits monthly for all users, which is enough for dozens of molecular docking simulations. Students can use AutoDock Vina online completely free with no credit card required."
-                            },
-                            {
-                                q: "What file formats does BioDockify support?",
-                                a: "BioDockify supports PDBQT, PDB, SDF, MOL2, and SMILES formats with automatic conversion. Upload any format and we'll convert it to PDBQT for AutoDock Vina docking."
-                            },
-                            {
-                                q: "How accurate is online molecular docking compared to local installations?",
-                                a: "BioDockify uses official AutoDock Vina 1.2.5, providing identical accuracy to local installations. Results are publication-ready and suitable for thesis work, journal submissions, and academic research."
-                            },
-                            {
-                                q: "Can I use BioDockify for my M.Pharm or PhD research?",
-                                a: "Absolutely! BioDockify is designed for academic research. You get AI-powered explanations, publication-ready PDF reports with proper citations, and all the features needed for thesis work and journal publications."
-                            }
-                        ].map((faq, i) => (
-                            <div key={i} className="bg-white rounded-2xl p-8 shadow-sm border border-slate-200 hover:border-primary-200 transition-all">
-                                <h4 className="text-xl font-bold text-slate-900 mb-3 flex items-start gap-3">
-                                    <span className="text-primary-500 text-2xl leading-none">Q.</span>
-                                    {faq.q}
-                                </h4>
-                                <p className="text-slate-600 leading-relaxed pl-8">
-                                    {faq.a}
-                                </p>
-                            </div>
-                        ))}
                     </div>
                 </div>
             </section>
