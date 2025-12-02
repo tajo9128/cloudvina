@@ -150,8 +150,8 @@ class DockingRunner:
             print(f"      ✗ Error preparing receptor: {e}")
             return False
 
-    def run_vina(self, receptor: Path, ligand: Path, output: Path, log: Path) -> bool:
-        """Run AutoDock Vina docking"""
+    def run_vina(self, receptor: Path, ligand: Path, output: Path, log: Path, config: Path) -> bool:
+        """Run AutoDock Vina docking using config file"""
         try:
             print(f"[4/5] Running AutoDock Vina...")
             
@@ -160,20 +160,33 @@ class DockingRunner:
                 print("      ✗ Missing receptor or ligand PDBQT files")
                 return False
             
-            cmd = [
-                'vina',
-                '--receptor', str(receptor),
-                '--ligand', str(ligand),
-                '--out', str(output),
-                '--center_x', '0',
-                '--center_y', '0', 
-                '--center_z', '0',
-                '--size_x', '20',
-                '--size_y', '20',
-                '--size_z', '20',
-                '--cpu', '1',
-                '--exhaustiveness', '8'
-            ]
+            if not config.exists():
+                print(f"      ⚠️ Config file not found at {config}, using default parameters")
+                # Fallback to hardcoded defaults if config is missing
+                cmd = [
+                    'vina',
+                    '--receptor', str(receptor),
+                    '--ligand', str(ligand),
+                    '--out', str(output),
+                    '--center_x', '0',
+                    '--center_y', '0', 
+                    '--center_z', '0',
+                    '--size_x', '20',
+                    '--size_y', '20',
+                    '--size_z', '20',
+                    '--cpu', '1',
+                    '--exhaustiveness', '8'
+                ]
+            else:
+                # Use config file (RECOMMENDED)
+                print(f"      ✓ Using config file: {config}")
+                cmd = [
+                    'vina',
+                    '--config', str(config),
+                    '--receptor', str(receptor),
+                    '--ligand', str(ligand),
+                    '--out', str(output)
+                ]
             
             # Capture output
             result = subprocess.run(cmd, capture_output=True, text=True)
@@ -221,12 +234,19 @@ class DockingRunner:
         ligand_pdbqt = self.work_dir / 'ligand.pdbqt'
         output_pdbqt = self.work_dir / 'output.pdbqt'
         log_file = self.work_dir / 'log.txt'
+        config_file = self.work_dir / 'config.txt'
         
         # Step 1: Download input files
         if not self.download_from_s3(self.receptor_key, receptor_input):
             sys.exit(1)
         if not self.download_from_s3(self.ligand_key, ligand_input):
             sys.exit(1)
+        
+        # Step 1.5: Download config file (if exists)
+        config_key = f'jobs/{self.job_id}/config.txt'
+        print(f"[1.5/5] Downloading config file...")
+        if not self.download_from_s3(config_key, config_file):
+            print(f"      ⚠️ Config file not found, will use defaults")
         
         # Step 2: Convert ligand to PDBQT
         if not self.convert_ligand_to_pdbqt(ligand_input, ligand_pdbqt):
@@ -237,7 +257,7 @@ class DockingRunner:
             sys.exit(1)
         
         # Step 4: Run docking
-        if not self.run_vina(receptor_pdbqt, ligand_pdbqt, output_pdbqt, log_file):
+        if not self.run_vina(receptor_pdbqt, ligand_pdbqt, output_pdbqt, log_file, config_file):
             sys.exit(1)
         
         # Step 5: Upload results
