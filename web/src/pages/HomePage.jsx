@@ -267,9 +267,6 @@ export default function HomePage() {
                                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                 />
                             </div>
-                            <div className="w-12 h-12 rounded-xl bg-primary-100 text-primary-600 flex items-center justify-center text-2xl mb-4 mx-auto">
-                                ☁️
-                            </div>
                             <h3 className="text-xl font-bold text-slate-900 mb-3">Infinite Cloud Scalability</h3>
                             <p className="text-slate-600 text-sm leading-relaxed mb-4">
                                 Forget queuing on local clusters. BioDockify leverages AWS Batch to spin up thousands of instances instantly.
@@ -286,9 +283,6 @@ export default function HomePage() {
                                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                 />
                             </div>
-                            <div className="w-12 h-12 rounded-xl bg-secondary-100 text-secondary-600 flex items-center justify-center text-2xl mb-4 mx-auto">
-                                🧬
-                            </div>
                             <h3 className="text-xl font-bold text-slate-900 mb-3">Universal Format Support</h3>
                             <p className="text-slate-600 text-sm leading-relaxed mb-4">
                                 We handle the messy work of file conversion. Upload PDB, SDF, MOL2, or SMILES and we automate the rest.
@@ -304,9 +298,6 @@ export default function HomePage() {
                                     alt="Analysis"
                                     className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                                 />
-                            </div>
-                            <div className="w-12 h-12 rounded-xl bg-teal-100 text-teal-600 flex items-center justify-center text-2xl mb-4 mx-auto">
-                                🔬
                             </div>
                             <h3 className="text-xl font-bold text-slate-900 mb-3">Interactive 3D Analysis</h3>
                             <p className="text-slate-600 text-sm leading-relaxed mb-4">
