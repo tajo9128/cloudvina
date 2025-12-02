@@ -449,7 +449,9 @@ async def get_job_status(
             "status": job['status'],
             "created_at": job['created_at'],
             "completed_at": job.get('completed_at'),
-            "binding_affinity": job.get('binding_affinity'),
+            "binding_affinity": job.get('binding_affinity') or job.get('docking_results', {}).get('best_affinity'),
+            "ligand_filename": job.get('ligand_filename'),
+            "receptor_filename": job.get('receptor_filename'),
             "download_urls": download_urls if download_urls else None
         }
     
