@@ -141,13 +141,7 @@ export default function HomePage() {
                         <Link to="/dock/new" className="btn-primary text-lg px-8 py-4 shadow-lg shadow-primary-600/20 hover:shadow-primary-600/40 transition-all">
                             Start Free Simulation
                         </Link>
-                        <button
-                            onClick={() => setIsVideoOpen(true)}
-                            className="px-8 py-4 rounded-xl font-bold text-white border border-slate-600 hover:bg-slate-800 transition-all flex items-center gap-2"
-                        >
-                            <svg className="w-5 h-5 text-primary-500" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
-                            Watch Demo
-                        </button>
+
                     </div>
 
                     <div className="mt-12 text-slate-400 text-sm font-medium flex justify-center gap-8">
@@ -164,30 +158,7 @@ export default function HomePage() {
             </section>
 
             {/* Video Modal */}
-            {isVideoOpen && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/90 backdrop-blur-sm" onClick={() => setIsVideoOpen(false)}>
-                    <div className="relative w-full max-w-5xl bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-700" onClick={e => e.stopPropagation()}>
-                        <button
-                            onClick={() => setIsVideoOpen(false)}
-                            className="absolute top-4 right-4 text-white/70 hover:text-white z-10 bg-black/50 rounded-full p-2 transition-colors"
-                        >
-                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                        <div className="aspect-video w-full">
-                            <iframe
-                                width="100%"
-                                height="100%"
-                                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1"
-                                title="BioDockify Demo"
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            ></iframe>
-                        </div>
-                    </div>
-                </div>
-            )
-            }
+
 
             {/* Stats Section */}
             <section className="py-10 bg-white border-b border-slate-200 relative z-20 -mt-8 mx-4 lg:mx-auto max-w-6xl rounded-2xl shadow-xl">
