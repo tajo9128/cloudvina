@@ -1,6 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 import SEOHelmet from '../components/SEOHelmet'
 
 // Import all blog posts
@@ -167,7 +168,7 @@ export default function BlogPostPage() {
             <div className="container mx-auto px-4 py-16">
                 <div className="max-w-3xl mx-auto">
                     <article className="prose prose-lg prose-slate prose-headings:text-slate-900 prose-a:text-primary-600 hover:prose-a:text-primary-500">
-                        <ReactMarkdown>{content}</ReactMarkdown>
+                        <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                     </article>
 
                     <div className="mt-16 pt-8 border-t border-slate-200">
