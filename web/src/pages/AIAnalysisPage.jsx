@@ -95,6 +95,11 @@ export default function AIAnalysisPage() {
                             </div>
                         </div>
 
+                        {/* AI Explainer Component - MOVED TO TOP */}
+                        <div className="max-w-4xl mx-auto mb-12">
+                            <AIExplainer />
+                        </div>
+
                         {/* Why Use This Tool - SEO Content */}
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-8 mb-8">
                             <h2 className="text-2xl font-bold text-slate-900 mb-6">Why Use the AI Molecular Docking Explainer?</h2>
@@ -124,11 +129,6 @@ export default function AIAnalysisPage() {
                                     <strong>Powered by advanced Grok AI technology</strong>, our explainer provides scientifically accurate information while maintaining accessibility. It analyzes binding affinities, RMSD values, pose clustering, and energy ranges to give you a complete picture of your docking results. Whether you're asking "Is -8.5 kcal/mol a good binding affinity?" or "Why do I have multiple poses?", the AI provides detailed, relevant answers that enhance your understanding of computational drug discovery.
                                 </p>
                             </div>
-                        </div>
-
-                        {/* AI Explainer Component */}
-                        <div className="max-w-4xl mx-auto">
-                            <AIExplainer />
                         </div>
 
                         {/* Features Grid */}
