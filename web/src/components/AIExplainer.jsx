@@ -28,10 +28,12 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
             // Add all uploaded files
             for (let i = 0; i < files.length; i++) {
                 const file = files[i]
-                if (file.name.match(/\.(txt|log)$/i)) {
-                    formData.append('log_file', file)
-                } else if (file.name.match(/\.pdbqt$/i)) {
+                if (file.name.match(/\.pdbqt$/i)) {
                     formData.append('pdbqt_file', file)
+                } else {
+                    // Treat all other files as log_file for now to ensure they reach the backend
+                    // The backend will attempt to parse them or just store them for context
+                    formData.append('log_file', file)
                 }
             }
 

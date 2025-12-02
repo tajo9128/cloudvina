@@ -675,6 +675,103 @@ async def explain_results(
     )
 
 
+@app.post("/ai/upload-and-analyze")
+async def upload_and_analyze(
+    log_file: UploadFile = File(...),
+    pdbqt_file: UploadFile = File(None),
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """Upload and analyze docking output files"""
+    from services.vina_parser import parse_vina_log
+    from auth import get_authenticated_client
+    
+    try:
+        # Parse log file
+        content = await log_file.read()
+        
+        analysis = None
+        try:
+            # Try to decode as text
+            text_content = content.decode('utf-8')
+            # Try to parse as Vina log
+            analysis = parse_vina_log(text_content)
+        except Exception:
+            # If decoding or parsing fails, return generic info
+            # This allows uploading PDFs, images, etc. without crashing
+            analysis = {
+                "best_affinity": "N/A",
+                "num_poses": 0,
+                "energy_range_min": 0,
+                "energy_range_max": 0,
+                "raw_content": "File uploaded successfully. Content format not automatically parsable as Vina log.",
+                "filename": log_file.filename
+            }
+        
+        # Simple interactions placeholder (can be enhanced)
+        interactions = None
+        if pdbqt_file:
+            interactions = {
+                "hydrogen_bonds": [],
+                "hydrophobic_contacts": [],
+                "note": "Upload both receptor and ligand PDBQT for detailed analysis"
+            }
+        
+        return {
+            "analysis": analysis,
+            "interactions": interactions,
+            "filenames": {
+                "log": log_file.filename,
+                "pdbqt": pdbqt_file.filename if pdbqt_file else None
+            }
+        }
+    
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Failed to process files: {str(e)}"
+        )
+
+
+@app.post("/ai/explain")
+async def explain_uploaded_results(
+    request: dict = Body(...),
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """Get AI explanation for uploaded docking results"""
+    analysis_data = request.get('analysis_data')
+    user_question = request.get('question')
+    
+    if not analysis_data:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="No analysis data provided"
+        )
+    
+    # Mock job data  
+    job_data = {
+        "receptor_filename": analysis_data.get('filenames', {}).get('receptor', 'Uploaded'),
+        "ligand_filename": analysis_data.get('filenames', {}).get('ligand', 'Uploaded')
+    }
+    
+    analysis = analysis_data.get('analysis')
+    interactions = analysis_data.get('interactions')
+    
+    explainer = AIExplainer()
+    
+    async def generate():
+        async for chunk in explainer.explain_results(
+            job_data, analysis, interactions, user_question
+        ):
+            yield chunk
+    
+    return StreamingResponse(
+        generate(),
+        media_type="text/event-stream"
+    )
+
+
 @app.get("/jobs/{job_id}/export/pdf")
 async def export_job_pdf(
     job_id: str,
