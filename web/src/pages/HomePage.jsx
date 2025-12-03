@@ -238,18 +238,12 @@ export default function HomePage() {
                             </div>
                         </div>
 
-                        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 p-8 mt-8 rounded-2xl text-center">
-                            <p className="font-bold text-blue-900 mb-2 text-xl">🎯 Start Your Research Today</p>
-                            <p className="text-blue-800 max-w-2xl mx-auto">
-                                Join thousands of M.Pharm and PhD students worldwide who trust BioDockify for molecular docking online free. No installation, no credit card, no barriers.
-                            </p>
-                        </div>
                     </div>
                 </div>
             </section>
 
             {/* Features Section - Alternating Layout */}
-            <section id="features" className="py-24 overflow-hidden">
+            <section id="features" className="pt-12 pb-24 overflow-hidden">
                 <div className="container mx-auto px-4">
                     <div className="text-center max-w-3xl mx-auto mb-20">
                         <h2 className="text-primary-600 font-bold tracking-wide uppercase text-sm mb-3">Why BioDockify?</h2>
@@ -307,8 +301,6 @@ export default function HomePage() {
                     </div>
                 </div>
             </section>
-
-            {/* Combined Testimonials & FAQ Section */}
             <section className="py-24 bg-slate-50 border-t border-slate-200">
                 <div className="container mx-auto px-4">
                     <div className="grid lg:grid-cols-2 gap-16 items-start">
