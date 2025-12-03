@@ -36,7 +36,7 @@ class ExportService:
         # Write data
         for job in jobs:
             writer.writerow([
-                job.get('job_id', ''),
+                job.get('id', ''),
                 job.get('status', ''),
                 job.get('binding_affinity', 'N/A'),
                 job.get('created_at', ''),
@@ -63,7 +63,7 @@ class ExportService:
             "total_jobs": len(jobs),
             "jobs": [
                 {
-                    "job_id": job.get('job_id'),
+                    "job_id": job.get('id'),
                     "status": job.get('status'),
                     "binding_affinity": job.get('binding_affinity'),
                     "created_at": job.get('created_at'),
@@ -101,7 +101,7 @@ class ExportService:
         story.append(Spacer(1, 0.1*inch))
         
         info_data = [
-            ['Job ID', job.get('job_id', 'N/A')],
+            ['Job ID', job.get('id', 'N/A')],
             ['Status', job.get('status', 'N/A')],
             ['Date', job.get('created_at', 'N/A')],
             ['Receptor', job.get('receptor_filename') or (job.get('receptor_s3_key', '').split('/')[-1] if job.get('receptor_s3_key') else 'Unknown')],
@@ -255,7 +255,7 @@ class ExportService:
         citation_text = """
         <b>If you use BioDockify in your research, please cite:</b><br/>
         BioDockify: A Cloud-Based Molecular Docking Platform. Available at: https://biodockify.com<br/>
-        Job ID: """ + job.get('job_id', 'N/A') + """ (Accessed: """ + datetime.now().strftime('%Y-%m-%d') + """)<br/><br/>
+        Job ID: """ + job.get('id', 'N/A') + """ (Accessed: """ + datetime.now().strftime('%Y-%m-%d') + """)<br/><br/>
         
         <b>AutoDock Vina Citation:</b><br/>
         Trott, O., & Olson, A. J. (2010). AutoDock Vina: improving the speed and accuracy of docking with a new scoring function, 
@@ -284,6 +284,6 @@ class ExportService:
             buffer,
             media_type="application/pdf",
             headers={
-                "Content-Disposition": f"attachment; filename=BioDockify_Report_{job.get('job_id', 'job')}.pdf"
+                "Content-Disposition": f"attachment; filename=BioDockify_Report_{job.get('id', 'job')}.pdf"
             }
         )
