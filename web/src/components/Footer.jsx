@@ -37,7 +37,7 @@ export default function Footer() {
             <div className="container mx-auto px-4 py-16 lg:py-24">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8">
 
-                    {/* Brand & Contact (Cols 1-4) */}
+                    {/* Brand & Contact + Newsletter (Cols 1-4) */}
                     <div className="lg:col-span-4 space-y-6">
                         <Link to="/" className="inline-block">
                             <div className="flex items-center gap-2 text-white font-bold text-2xl tracking-tight">
@@ -64,6 +64,30 @@ export default function Footer() {
                                 <span>support@biodockify.com</span>
                             </div>
                         </div>
+
+                        {/* Newsletter */}
+                        <div className="pt-4">
+                            <h3 className="text-white font-bold mb-4">Newsletter</h3>
+                            <p className="text-slate-400 mb-4 text-sm">
+                                Subscribe for the latest updates in computational drug discovery.
+                            </p>
+                            <form onSubmit={handleSubscribe} className="space-y-3">
+                                <input
+                                    type="email"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    placeholder="Email Address"
+                                    required
+                                    className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all text-sm"
+                                />
+                                <button
+                                    type="submit"
+                                    className="w-full bg-primary-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-500 transition-colors text-sm"
+                                >
+                                    Subscribe
+                                </button>
+                            </form>
+                        </div>
                     </div>
 
                     {/* Links Column 1 (Cols 5-6) */}
@@ -86,30 +110,6 @@ export default function Footer() {
                             <li><Link to="/docs" className="text-slate-400 hover:text-primary-400 transition-colors">Documentation</Link></li>
                             <li><Link to="/faq" className="text-slate-400 hover:text-primary-400 transition-colors">Help Center</Link></li>
                         </ul>
-                    </div>
-
-                    {/* Newsletter (Cols 9-12) */}
-                    <div className="lg:col-span-4">
-                        <h3 className="text-white font-bold mb-6">Newsletter</h3>
-                        <p className="text-slate-400 mb-4 text-sm">
-                            Subscribe for the latest updates in computational drug discovery.
-                        </p>
-                        <form onSubmit={handleSubscribe} className="space-y-3">
-                            <input
-                                type="email"
-                                value={email}
-                                onChange={(e) => setEmail(e.target.value)}
-                                placeholder="Email Address"
-                                required
-                                className="w-full bg-slate-800/50 border border-slate-700 rounded-lg py-3 px-4 text-white placeholder-slate-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all text-sm"
-                            />
-                            <button
-                                type="submit"
-                                className="w-full bg-primary-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-primary-500 transition-colors text-sm"
-                            >
-                                Subscribe
-                            </button>
-                        </form>
                     </div>
                 </div>
             </div>
