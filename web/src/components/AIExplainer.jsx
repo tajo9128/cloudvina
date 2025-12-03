@@ -174,7 +174,7 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
                         </div>
                         <div>
                             <h3 className="font-bold text-lg">AI Results Explainer</h3>
-                            <p className="text-sm opacity-90">Powered by Grok AI</p>
+                            <p className="text-sm opacity-90">Powered by Gemini 2.0</p>
                         </div>
                     </div>
                     {!showChat && hasData && (
