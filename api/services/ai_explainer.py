@@ -8,7 +8,7 @@ class AIExplainer:
     def __init__(self):
         self.api_key = os.getenv('OPENROUTER_API_KEY')
         self.base_url = "https://openrouter.ai/api/v1"
-        self.model = "x-ai/grok-4.1-fast:free"  # Free Grok model
+        self.model = "google/gemini-2.0-flash-exp:free"  # Faster model
     
     async def explain_results(
         self, 

@@ -51,11 +51,9 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
             setUploadedData(data)
             setShowChat(true)
 
-            // Add success message
-            setMessages([{
-                role: 'assistant',
-                content: `✅ Files analyzed successfully!\n\n📊 Results:\n• Best Affinity: ${data.analysis?.best_affinity || 'N/A'} kcal/mol\n• Poses Found: ${data.analysis?.num_poses || 0}\n• Hydrogen Bonds: ${data.interactions?.hydrogen_bonds?.length || 0}\n• Hydrophobic Contacts: ${data.interactions?.hydrophobic_contacts?.length || 0}\n\nAsk me anything about these results!`
-            }])
+            // Auto-trigger explanation with the new data
+            // We pass data directly because state update might not be immediate
+            getExplanation(null, data)
 
         } catch (error) {
             console.error('Upload error:', error)
@@ -65,7 +63,7 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
         }
     }
 
-    const getExplanation = async (question = null) => {
+    const getExplanation = async (question = null, dataOverride = null) => {
         setLoading(true)
 
         const { data: { session } } = await supabase.auth.getSession()
@@ -74,11 +72,13 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
         try {
             let endpoint, requestBody
 
-            if (uploadedData) {
+            const dataToUse = dataOverride || uploadedData
+
+            if (dataToUse) {
                 // Use uploaded data
                 endpoint = `${API_URL}/ai/explain`
                 requestBody = {
-                    analysis_data: uploadedData,
+                    analysis_data: dataToUse,
                     question
                 }
             } else if (jobId) {
