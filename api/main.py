@@ -23,7 +23,7 @@ from aws_services import (
 from fastapi.responses import StreamingResponse
 from services.ai_explainer import AIExplainer
 from tools import router as tools_router
-from admin import router as admin_router
+from routes.admin import router as admin_router
 
 # NEW: Import SQLAdmin setup
 from admin_sqladmin import setup_admin

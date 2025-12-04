@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
@@ -20,6 +20,11 @@ import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
 import AIAnalysisPage from './pages/AIAnalysisPage'
 import Layout from './components/Layout'
+import AdminLayout from './components/AdminLayout'
+import AdminRoute from './components/AdminRoute'
+import AdminDashboard from './pages/admin/Dashboard'
+import AdminJobs from './pages/admin/Jobs'
+import AdminUsers from './pages/admin/Users'
 
 const queryClient = new QueryClient()
 
@@ -57,8 +62,20 @@ function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
-                <Layout>
-                    <Routes>
+                <Routes>
+                    {/* Admin Routes */}
+                    <Route path="/admin" element={
+                        <AdminRoute>
+                            <AdminLayout />
+                        </AdminRoute>
+                    }>
+                        <Route index element={<AdminDashboard />} />
+                        <Route path="jobs" element={<AdminJobs />} />
+                        <Route path="users" element={<AdminUsers />} />
+                    </Route>
+
+                    {/* Public/User Routes with Main Layout */}
+                    <Route element={<Layout><Outlet /></Layout>}>
                         <Route path="/test" element={<TestPage />} />
                         <Route path="/" element={<HomePage />} />
                         <Route path="/login" element={<LoginPage />} />
@@ -74,7 +91,6 @@ function App() {
                             path="/dock/:jobId"
                             element={session ? <JobResultsPage /> : <Navigate to="/login" />}
                         />
-                        {/* <Route path="/admin" element={session ? <AdminPage /> : <Navigate to="/login" />} /> */}
                         <Route path="/tools/converter" element={<ConverterPage />} />
                         <Route path="/ai-analysis" element={<AIAnalysisPage />} />
                         <Route path="/blog" element={<BlogPage />} />
@@ -83,8 +99,8 @@ function App() {
                         <Route path="/privacy" element={<PrivacyPage />} />
                         <Route path="/terms" element={<TermsPage />} />
                         <Route path="/contact" element={<ContactPage />} />
-                    </Routes>
-                </Layout>
+                    </Route>
+                </Routes>
             </BrowserRouter>
         </QueryClientProvider>
     )
