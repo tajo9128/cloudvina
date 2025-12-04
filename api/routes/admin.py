@@ -4,26 +4,17 @@ from datetime import datetime, timedelta
 from supabase import Client
 import psutil
 import os
-from ..auth import get_current_user
-from ..aws_services import cancel_batch_job
+
+# Use absolute imports (since Render runs from api/ directory)
+from auth import supabase, get_current_user
+from aws_services import cancel_batch_job
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 async def verify_admin(user: dict = Depends(get_current_user)):
     """Verify user is admin by checking the is_admin flag in profiles table"""
-    # In a real app, we might cache this or put it in the JWT claims
-    # For now, we trust the DB lookup done in get_current_user or do a fresh one
     
-    # We need to query the profile to check is_admin because get_current_user might only return auth data
-    # Assuming get_current_user returns the user dict from Supabase Auth
-    
-    # We need a supabase client with service role to check profiles if RLS hides it, 
-    # OR we rely on the user's own ability to see their own profile.
-    # But for security, let's use the service role client to be sure.
-    
-    from ..main import supabase # Import here to avoid circular imports if possible, or use a dependency
-    
-    # Actually, let's just use the user ID to check the profile
+    # Use the user ID to check the profile
     response = supabase.table("profiles").select("is_admin").eq("id", user["id"]).single().execute()
     
     if not response.data or not response.data.get("is_admin"):
@@ -37,10 +28,8 @@ async def get_dashboard_stats(
     hours_back: int = 24
 ):
     """Get comprehensive admin dashboard statistics"""
-    from ..main import supabase
     
     # Real-time job stats
-    # Note: count='exact' is needed to get the total count
     jobs_response = supabase.table("jobs") \
         .select("*", count="exact") \
         .gte("created_at", (datetime.utcnow() - timedelta(hours=hours_back)).isoformat()) \
@@ -53,13 +42,23 @@ async def get_dashboard_stats(
         .execute()
     
     # System metrics
-    system_metrics = {
-        "cpu_percent": psutil.cpu_percent(),
-        "memory_percent": psutil.virtual_memory().percent,
-        "disk_percent": psutil.disk_usage("/").percent,
-        "active_connections": len(psutil.net_connections()),
-        "uptime": psutil.boot_time()
-    }
+    try:
+        system_metrics = {
+            "cpu_percent": psutil.cpu_percent(),
+            "memory_percent": psutil.virtual_memory().percent,
+            "disk_percent": psutil.disk_usage("/").percent,
+            "active_connections": len(psutil.net_connections()),
+            "uptime": psutil.boot_time()
+        }
+    except Exception:
+        # Fallback if psutil fails on certain platforms
+        system_metrics = {
+            "cpu_percent": 0,
+            "memory_percent": 0,
+            "disk_percent": 0,
+            "active_connections": 0,
+            "uptime": 0
+        }
     
     jobs_data = jobs_response.data or []
     
@@ -73,7 +72,7 @@ async def get_dashboard_stats(
         },
         "users": {
             "total": users_response.count,
-            "active_today": users_response.count,  # Simplified for now
+            "active_today": users_response.count,
         },
         "system": system_metrics
     }
@@ -87,7 +86,6 @@ async def get_all_jobs(
     user_id: Optional[str] = None
 ):
     """Get all jobs with filtering"""
-    from ..main import supabase
     
     query = supabase.table("jobs") \
         .select("*, profiles(email, username)") \
@@ -110,7 +108,6 @@ async def cancel_job(
     admin: dict = Depends(verify_admin)
 ):
     """Cancel a running job"""
-    from ..main import supabase
     
     # Log admin action
     supabase.table("admin_actions").insert({
@@ -145,9 +142,7 @@ async def get_all_users(
     offset: int = 0
 ):
     """Get all users"""
-    from ..main import supabase
     
-    # Simple query for now. Complex joins might need RPC or raw SQL if Supabase client limits it.
     response = supabase.table("profiles") \
         .select("*") \
         .order("created_at", desc=True) \
@@ -164,12 +159,6 @@ async def suspend_user(
     admin: dict = Depends(verify_admin)
 ):
     """Suspend a user account"""
-    from ..main import supabase
-    
-    # Update user profile - assuming we add an is_suspended column or similar
-    # For now, let's just log it and maybe update a metadata field if the column doesn't exist yet
-    # But the plan said we'd update profiles. Let's assume we can add a 'status' or 'is_suspended' column later.
-    # For this MVP, we'll just log the action.
     
     # Log admin action
     supabase.table("admin_actions").insert({
@@ -187,7 +176,6 @@ async def suspend_user(
 @router.get("/system/config")
 async def get_system_config(admin: dict = Depends(verify_admin)):
     """Get system configuration"""
-    from ..main import supabase
     
     response = supabase.table("job_queue_control") \
         .select("*") \
@@ -204,7 +192,6 @@ async def update_system_config(
     admin: dict = Depends(verify_admin)
 ):
     """Update system configuration"""
-    from ..main import supabase
     
     config["updated_by"] = admin["id"]
     config["updated_at"] = datetime.utcnow().isoformat()
