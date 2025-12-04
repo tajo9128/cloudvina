@@ -150,3 +150,35 @@ def get_batch_job_status(batch_job_id: str) -> dict:
     
     except ClientError as e:
         raise Exception(f"Failed to get Batch job status: {str(e)}")
+
+
+def cancel_batch_job(batch_job_id: str, reason: str = "Cancelled by user") -> dict:
+    """
+    Cancel/terminate a running AWS Batch job
+    
+    Args:
+        batch_job_id: The AWS Batch job ID
+        reason: Reason for cancellation
+    
+    Returns:
+        Dict with cancellation result
+    """
+    try:
+        # First try to cancel (for jobs in SUBMITTED, PENDING, or RUNNABLE state)
+        response = batch_client.cancel_job(
+            jobId=batch_job_id,
+            reason=reason
+        )
+        return {"status": "cancelled", "message": f"Job {batch_job_id} cancelled"}
+    
+    except ClientError as e:
+        # If cancel fails, try to terminate (for jobs in STARTING or RUNNING state)
+        try:
+            response = batch_client.terminate_job(
+                jobId=batch_job_id,
+                reason=reason
+            )
+            return {"status": "terminated", "message": f"Job {batch_job_id} terminated"}
+        except ClientError as e2:
+            raise Exception(f"Failed to cancel/terminate Batch job: {str(e2)}")
+
