@@ -21,3 +21,4 @@ pandas==2.1.4
 httpx==0.24.1
 email-validator==2.1.0
 biopython==1.84
+psutil==5.9.7
