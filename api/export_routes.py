@@ -1,8 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import List
-from .auth import get_current_user, get_authenticated_client
-from .services.export import ExportService
+from auth import get_current_user, get_authenticated_client
+from services.export import ExportService
 
 router = APIRouter(tags=["Export"])
 security = HTTPBearer()
@@ -18,8 +18,8 @@ async def export_single_job(
     Export a single job to CSV, JSON, or PDF
     """
     try:
-        from .services.vina_parser import parse_vina_log
-        from .services.interaction_analyzer import InteractionAnalyzer
+        from services.vina_parser import parse_vina_log
+        from services.interaction_analyzer import InteractionAnalyzer
         import boto3
         import os
         
