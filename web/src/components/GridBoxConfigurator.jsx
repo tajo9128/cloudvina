@@ -12,9 +12,9 @@ export default function GridBoxConfigurator({ onGridChange, onConfigChange }) {
         setTimeout(() => {
             // Mock auto-detection (will be replaced with real API call)
             setCenter({ x: 15.0, y: 20.5, z: 10.2 })
-            setSize({ x: 22, y: 22, z: 22 })
+            // Size is now fixed at 20x20x20
             setIsDetecting(false)
-            updateGrid({ x: 15.0, y: 20.5, z: 10.2 }, { x: 22, y: 22, z: 22 })
+            updateGrid({ x: 15.0, y: 20.5, z: 10.2 }, size)
         }, 1000)
     }
 
@@ -39,11 +39,12 @@ export default function GridBoxConfigurator({ onGridChange, onConfigChange }) {
         updateGrid(newCenter, size)
     }
 
-    const handleSizeChange = (axis, value) => {
-        const newSize = { ...size, [axis]: parseInt(value) }
-        setSize(newSize)
-        updateGrid(center, newSize)
-    }
+    // Size is fixed, no longer editable
+    // const handleSizeChange = (axis, value) => {
+    //     const newSize = { ...size, [axis]: parseInt(value) }
+    //     setSize(newSize)
+    //     updateGrid(center, newSize)
+    // }
 
     const gridVolume = size.x * size.y * size.z
     const isOptimalSize = gridVolume >= 8000 && gridVolume <= 27000
@@ -167,70 +168,13 @@ export default function GridBoxConfigurator({ onGridChange, onConfigChange }) {
                     </div>
                 </div>
 
-                {/* Box Size */}
+                {/* Box Size - Fixed at 20x20x20 */}
                 <div className="space-y-4">
                     <h4 className="font-semibold text-slate-700 text-sm uppercase tracking-wider">Size (Ų)</h4>
-
-                    <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">X dimension</label>
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="range"
-                                min="10"
-                                max="40"
-                                step="1"
-                                value={size.x}
-                                onChange={(e) => handleSizeChange('x', e.target.value)}
-                                className="flex-1"
-                            />
-                            <input
-                                type="number"
-                                value={size.x}
-                                onChange={(e) => handleSizeChange('x', e.target.value)}
-                                className="w-20 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Y dimension</label>
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="range"
-                                min="10"
-                                max="40"
-                                step="1"
-                                value={size.y}
-                                onChange={(e) => handleSizeChange('y', e.target.value)}
-                                className="flex-1"
-                            />
-                            <input
-                                type="number"
-                                value={size.y}
-                                onChange={(e) => handleSizeChange('y', e.target.value)}
-                                className="w-20 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
-                            />
-                        </div>
-                    </div>
-
-                    <div>
-                        <label className="block text-xs font-medium text-slate-600 mb-1">Z dimension</label>
-                        <div className="flex items-center gap-3">
-                            <input
-                                type="range"
-                                min="10"
-                                max="40"
-                                step="1"
-                                value={size.z}
-                                onChange={(e) => handleSizeChange('z', e.target.value)}
-                                className="flex-1"
-                            />
-                            <input
-                                type="number"
-                                value={size.z}
-                                onChange={(e) => handleSizeChange('z', e.target.value)}
-                                className="w-20 px-2 py-1 text-sm border border-slate-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
-                            />
+                    <div className="p-4 bg-slate-50 rounded-lg border border-slate-300">
+                        <div className="text-center">
+                            <div className="text-2xl font-bold text-slate-900 mb-1">20 × 20 × 20 Ų</div>
+                            <div className="text-xs text-slate-600">Fixed grid box size for optimal performance</div>
                         </div>
                     </div>
                 </div>
