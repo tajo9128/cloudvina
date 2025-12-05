@@ -26,6 +26,7 @@ from .tools import router as tools_router
 from .routes.admin import router as admin_router
 from .routes.evolution import router as evolution_router
 from .services.cavity_detector import CavityDetector
+from .services.drug_properties import DrugPropertiesCalculator
 
 # NEW: Import SQLAdmin setup
 # from admin_sqladmin import setup_admin
@@ -548,6 +549,112 @@ async def detect_cavities(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to detect cavities: {str(e)}"
+        )
+
+
+@app.post("/molecules/drug-properties")
+async def get_drug_properties(
+    request: dict,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Calculate drug-likeness properties and ADMET predictions for a molecule.
+    Returns Lipinski Rule of 5, Veber rules, PAINS alerts, and links to external tools.
+    """
+    try:
+        smiles = request.get("smiles")
+        if not smiles:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="SMILES string is required"
+            )
+        
+        calculator = DrugPropertiesCalculator()
+        properties = calculator.calculate_all(smiles)
+        
+        if "error" in properties:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=properties["error"]
+            )
+        
+        return properties
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate drug properties: {str(e)}"
+        )
+
+
+@app.get("/jobs/{job_id}/drug-properties")
+async def get_job_drug_properties(
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Get drug-likeness properties for the ligand used in a docking job.
+    Extracts SMILES from the docked ligand and calculates properties.
+    """
+    try:
+        from auth import get_authenticated_client
+        import boto3
+        from rdkit import Chem
+        
+        auth_client = get_authenticated_client(credentials.credentials)
+
+        # Get job from database
+        job_response = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
+        
+        if not job_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Job not found"
+            )
+        
+        job = job_response.data[0]
+        
+        if job['status'] != 'SUCCEEDED':
+            return {"job_id": job_id, "status": job['status'], "properties": None, "message": "Job not completed"}
+        
+        # Try to get ligand SMILES from docked output
+        s3 = boto3.client('s3', region_name=AWS_REGION)
+        ligand_key = f"{job_id}/output.pdbqt"
+        
+        try:
+            response = s3.get_object(Bucket=S3_BUCKET, Key=ligand_key)
+            pdbqt_content = response['Body'].read().decode('utf-8')
+            
+            # Convert PDBQT to mol and then to SMILES
+            # First try to extract from the original ligand if available
+            mol = Chem.MolFromPDBBlock(pdbqt_content)
+            if mol:
+                smiles = Chem.MolToSmiles(mol)
+            else:
+                return {"job_id": job_id, "properties": None, "message": "Could not extract SMILES from ligand"}
+            
+        except Exception as e:
+            return {"job_id": job_id, "properties": None, "message": f"Could not retrieve ligand: {str(e)}"}
+        
+        calculator = DrugPropertiesCalculator()
+        properties = calculator.calculate_all(smiles)
+        
+        return {
+            "job_id": job_id,
+            "smiles": smiles,
+            "properties": properties
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to calculate drug properties: {str(e)}"
         )
 
 

@@ -5,6 +5,7 @@ import { supabase } from '../supabaseClient'
 import ExportButtons from '../components/ExportButtons'
 import DockingResultsTable from '../components/DockingResultsTable'
 import InteractionTable from '../components/InteractionTable'
+import DrugPropertiesPanel from '../components/DrugPropertiesPanel'
 import { API_URL } from '../config'
 import AIExplainer from '../components/AIExplainer'
 import EvolutionPanel from '../components/EvolutionPanel'
@@ -325,15 +326,15 @@ export default function JobResultsPage() {
                                             key={pocket.pocket_id}
                                             onClick={() => setSelectedPocketId(pocket.pocket_id)}
                                             className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedPocketId === pocket.pocket_id
-                                                    ? 'bg-primary-600 text-white shadow-md'
-                                                    : 'bg-white text-slate-700 border border-slate-200 hover:border-primary-300'
+                                                ? 'bg-primary-600 text-white shadow-md'
+                                                : 'bg-white text-slate-700 border border-slate-200 hover:border-primary-300'
                                                 }`}
                                         >
                                             <div className="flex items-center gap-2">
                                                 <span>Pocket {pocket.pocket_id}</span>
                                                 <span className={`text-xs px-1.5 py-0.5 rounded ${selectedPocketId === pocket.pocket_id
-                                                        ? 'bg-white/20'
-                                                        : 'bg-primary-100 text-primary-700'
+                                                    ? 'bg-white/20'
+                                                    : 'bg-primary-100 text-primary-700'
                                                     }`}>
                                                     {(pocket.score * 100).toFixed(0)}%
                                                 </span>
@@ -387,6 +388,13 @@ export default function JobResultsPage() {
                         {job.status === 'SUCCEEDED' && interactions && !interactions.error && (
                             <div className="p-8 bg-white border-t border-slate-100">
                                 <InteractionTable interactions={interactions} />
+                            </div>
+                        )}
+
+                        {/* Drug Properties Panel (NEW) */}
+                        {job.status === 'SUCCEEDED' && (
+                            <div className="p-8 bg-white border-t border-slate-100">
+                                <DrugPropertiesPanel jobId={jobId} />
                             </div>
                         )}
 
