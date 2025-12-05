@@ -590,6 +590,39 @@ async def get_drug_properties(
         )
 
 
+@app.post("/molecules/bioactivity")
+async def get_bioactivity(
+    request: dict,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Fetch bioactivity data from PubChem and ChEMBL.
+    Returns compound info, targets, and activity values.
+    """
+    try:
+        from services.bioactivity_service import get_bioactivity_data
+        
+        smiles = request.get("smiles")
+        if not smiles:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="SMILES string is required"
+            )
+        
+        data = get_bioactivity_data(smiles)
+        
+        return data
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch bioactivity data: {str(e)}"
+        )
+
+
 @app.get("/jobs/{job_id}/drug-properties")
 async def get_job_drug_properties(
     job_id: str,

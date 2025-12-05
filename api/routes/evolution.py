@@ -1,9 +1,24 @@
-from fastapi import APIRouter, WebSocket, WebSocketDisconnect, Depends
+from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from ..services.evolution_engine import GeneticAlgorithm
 import json
 import asyncio
+import boto3
+import os
+from rdkit import Chem
 
 router = APIRouter()
+
+def parse_vina_config(config_content):
+    """Parse Vina config file to get center and size."""
+    config = {}
+    for line in config_content.splitlines():
+        if '=' in line:
+            key, value = line.split('=')
+            config[key.strip()] = float(value.strip())
+    
+    center = (config.get('center_x', 0), config.get('center_y', 0), config.get('center_z', 0))
+    size = (config.get('size_x', 20), config.get('size_y', 20), config.get('size_z', 20))
+    return center, size
 
 @router.websocket("/ws/evolve/{job_id}")
 async def websocket_endpoint(websocket: WebSocket, job_id: str):
@@ -14,21 +29,54 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str):
     await websocket.accept()
     
     try:
-        # 1. Receive initial configuration from client (e.g., target protein, seed molecule)
+        # 1. Receive initial handshake
         data = await websocket.receive_text()
-        config = json.loads(data)
+        _ = json.loads(data)
         
-        # Mock data for now - in production, fetch PDBQT from S3 using job_id
-        receptor_content = "MOCK_PDBQT_CONTENT" 
-        center = (0, 0, 0)
-        size = (20, 20, 20)
+        # 2. Fetch Job Data from S3
+        s3 = boto3.client('s3', region_name=os.getenv("AWS_REGION", "us-east-1"))
+        bucket = os.getenv("S3_BUCKET", "BioDockify-jobs-use1-1763775915")
         
-        # 2. Initialize the Engine
-        engine = GeneticAlgorithm(receptor_content, center, size)
-        
-        # 3. Initialize Population (using a simple seed for demo)
-        # In production, use the ligand uploaded by the user
-        seed_smiles = ["c1ccccc1"] # Benzene
+        try:
+            # Fetch Receptor
+            # Try .pdb first, then .pdbqt
+            try:
+                receptor_obj = s3.get_object(Bucket=bucket, Key=f"{job_id}/receptor.pdb")
+                receptor_content = receptor_obj['Body'].read().decode('utf-8')
+            except:
+                receptor_obj = s3.get_object(Bucket=bucket, Key=f"{job_id}/receptor.pdbqt")
+                receptor_content = receptor_obj['Body'].read().decode('utf-8')
+
+            # Fetch Config
+            config_obj = s3.get_object(Bucket=bucket, Key=f"{job_id}/config.txt")
+            config_content = config_obj['Body'].read().decode('utf-8')
+            center, size = parse_vina_config(config_content)
+
+            # Fetch Docked Ligand (Output)
+            output_obj = s3.get_object(Bucket=bucket, Key=f"{job_id}/output.pdbqt")
+            output_content = output_obj['Body'].read().decode('utf-8')
+            
+            # Extract SMILES from Docked Ligand
+            # Use the first model in the PDBQT
+            mol = Chem.MolFromPDBBlock(output_content)
+            if mol:
+                seed_smiles = [Chem.MolToSmiles(mol)]
+            else:
+                # Fallback if RDKit fails to parse PDBQT directly (common with PDBQT)
+                # Try to fetch original ligand if possible, or error out
+                # For now, let's try a fallback or just notify
+                await websocket.send_json({"status": "Error", "message": "Could not parse docked ligand."})
+                return
+
+        except Exception as e:
+            print(f"S3 Fetch Error: {e}")
+            await websocket.send_json({"status": "Error", "message": f"Failed to load job data: {str(e)}"})
+            await websocket.close()
+            return
+
+        # 3. Initialize the Engine
+        # Auto-detect format (PDB or PDBQT)
+        engine = GeneticAlgorithm(receptor_content, center, size, receptor_format='auto')
         
         # 4. Run the Evolution Loop
         for result in engine.evolve(seed_smiles):
@@ -36,8 +84,8 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str):
             result["status"] = "Running"
             await websocket.send_json(result)
             
-            # Simulate processing time (remove in production)
-            await asyncio.sleep(0.5) 
+            # Small delay to not overwhelm frontend
+            await asyncio.sleep(0.1) 
             
         # 5. Finish
         await websocket.send_json({"status": "Completed", "message": "Evolution finished."})
@@ -47,4 +95,7 @@ async def websocket_endpoint(websocket: WebSocket, job_id: str):
         print(f"Client disconnected from job {job_id}")
     except Exception as e:
         print(f"Error in evolution loop: {str(e)}")
-        await websocket.close(code=1011)
+        try:
+            await websocket.close(code=1011)
+        except:
+            pass

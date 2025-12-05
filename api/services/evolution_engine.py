@@ -18,11 +18,11 @@ import tempfile
 import os
 
 class GeneticAlgorithm:
-    def __init__(self, receptor_pdbqt_content, center, size):
+    def __init__(self, receptor_content, center, size, receptor_format='pdbqt'):
         """
         Initialize the Evolutionary Engine.
         """
-        self.receptor_content = receptor_pdbqt_content
+        self.receptor_content = receptor_content
         self.center = center
         self.size = size
         self.protein = None
@@ -32,15 +32,29 @@ class GeneticAlgorithm:
         try:
             self.scorer = rfscore.rfscore(version=1)
             
+            # Determine format if not provided (heuristic)
+            if receptor_format == 'auto':
+                if 'ATOM' in receptor_content and 'ROOT' in receptor_content:
+                    receptor_format = 'pdbqt'
+                else:
+                    receptor_format = 'pdb'
+
             # Save receptor to temp file for ODDT
-            self.temp_receptor = tempfile.NamedTemporaryFile(delete=False, suffix='.pdbqt')
-            self.temp_receptor.write(receptor_pdbqt_content.encode('utf-8'))
+            suffix = f".{receptor_format}"
+            self.temp_receptor = tempfile.NamedTemporaryFile(delete=False, suffix=suffix)
+            self.temp_receptor.write(receptor_content.encode('utf-8'))
             self.temp_receptor.close()
             self.temp_receptor_path = self.temp_receptor.name
             
             # Load Protein into ODDT
-            # Note: ODDT reads files based on extension
-            self.protein = next(oddt.toolkit.readfile('pdbqt', self.temp_receptor_path))
+            try:
+                self.protein = next(oddt.toolkit.readfile(receptor_format, self.temp_receptor_path))
+            except Exception:
+                # Fallback: try the other format
+                other_format = 'pdb' if receptor_format == 'pdbqt' else 'pdbqt'
+                print(f"Warning: Failed to read as {receptor_format}, trying {other_format}")
+                self.protein = next(oddt.toolkit.readfile(other_format, self.temp_receptor_path))
+
             self.protein.protein = True
             
             # Set the scorer's protein
