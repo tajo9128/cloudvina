@@ -13,20 +13,20 @@ from datetime import datetime
 import uuid
 
 # Import auth and AWS utilities
-from .auth import supabase, get_current_user
-from .aws_services import (
+from auth import supabase, get_current_user
+from aws_services import (
     generate_presigned_upload_urls,
     generate_presigned_download_url,
     submit_batch_job,
     get_batch_job_status
 )
 from fastapi.responses import StreamingResponse
-from .services.ai_explainer import AIExplainer
-from .tools import router as tools_router
-from .routes.admin import router as admin_router
-from .routes.evolution import router as evolution_router
-from .services.cavity_detector import CavityDetector
-from .services.drug_properties import DrugPropertiesCalculator
+from services.ai_explainer import AIExplainer
+from tools import router as tools_router
+from routes.admin import router as admin_router
+from routes.evolution import router as evolution_router
+from services.cavity_detector import CavityDetector
+from services.drug_properties import DrugPropertiesCalculator
 
 # NEW: Import SQLAdmin setup
 # from admin_sqladmin import setup_admin
