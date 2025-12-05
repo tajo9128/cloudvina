@@ -18,6 +18,10 @@ const ThreeDViewer = () => {
     const [showHBonds, setShowHBonds] = useState(true);
     const [showHydrophobic, setShowHydrophobic] = useState(false);
 
+    // Cavity Visualization State (NEW)
+    const [cavities, setCavities] = useState(null);
+    const [showCavities, setShowCavities] = useState(true);
+
     // Initialize 3Dmol Viewer
     useEffect(() => {
         if (!viewerRef.current) return;
@@ -77,6 +81,22 @@ const ThreeDViewer = () => {
                     } catch (intErr) {
                         console.warn('Failed to load interactions:', intErr);
                     }
+
+                    // Fetch cavities for pocket visualization
+                    try {
+                        const cavRes = await fetch(`${API_URL}/jobs/${jobId}/detect-cavities`, {
+                            headers: { 'Authorization': `Bearer ${session.access_token}` }
+                        });
+                        if (cavRes.ok) {
+                            const cavData = await cavRes.json();
+                            if (cavData.cavities) {
+                                setCavities(cavData.cavities);
+                                console.log('Loaded cavities:', cavData.cavities);
+                            }
+                        }
+                    } catch (cavErr) {
+                        console.warn('Failed to load cavities:', cavErr);
+                    }
                 } else {
                     setStatus(`Job Status: ${job.status}`);
                 }
@@ -89,23 +109,64 @@ const ThreeDViewer = () => {
         loadJobData();
     }, [jobId, viewer]);
 
-    // Draw interactions as lines when toggle changes
+    // Draw interactions and cavities when toggle changes
     useEffect(() => {
-        if (!viewer || !interactions) return;
+        if (!viewer) return;
 
         // Clear existing shapes
         viewer.removeAllShapes();
 
         // Draw H-bonds as cyan dashed lines
-        if (showHBonds && interactions.hydrogen_bonds) {
+        if (showHBonds && interactions?.hydrogen_bonds) {
             interactions.hydrogen_bonds.forEach(bond => {
-                // We need coordinates - they might not be in the simple format
-                // For now, highlight the residue instead
+                if (bond.ligand_coords && bond.protein_coords) {
+                    viewer.addCylinder({
+                        start: { x: bond.ligand_coords[0], y: bond.ligand_coords[1], z: bond.ligand_coords[2] },
+                        end: { x: bond.protein_coords[0], y: bond.protein_coords[1], z: bond.protein_coords[2] },
+                        radius: 0.08,
+                        color: '#2563eb',
+                        dashed: true
+                    });
+                }
+            });
+        }
+
+        // Draw hydrophobic contacts as yellow dotted lines
+        if (showHydrophobic && interactions?.hydrophobic_contacts) {
+            interactions.hydrophobic_contacts.forEach(contact => {
+                if (contact.ligand_coords && contact.protein_coords) {
+                    viewer.addCylinder({
+                        start: { x: contact.ligand_coords[0], y: contact.ligand_coords[1], z: contact.ligand_coords[2] },
+                        end: { x: contact.protein_coords[0], y: contact.protein_coords[1], z: contact.protein_coords[2] },
+                        radius: 0.05,
+                        color: '#eab308',
+                        dashed: true
+                    });
+                }
+            });
+        }
+
+        // Draw cavities as colored spheres
+        if (showCavities && cavities) {
+            const colors = ['#22c55e', '#f97316', '#a855f7', '#ec4899', '#14b8a6'];
+            cavities.forEach((cavity, i) => {
+                viewer.addSphere({
+                    center: { x: cavity.center_x, y: cavity.center_y, z: cavity.center_z },
+                    radius: Math.min(cavity.size_x, cavity.size_y, cavity.size_z) / 4,
+                    color: colors[i % colors.length],
+                    opacity: 0.3
+                });
+                viewer.addLabel(`Pocket ${cavity.pocket_id}`, {
+                    position: { x: cavity.center_x, y: cavity.center_y + 3, z: cavity.center_z },
+                    backgroundColor: colors[i % colors.length],
+                    fontColor: 'white',
+                    fontSize: 12
+                });
             });
         }
 
         viewer.render();
-    }, [viewer, interactions, showHBonds, showHydrophobic]);
+    }, [viewer, interactions, cavities, showHBonds, showHydrophobic, showCavities]);
 
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
@@ -230,6 +291,35 @@ const ThreeDViewer = () => {
                                 </div>
                                 <p className="text-xs text-slate-400 mt-3">
                                     Key residues: {interactions.residues_involved?.slice(0, 5).join(', ')}
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Cavity Display Controls (NEW) */}
+                        {cavities && (
+                            <div className="card p-6">
+                                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
+                                    Binding Pockets
+                                </h2>
+                                <div className="space-y-3">
+                                    <label className="flex items-center justify-between cursor-pointer">
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-3 h-3 rounded-full bg-green-400"></span>
+                                            <span className="text-sm text-slate-700">Show Cavities</span>
+                                            <span className="text-xs bg-green-100 text-green-700 px-1.5 py-0.5 rounded">
+                                                {cavities.length}
+                                            </span>
+                                        </span>
+                                        <input
+                                            type="checkbox"
+                                            checked={showCavities}
+                                            onChange={(e) => setShowCavities(e.target.checked)}
+                                            className="w-4 h-4 text-green-600 rounded border-slate-300 focus:ring-green-500"
+                                        />
+                                    </label>
+                                </div>
+                                <p className="text-xs text-slate-400 mt-3">
+                                    Detected {cavities.length} potential binding {cavities.length === 1 ? 'site' : 'sites'}
                                 </p>
                             </div>
                         )}
