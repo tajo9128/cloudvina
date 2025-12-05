@@ -5,9 +5,9 @@ from supabase import Client
 import psutil
 import os
 
-# Use absolute imports (since Render runs from api/ directory)
-from auth import supabase, get_current_user
-from aws_services import cancel_batch_job
+# Use relative imports
+from ..auth import supabase, get_current_user
+from ..aws_services import cancel_batch_job
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 

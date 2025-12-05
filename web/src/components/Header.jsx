@@ -24,7 +24,7 @@ export default function Header() {
                 </Link>
 
                 <nav className="hidden md:flex items-center space-x-8">
-                    {['Features', 'AI Analysis', 'Tools', 'Blog', 'Dashboard'].map((item) => (
+                    {['Features', 'AI Analysis', '3D Viewer', 'Tools', 'Blog', 'Dashboard'].map((item) => (
                         <Link
                             key={item}
                             to={
@@ -32,7 +32,8 @@ export default function Header() {
                                     item === 'Dashboard' ? '/dashboard' :
                                         item === 'Blog' ? '/blog' :
                                             item === 'AI Analysis' ? '/ai-analysis' :
-                                                `/#${item.toLowerCase()}`
+                                                item === '3D Viewer' ? '/3d-viewer' :
+                                                    `/#${item.toLowerCase()}`
                             }
                             className={`font-medium text-sm uppercase tracking-wide transition-colors ${scrolled ? 'text-slate-600 hover:text-primary-600' : 'text-slate-700 hover:text-primary-600'}`}
                         >

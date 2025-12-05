@@ -7,6 +7,7 @@ import DockingResultsTable from '../components/DockingResultsTable'
 import InteractionTable from '../components/InteractionTable'
 import { API_URL } from '../config'
 import AIExplainer from '../components/AIExplainer'
+import EvolutionPanel from '../components/EvolutionPanel'
 
 export default function JobResultsPage() {
     const { jobId } = useParams()
@@ -17,6 +18,7 @@ export default function JobResultsPage() {
     const [error, setError] = useState(null)
     const [elapsedTime, setElapsedTime] = useState(0)
     const [pdbqtData, setPdbqtData] = useState(null)
+    const [showEvolution, setShowEvolution] = useState(false)
     const ESTIMATED_DURATION = 300 // 5 minutes in seconds
 
     useEffect(() => {
@@ -34,12 +36,6 @@ export default function JobResultsPage() {
         }
         return () => clearInterval(timer)
     }, [job])
-
-    const getProgressColor = (percentage) => {
-        if (percentage < 30) return 'bg-primary-500'
-        if (percentage < 70) return 'bg-secondary-500'
-        return 'bg-green-500'
-    }
 
     const formatTime = (seconds) => {
         const mins = Math.floor(seconds / 60)
@@ -258,15 +254,26 @@ export default function JobResultsPage() {
 
                             <div className="p-6 text-center">
                                 <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ligand</h2>
-                                <div className="text-lg font-medium text-slate-700 truncate px-4" title={job.ligand_filename || 'Unknown'}>
+                                <div className="text-lg font-medium text-slate-700 truncate px-4 mb-2" title={job.ligand_filename || 'Unknown'}>
                                     {job.ligand_filename || 'Unknown'}
+                                </div>
+                                <div className="flex flex-col gap-2 mt-2">
+                                    <Link to={`/3d-viewer/${jobId}`} className="inline-flex items-center justify-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold hover:bg-blue-200 transition-colors">
+                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                        View in 3D
+                                    </Link>
+
+                                    {/* Refine / Evolution Button */}
+                                    <button
+                                        onClick={() => setShowEvolution(true)}
+                                        className="inline-flex items-center justify-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-200 transition-colors border border-purple-200"
+                                    >
+                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                        Refine Results (AI)
+                                    </button>
                                 </div>
                             </div>
                         </div>
-
-
-
-
 
                         {/* Docking Results Table */}
                         {job.status === 'SUCCEEDED' && analysis && !analysis.error && analysis.poses && (
@@ -275,15 +282,12 @@ export default function JobResultsPage() {
                             </div>
                         )}
 
-
-
                         {/* Interaction Analysis Table */}
                         {job.status === 'SUCCEEDED' && interactions && !interactions.error && (
                             <div className="p-8 bg-white border-t border-slate-100">
                                 <InteractionTable interactions={interactions} />
                             </div>
                         )}
-
 
                         {/* AI Explainer */}
                         {job.status === 'SUCCEEDED' && (
@@ -366,6 +370,14 @@ export default function JobResultsPage() {
                     </div>
                 </div>
             </main>
+
+            {showEvolution && (
+                <EvolutionPanel
+                    jobId={jobId}
+                    initialPdbqt={pdbqtData}
+                    onClose={() => setShowEvolution(false)}
+                />
+            )}
         </div>
     )
 }

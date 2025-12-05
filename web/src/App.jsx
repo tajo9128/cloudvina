@@ -19,6 +19,7 @@ import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
 import AIAnalysisPage from './pages/AIAnalysisPage'
+import ThreeDViewer from './pages/3DViewer'
 import Layout from './components/Layout'
 import AdminLayout from './components/AdminLayout'
 import AdminRoute from './components/AdminRoute'
@@ -99,6 +100,8 @@ function App() {
                         <Route path="/privacy" element={<PrivacyPage />} />
                         <Route path="/terms" element={<TermsPage />} />
                         <Route path="/contact" element={<ContactPage />} />
+                        <Route path="/3d-viewer" element={<ThreeDViewer />} />
+                        <Route path="/3d-viewer/:jobId" element={<ThreeDViewer />} />
                     </Route>
                 </Routes>
             </BrowserRouter>

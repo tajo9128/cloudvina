@@ -13,20 +13,21 @@ from datetime import datetime
 import uuid
 
 # Import auth and AWS utilities
-from auth import supabase, get_current_user
-from aws_services import (
+from .auth import supabase, get_current_user
+from .aws_services import (
     generate_presigned_upload_urls,
     generate_presigned_download_url,
     submit_batch_job,
     get_batch_job_status
 )
 from fastapi.responses import StreamingResponse
-from services.ai_explainer import AIExplainer
-from tools import router as tools_router
-from routes.admin import router as admin_router
+from .services.ai_explainer import AIExplainer
+from .tools import router as tools_router
+from .routes.admin import router as admin_router
+from .routes.evolution import router as evolution_router
 
 # NEW: Import SQLAdmin setup
-from admin_sqladmin import setup_admin
+# from admin_sqladmin import setup_admin
 
 app = FastAPI(
     title="BioDockify API",
@@ -39,9 +40,9 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event():
     print("="*50)
-    print("🚀 BioDockify API v1.1.0 - Deployed at " + datetime.utcnow().isoformat())
-    print("✓ Fix: RateLimiter Admin API call removed")
-    print("✓ Fix: Signup handled by DB Triggers")
+    print("BioDockify API v1.1.0 - Deployed at " + datetime.utcnow().isoformat())
+    print("Fix: RateLimiter Admin API call removed")
+    print("Fix: Signup handled by DB Triggers")
     print("="*50)
 
 @app.get("/health")
@@ -78,12 +79,13 @@ app.add_middleware(
 # app.add_middleware(ActivityLoggerMiddleware)
 
 # NEW: Setup SQLAdmin (Django-style admin panel at /sqladmin)
-admin = setup_admin(app)
+# admin = setup_admin(app)
 
 app.include_router(tools_router)
 app.include_router(admin_router)
-from export_routes import router as export_router
+from .export_routes import router as export_router
 app.include_router(export_router)
+app.include_router(evolution_router)
 
 # ============================================================================
 # Configuration
@@ -804,10 +806,10 @@ async def export_job_json(
 async def _generate_job_export(job_id, current_user, credentials, format_type):
     """Helper to generate exports - auto-triggers analysis if missing"""
     try:
-        from auth import get_authenticated_client
-        from services.export import ExportService
-        from services.vina_parser import parse_vina_log
-        from services.interaction_analyzer import InteractionAnalyzer
+        from .auth import get_authenticated_client
+        from .services.export import ExportService
+        from .services.vina_parser import parse_vina_log
+        from .services.interaction_analyzer import InteractionAnalyzer
         import boto3
         
         auth_client = get_authenticated_client(credentials.credentials)
