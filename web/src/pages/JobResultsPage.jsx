@@ -508,6 +508,8 @@ export default function JobResultsPage() {
                                                 width="100%"
                                                 height="100%"
                                                 title=""
+                                                interactions={interactions}
+                                                cavities={detectedPockets}
                                             />
                                         </div>
                                     </div>

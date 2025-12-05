@@ -68,7 +68,9 @@ class InteractionAnalyzer:
                                 "ligand_atom": lig_name,
                                 "protein_atom": protein_atom.get_name(),
                                 "residue": res_id,
-                                "distance": round(dist, 2)
+                                "distance": round(dist, 2),
+                                "ligand_coords": lig_coord.tolist(),
+                                "protein_coords": protein_atom.get_coord().tolist()
                             })
                             interactions["residues_involved"].add(res_id)
                             continue 
@@ -80,7 +82,9 @@ class InteractionAnalyzer:
                                 "ligand_atom": lig_name,
                                 "protein_atom": protein_atom.get_name(),
                                 "residue": res_id,
-                                "distance": round(dist, 2)
+                                "distance": round(dist, 2),
+                                "ligand_coords": lig_coord.tolist(),
+                                "protein_coords": protein_atom.get_coord().tolist()
                             })
                             interactions["residues_involved"].add(res_id)
 
