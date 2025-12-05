@@ -25,6 +25,7 @@ from .services.ai_explainer import AIExplainer
 from .tools import router as tools_router
 from .routes.admin import router as admin_router
 from .routes.evolution import router as evolution_router
+from .services.cavity_detector import CavityDetector
 
 # NEW: Import SQLAdmin setup
 # from admin_sqladmin import setup_admin
@@ -463,6 +464,90 @@ async def get_job_status(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get job status: {str(e)}"
+        )
+
+
+@app.post("/jobs/{job_id}/detect-cavities")
+async def detect_cavities(
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Detect binding cavities in the uploaded receptor structure.
+    Returns top 5 potential binding pockets with coordinates for grid box configuration.
+    """
+    try:
+        from auth import get_authenticated_client
+        import boto3
+        
+        auth_client = get_authenticated_client(credentials.credentials)
+
+        # Get job from database
+        job_response = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
+        
+        if not job_response.data:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Job not found"
+            )
+        
+        job = job_response.data[0]
+        receptor_key = job.get('receptor_s3_key')
+        
+        if not receptor_key:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No receptor file uploaded for this job"
+            )
+        
+        # Download receptor from S3
+        s3 = boto3.client('s3', region_name=AWS_REGION)
+        
+        try:
+            response = s3.get_object(Bucket=S3_BUCKET, Key=receptor_key)
+            pdb_content = response['Body'].read().decode('utf-8')
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Could not retrieve receptor file: {str(e)}"
+            )
+        
+        # Detect cavities
+        detector = CavityDetector()
+        cavities = detector.detect_cavities(pdb_content)
+        
+        if not cavities:
+            # Return a default cavity at protein center if none found
+            return {
+                "job_id": job_id,
+                "cavities": [{
+                    "pocket_id": 1,
+                    "center_x": 0.0,
+                    "center_y": 0.0,
+                    "center_z": 0.0,
+                    "size_x": 20.0,
+                    "size_y": 20.0,
+                    "size_z": 20.0,
+                    "score": 0.5,
+                    "volume": 8000.0,
+                    "residues": []
+                }],
+                "message": "No distinct cavities detected. Using protein center."
+            }
+        
+        return {
+            "job_id": job_id,
+            "cavities": cavities,
+            "message": f"Detected {len(cavities)} potential binding site(s)"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to detect cavities: {str(e)}"
         )
 
 

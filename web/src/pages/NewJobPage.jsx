@@ -13,6 +13,12 @@ export default function NewJobPage() {
     const [error, setError] = useState(null)
     const [preparationStep, setPreparationStep] = useState(0) // 0=not started, 1-4=prep steps
 
+    // Blind Docking State (NEW)
+    const [autoDetect, setAutoDetect] = useState(true) // Default to auto-detect
+    const [detectedCavities, setDetectedCavities] = useState([])
+    const [selectedPocket, setSelectedPocket] = useState(null)
+    const [detectingCavities, setDetectingCavities] = useState(false)
+
     // Grid Box State
     const [gridParams, setGridParams] = useState({
         center_x: 0,
@@ -164,6 +170,47 @@ export default function NewJobPage() {
             setPreparationStep(2) // Ligand preparation
             await new Promise(r => setTimeout(r, 1500))
 
+            // 2.75 Cavity Detection (if auto-detect enabled)
+            let finalGridParams = gridParams
+            if (autoDetect) {
+                setPreparationStep(2.5) // Show detecting cavities
+                setError('🔍 Detecting binding sites...')
+                setDetectingCavities(true)
+
+                try {
+                    const cavityRes = await fetch(`${API_URL}/jobs/${job_id}/detect-cavities`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${session.access_token}`
+                        }
+                    })
+
+                    if (cavityRes.ok) {
+                        const cavityData = await cavityRes.json()
+                        if (cavityData.cavities && cavityData.cavities.length > 0) {
+                            setDetectedCavities(cavityData.cavities)
+                            // Auto-select the best pocket (first one, highest score)
+                            const bestPocket = cavityData.cavities[0]
+                            setSelectedPocket(bestPocket.pocket_id)
+                            finalGridParams = {
+                                center_x: bestPocket.center_x,
+                                center_y: bestPocket.center_y,
+                                center_z: bestPocket.center_z,
+                                size_x: bestPocket.size_x,
+                                size_y: bestPocket.size_y,
+                                size_z: bestPocket.size_z
+                            }
+                            setGridParams(finalGridParams)
+                            console.log('Detected cavities:', cavityData.cavities.length, 'Using pocket:', bestPocket.pocket_id)
+                        }
+                    }
+                } catch (cavityErr) {
+                    console.warn('Cavity detection failed, using default grid:', cavityErr)
+                }
+                setDetectingCavities(false)
+                setError(null)
+            }
+
             setPreparationStep(3) // Config generation
             await new Promise(r => setTimeout(r, 1000))
 
@@ -182,12 +229,12 @@ export default function NewJobPage() {
                 },
                 body: JSON.stringify({
                     grid_params: {
-                        grid_center_x: parseFloat(gridParams.center_x),
-                        grid_center_y: parseFloat(gridParams.center_y),
-                        grid_center_z: parseFloat(gridParams.center_z),
-                        grid_size_x: parseFloat(gridParams.size_x),
-                        grid_size_y: parseFloat(gridParams.size_y),
-                        grid_size_z: parseFloat(gridParams.size_z)
+                        grid_center_x: parseFloat(finalGridParams.center_x),
+                        grid_center_y: parseFloat(finalGridParams.center_y),
+                        grid_center_z: parseFloat(finalGridParams.center_z),
+                        grid_size_x: parseFloat(finalGridParams.size_x),
+                        grid_size_y: parseFloat(finalGridParams.size_y),
+                        grid_size_z: parseFloat(finalGridParams.size_z)
                     }
                 })
             })
@@ -331,14 +378,104 @@ export default function NewJobPage() {
 
                         {/* Grid Box Configuration */}
                         <div className="mb-8">
-                            <h3 className="text-lg font-bold text-slate-800 mb-4">Grid Box Configuration</h3>
-                            <p className="text-slate-500 text-sm mb-4">
-                                Define the search space for docking. The box should be centered on the binding site and large enough to contain the ligand.
-                            </p>
-                            <GridBoxConfigurator
-                                onConfigChange={setGridParams}
-                                initialConfig={gridParams}
-                            />
+                            <div className="flex items-center justify-between mb-4">
+                                <h3 className="text-lg font-bold text-slate-800">Binding Site Configuration</h3>
+                                {/* Auto/Manual Toggle */}
+                                <div className="flex items-center gap-3 bg-slate-100 rounded-lg p-1">
+                                    <button
+                                        type="button"
+                                        onClick={() => setAutoDetect(true)}
+                                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${autoDetect
+                                            ? 'bg-primary-600 text-white shadow-sm'
+                                            : 'text-slate-600 hover:text-slate-900'
+                                            }`}
+                                    >
+                                        🔍 Auto-Detect
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setAutoDetect(false)}
+                                        className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${!autoDetect
+                                            ? 'bg-primary-600 text-white shadow-sm'
+                                            : 'text-slate-600 hover:text-slate-900'
+                                            }`}
+                                    >
+                                        ✏️ Manual
+                                    </button>
+                                </div>
+                            </div>
+
+                            {autoDetect ? (
+                                /* Auto-Detect Mode */
+                                <div className="bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl p-6 border border-primary-100">
+                                    <p className="text-slate-600 text-sm mb-4">
+                                        <span className="font-semibold text-primary-700">Blind Docking Mode:</span> We'll automatically detect potential binding sites on your protein and dock to the best pocket.
+                                    </p>
+
+                                    {detectedCavities.length > 0 ? (
+                                        <div className="space-y-3">
+                                            <label className="block text-sm font-medium text-slate-700">
+                                                Select Binding Pocket
+                                            </label>
+                                            <select
+                                                value={selectedPocket || ''}
+                                                onChange={(e) => {
+                                                    const pocket = detectedCavities.find(c => c.pocket_id === parseInt(e.target.value))
+                                                    setSelectedPocket(pocket?.pocket_id || null)
+                                                    if (pocket) {
+                                                        setGridParams({
+                                                            center_x: pocket.center_x,
+                                                            center_y: pocket.center_y,
+                                                            center_z: pocket.center_z,
+                                                            size_x: pocket.size_x,
+                                                            size_y: pocket.size_y,
+                                                            size_z: pocket.size_z
+                                                        })
+                                                    }
+                                                }}
+                                                className="w-full px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500 bg-white"
+                                            >
+                                                {detectedCavities.map((cavity) => (
+                                                    <option key={cavity.pocket_id} value={cavity.pocket_id}>
+                                                        Pocket {cavity.pocket_id} — Score: {(cavity.score * 100).toFixed(0)}% — Volume: {cavity.volume.toFixed(0)} Å³
+                                                    </option>
+                                                ))}
+                                            </select>
+                                            <p className="text-xs text-slate-500">
+                                                Higher scores indicate more drug-like binding pockets
+                                            </p>
+                                        </div>
+                                    ) : (
+                                        <div className="flex items-center gap-3 text-slate-500">
+                                            {detectingCavities ? (
+                                                <>
+                                                    <svg className="animate-spin h-5 w-5 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                                                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    <span>Analyzing protein structure...</span>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <span className="text-2xl">📤</span>
+                                                    <span>Upload your receptor to detect binding sites automatically</span>
+                                                </>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            ) : (
+                                /* Manual Mode */
+                                <div>
+                                    <p className="text-slate-500 text-sm mb-4">
+                                        Define the search space for docking. The box should be centered on the binding site and large enough to contain the ligand.
+                                    </p>
+                                    <GridBoxConfigurator
+                                        onConfigChange={setGridParams}
+                                        initialConfig={gridParams}
+                                    />
+                                </div>
+                            )}
                         </div>
 
                         {/* Preparation Progress */}
