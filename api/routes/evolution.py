@@ -1,5 +1,5 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
-from ..services.evolution_engine import GeneticAlgorithm
+from services.evolution_engine import GeneticAlgorithm
 import json
 import asyncio
 import boto3
