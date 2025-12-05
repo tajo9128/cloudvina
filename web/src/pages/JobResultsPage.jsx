@@ -19,6 +19,11 @@ export default function JobResultsPage() {
     const [elapsedTime, setElapsedTime] = useState(0)
     const [pdbqtData, setPdbqtData] = useState(null)
     const [showEvolution, setShowEvolution] = useState(false)
+
+    // Multiple Pocket Results State (NEW)
+    const [detectedPockets, setDetectedPockets] = useState([])
+    const [selectedPocketId, setSelectedPocketId] = useState(1)
+
     const ESTIMATED_DURATION = 300 // 5 minutes in seconds
 
     useEffect(() => {
@@ -80,6 +85,11 @@ export default function JobResultsPage() {
                 fetchInteractions(session.access_token)
             }
 
+            // Fetch detected pockets for multi-pocket display
+            if (data.status === 'SUCCEEDED' && detectedPockets.length === 0) {
+                fetchPockets(session.access_token)
+            }
+
             // Fetch PDBQT data if succeeded
             if (data.status === 'SUCCEEDED' && data.download_urls?.output && !pdbqtData) {
                 try {
@@ -137,6 +147,28 @@ export default function JobResultsPage() {
         } catch (err) {
             console.error('Failed to fetch interactions:', err)
             setInteractions({ error: true })
+        }
+    }
+
+    // Fetch detected pockets for multi-pocket display
+    const fetchPockets = async (token) => {
+        try {
+            const res = await fetch(`${API_URL}/jobs/${jobId}/detect-cavities`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            })
+
+            if (res.ok) {
+                const data = await res.json()
+                if (data.cavities && data.cavities.length > 0) {
+                    setDetectedPockets(data.cavities)
+                    console.log('Detected pockets:', data.cavities.length)
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch pockets:', err)
         }
     }
 
@@ -274,6 +306,75 @@ export default function JobResultsPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* Multiple Pocket Selector (NEW) */}
+                        {job.status === 'SUCCEEDED' && detectedPockets.length > 1 && (
+                            <div className="p-6 bg-gradient-to-r from-primary-50 to-secondary-50 border-b border-slate-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h3 className="font-bold text-slate-900">Binding Pockets Detected</h3>
+                                        <p className="text-sm text-slate-500">
+                                            {detectedPockets.length} potential binding sites identified
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-wrap gap-2">
+                                    {detectedPockets.map((pocket) => (
+                                        <button
+                                            key={pocket.pocket_id}
+                                            onClick={() => setSelectedPocketId(pocket.pocket_id)}
+                                            className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedPocketId === pocket.pocket_id
+                                                    ? 'bg-primary-600 text-white shadow-md'
+                                                    : 'bg-white text-slate-700 border border-slate-200 hover:border-primary-300'
+                                                }`}
+                                        >
+                                            <div className="flex items-center gap-2">
+                                                <span>Pocket {pocket.pocket_id}</span>
+                                                <span className={`text-xs px-1.5 py-0.5 rounded ${selectedPocketId === pocket.pocket_id
+                                                        ? 'bg-white/20'
+                                                        : 'bg-primary-100 text-primary-700'
+                                                    }`}>
+                                                    {(pocket.score * 100).toFixed(0)}%
+                                                </span>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+
+                                {/* Pocket Details */}
+                                {detectedPockets.find(p => p.pocket_id === selectedPocketId) && (
+                                    <div className="mt-4 p-4 bg-white rounded-lg border border-slate-200">
+                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                            <div>
+                                                <div className="text-xs text-slate-500 uppercase">Center X</div>
+                                                <div className="font-mono font-bold text-slate-900">
+                                                    {detectedPockets.find(p => p.pocket_id === selectedPocketId).center_x}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-slate-500 uppercase">Center Y</div>
+                                                <div className="font-mono font-bold text-slate-900">
+                                                    {detectedPockets.find(p => p.pocket_id === selectedPocketId).center_y}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-slate-500 uppercase">Center Z</div>
+                                                <div className="font-mono font-bold text-slate-900">
+                                                    {detectedPockets.find(p => p.pocket_id === selectedPocketId).center_z}
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div className="text-xs text-slate-500 uppercase">Volume</div>
+                                                <div className="font-mono font-bold text-slate-900">
+                                                    {detectedPockets.find(p => p.pocket_id === selectedPocketId).volume?.toFixed(0)} Å³
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        )}
 
                         {/* Docking Results Table */}
                         {job.status === 'SUCCEEDED' && analysis && !analysis.error && analysis.poses && (
