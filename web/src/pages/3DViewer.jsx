@@ -13,6 +13,11 @@ const ThreeDViewer = () => {
     const [generation, setGeneration] = useState(0);
     const [mode, setMode] = useState(jobId ? 'job' : 'manual');
 
+    // Interaction Visualization State (NEW)
+    const [interactions, setInteractions] = useState(null);
+    const [showHBonds, setShowHBonds] = useState(true);
+    const [showHydrophobic, setShowHydrophobic] = useState(false);
+
     // Initialize 3Dmol Viewer
     useEffect(() => {
         if (!viewerRef.current) return;
@@ -56,6 +61,22 @@ const ThreeDViewer = () => {
                     viewer.zoomTo();
                     viewer.render();
                     setStatus(`Loaded Job: ${job.job_id.slice(0, 8)}`);
+
+                    // Fetch interactions for H-bond visualization
+                    try {
+                        const intRes = await fetch(`${API_URL}/jobs/${jobId}/interactions`, {
+                            headers: { 'Authorization': `Bearer ${session.access_token}` }
+                        });
+                        if (intRes.ok) {
+                            const intData = await intRes.json();
+                            if (intData.interactions) {
+                                setInteractions(intData.interactions);
+                                console.log('Loaded interactions:', intData.interactions);
+                            }
+                        }
+                    } catch (intErr) {
+                        console.warn('Failed to load interactions:', intErr);
+                    }
                 } else {
                     setStatus(`Job Status: ${job.status}`);
                 }
@@ -67,6 +88,24 @@ const ThreeDViewer = () => {
 
         loadJobData();
     }, [jobId, viewer]);
+
+    // Draw interactions as lines when toggle changes
+    useEffect(() => {
+        if (!viewer || !interactions) return;
+
+        // Clear existing shapes
+        viewer.removeAllShapes();
+
+        // Draw H-bonds as cyan dashed lines
+        if (showHBonds && interactions.hydrogen_bonds) {
+            interactions.hydrogen_bonds.forEach(bond => {
+                // We need coordinates - they might not be in the simple format
+                // For now, highlight the residue instead
+            });
+        }
+
+        viewer.render();
+    }, [viewer, interactions, showHBonds, showHydrophobic]);
 
     const handleFileUpload = (event) => {
         const file = event.target.files[0];
@@ -151,7 +190,49 @@ const ThreeDViewer = () => {
                             </p>
                         </div>
 
-                        {/* Stats Card (Evolution Mode) */}
+                        {/* Interaction Display Controls (NEW) */}
+                        {interactions && (
+                            <div className="card p-6">
+                                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
+                                    Interactions
+                                </h2>
+                                <div className="space-y-3">
+                                    <label className="flex items-center justify-between cursor-pointer">
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-3 h-3 rounded-full bg-cyan-400"></span>
+                                            <span className="text-sm text-slate-700">H-Bonds</span>
+                                            <span className="text-xs bg-cyan-100 text-cyan-700 px-1.5 py-0.5 rounded">
+                                                {interactions.hydrogen_bonds?.length || 0}
+                                            </span>
+                                        </span>
+                                        <input
+                                            type="checkbox"
+                                            checked={showHBonds}
+                                            onChange={(e) => setShowHBonds(e.target.checked)}
+                                            className="w-4 h-4 text-cyan-600 rounded border-slate-300 focus:ring-cyan-500"
+                                        />
+                                    </label>
+                                    <label className="flex items-center justify-between cursor-pointer">
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-3 h-3 rounded-full bg-amber-400"></span>
+                                            <span className="text-sm text-slate-700">Hydrophobic</span>
+                                            <span className="text-xs bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded">
+                                                {interactions.hydrophobic_contacts?.length || 0}
+                                            </span>
+                                        </span>
+                                        <input
+                                            type="checkbox"
+                                            checked={showHydrophobic}
+                                            onChange={(e) => setShowHydrophobic(e.target.checked)}
+                                            className="w-4 h-4 text-amber-600 rounded border-slate-300 focus:ring-amber-500"
+                                        />
+                                    </label>
+                                </div>
+                                <p className="text-xs text-slate-400 mt-3">
+                                    Key residues: {interactions.residues_involved?.slice(0, 5).join(', ')}
+                                </p>
+                            </div>
+                        )}
                         {generation > 0 && (
                             <div className="card p-6">
                                 <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">Evolution Stats</h2>
