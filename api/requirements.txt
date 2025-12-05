@@ -1,3 +1,4 @@
+six
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
 supabase==2.0.3
@@ -23,6 +24,5 @@ email-validator==2.1.0
 biopython==1.84
 psutil==5.9.7
 
-oddt==0.7
+git+https://github.com/oddt/oddt.git@master#egg=oddt
 scikit-learn==1.3.2
-six

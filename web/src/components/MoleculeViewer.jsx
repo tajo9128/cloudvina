@@ -46,6 +46,18 @@ export default function MoleculeViewer({ pdbqtData, width = "100%", height = "10
         }
     }, [pdbqtData])
 
+    // Handle window resize
+    useEffect(() => {
+        const handleResize = () => {
+            if (viewerRef.current) {
+                viewerRef.current.resize()
+            }
+        }
+
+        window.addEventListener('resize', handleResize)
+        return () => window.removeEventListener('resize', handleResize)
+    }, [])
+
     const handleReset = () => {
         if (viewerRef.current) {
             viewerRef.current.zoomTo()
@@ -58,119 +70,63 @@ export default function MoleculeViewer({ pdbqtData, width = "100%", height = "10
             if (isSpinning) {
                 viewerRef.current.spin(false)
             } else {
-                viewerRef.current.spin('y', 1)
-            }
-            setIsSpinning(!isSpinning)
-        }
-    }
+                </div >
+            )
+}
 
-    const handleStyleChange = (style) => {
-        if (!viewerRef.current) return
+{
+    !title && (
+        <div className="mb-3 flex justify-end gap-2">
+            <button
+                onClick={handleReset}
+                className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition"
+                title="Reset view"
+            >
+                🔄 Reset
+            </button>
+            <button
+                onClick={handleSpin}
+                className={`text-sm px-3 py-1 rounded transition ${isSpinning
+                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                    : 'bg-gray-100 hover:bg-gray-200'
+                    }`}
+                title="Toggle rotation"
+            >
+                {isSpinning ? '⏸ Stop' : '▶ Spin'}
+            </button>
+        </div>
+    )
+}
 
-        switch (style) {
-            case 'stick':
-                viewerRef.current.setStyle({}, {
-                    stick: { radius: 0.15, colorscheme: 'Jmol' }
-                })
-                break
-            case 'sphere':
-                viewerRef.current.setStyle({}, {
-                    sphere: { scale: 0.4, colorscheme: 'Jmol' }
-                })
-                break
-            case 'cartoon':
-                viewerRef.current.setStyle({}, {
-                    cartoon: { color: 'spectrum' }
-                })
-                break
-            case 'both':
-                viewerRef.current.setStyle({}, {
-                    stick: { radius: 0.15, colorscheme: 'Jmol' },
-                    sphere: { scale: 0.25, colorscheme: 'Jmol' }
-                })
-                break
-        }
-        viewerRef.current.render()
-    }
+{/* Style buttons */ }
+<div className="mb-3 flex gap-2">
+    <button
+        onClick={() => handleStyleChange('stick')}
+        className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded"
+    >
+        Stick
+    </button>
+    <button
+        onClick={() => handleStyleChange('sphere')}
+        className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded"
+    >
+        Sphere
+    </button>
+    <button
+        onClick={() => handleStyleChange('both')}
+        className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded"
+    >
+        Ball & Stick
+    </button>
+    <button
+        onClick={() => handleStyleChange('cartoon')}
+        className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded"
+    >
+        Cartoon
+    </button>
+</div>
 
-    return (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full flex flex-col">
-            {title && (
-                <div className="mb-3 flex justify-between items-center">
-                    <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={handleReset}
-                            className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition"
-                            title="Reset view"
-                        >
-                            🔄 Reset
-                        </button>
-                        <button
-                            onClick={handleSpin}
-                            className={`text-sm px-3 py-1 rounded transition ${isSpinning
-                                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                                    : 'bg-gray-100 hover:bg-gray-200'
-                                }`}
-                            title="Toggle rotation"
-                        >
-                            {isSpinning ? '⏸ Stop' : '▶ Spin'}
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {!title && (
-                 <div className="mb-3 flex justify-end gap-2">
-                    <button
-                        onClick={handleReset}
-                        className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition"
-                        title="Reset view"
-                    >
-                        🔄 Reset
-                    </button>
-                    <button
-                        onClick={handleSpin}
-                        className={`text-sm px-3 py-1 rounded transition ${isSpinning
-                                ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                                : 'bg-gray-100 hover:bg-gray-200'
-                            }`}
-                        title="Toggle rotation"
-                    >
-                        {isSpinning ? '⏸ Stop' : '▶ Spin'}
-                    </button>
-                </div>
-            )}
-
-            {/* Style buttons */}
-            <div className="mb-3 flex gap-2">
-                <button
-                    onClick={() => handleStyleChange('stick')}
-                    className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded"
-                >
-                    Stick
-                </button>
-                <button
-                    onClick={() => handleStyleChange('sphere')}
-                    className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded"
-                >
-                    Sphere
-                </button>
-                <button
-                    onClick={() => handleStyleChange('both')}
-                    className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded"
-                >
-                    Ball & Stick
-                </button>
-                <button
-                    onClick={() => handleStyleChange('cartoon')}
-                    className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded"
-                >
-                    Cartoon
-                </button>
-            </div>
-
-            {/* 3D Viewer Container */}
+{/* 3D Viewer Container */ }
             <div
                 ref={containerRef}
                 style={{ width: width, height: height, minHeight: '400px' }}
@@ -180,6 +136,6 @@ export default function MoleculeViewer({ pdbqtData, width = "100%", height = "10
             <div className="mt-2 text-xs text-gray-500">
                 💡 <strong>Tip:</strong> Click and drag to rotate, scroll to zoom, right-click to pan
             </div>
-        </div>
+        </div >
     )
 }
