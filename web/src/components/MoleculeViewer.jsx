@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 
-export default function MoleculeViewer({ pdbqtData, width = 600, height = 500, title = "3D Structure" }) {
+export default function MoleculeViewer({ pdbqtData, width = "100%", height = "100%", title = "3D Structure" }) {
     const viewerRef = useRef(null)
     const containerRef = useRef(null)
     const [isSpinning, setIsSpinning] = useState(false)
@@ -94,10 +94,34 @@ export default function MoleculeViewer({ pdbqtData, width = 600, height = 500, t
     }
 
     return (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm">
-            <div className="mb-3 flex justify-between items-center">
-                <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>
-                <div className="flex gap-2">
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full flex flex-col">
+            {title && (
+                <div className="mb-3 flex justify-between items-center">
+                    <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={handleReset}
+                            className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition"
+                            title="Reset view"
+                        >
+                            🔄 Reset
+                        </button>
+                        <button
+                            onClick={handleSpin}
+                            className={`text-sm px-3 py-1 rounded transition ${isSpinning
+                                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                                    : 'bg-gray-100 hover:bg-gray-200'
+                                }`}
+                            title="Toggle rotation"
+                        >
+                            {isSpinning ? '⏸ Stop' : '▶ Spin'}
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {!title && (
+                 <div className="mb-3 flex justify-end gap-2">
                     <button
                         onClick={handleReset}
                         className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded transition"
@@ -116,7 +140,7 @@ export default function MoleculeViewer({ pdbqtData, width = 600, height = 500, t
                         {isSpinning ? '⏸ Stop' : '▶ Spin'}
                     </button>
                 </div>
-            </div>
+            )}
 
             {/* Style buttons */}
             <div className="mb-3 flex gap-2">
@@ -149,8 +173,8 @@ export default function MoleculeViewer({ pdbqtData, width = 600, height = 500, t
             {/* 3D Viewer Container */}
             <div
                 ref={containerRef}
-                style={{ width: `${width}px`, height: `${height}px` }}
-                className="border border-gray-300 rounded bg-white"
+                style={{ width: width, height: height, minHeight: '400px' }}
+                className="border border-gray-300 rounded bg-white flex-grow relative"
             />
 
             <div className="mt-2 text-xs text-gray-500">

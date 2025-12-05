@@ -9,6 +9,7 @@ import DrugPropertiesPanel from '../components/DrugPropertiesPanel'
 import { API_URL } from '../config'
 import AIExplainer from '../components/AIExplainer'
 import EvolutionPanel from '../components/EvolutionPanel'
+import MoleculeViewer from '../components/MoleculeViewer'
 
 export default function JobResultsPage() {
     const { jobId } = useParams()
@@ -208,7 +209,7 @@ export default function JobResultsPage() {
     return (
         <div className="min-h-screen bg-slate-50 pt-24 pb-12">
             <main className="container mx-auto px-4">
-                <div className="max-w-6xl mx-auto">
+                <div className="max-w-7xl mx-auto">
                     {/* Header */}
                     <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
                         <div className="bg-slate-50 px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 gap-4">
@@ -255,227 +256,276 @@ export default function JobResultsPage() {
                                 </p>
                             </div>
                         )}
+                    </div>
 
-                        <div className="grid md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-slate-200 border-b border-slate-200">
-                            <div className="p-6 text-center">
-                                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Status</h2>
-                                <div className="inline-flex items-center">
-                                    <span className={`px-4 py-1.5 rounded-full text-sm font-bold border 
-                        ${job.status === 'SUCCEEDED' ? 'bg-green-100 text-green-700 border-green-200' :
-                                            job.status === 'FAILED' ? 'bg-red-100 text-red-700 border-red-200' :
-                                                'bg-amber-100 text-amber-700 border-amber-200'}`}>
-                                        {job.status}
-                                    </span>
-                                </div>
-                            </div>
+                    {/* Split Layout */}
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Left Column: Data & Analysis */}
+                        <div className="space-y-6">
+                            {/* Status Cards */}
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                                <div className="grid grid-cols-3 divide-x divide-slate-200">
+                                    <div className="p-6 text-center">
+                                        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Status</h2>
+                                        <div className="inline-flex items-center">
+                                            <span className={`px-4 py-1.5 rounded-full text-sm font-bold border 
+                                ${job.status === 'SUCCEEDED' ? 'bg-green-100 text-green-700 border-green-200' :
+                                                    job.status === 'FAILED' ? 'bg-red-100 text-red-700 border-red-200' :
+                                                        'bg-amber-100 text-amber-700 border-amber-200'}`}>
+                                                {job.status}
+                                            </span>
+                                        </div>
+                                    </div>
 
-                            <div className="p-6 text-center">
-                                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Best Affinity</h2>
-                                {analysis?.best_affinity ? (
-                                    <>
-                                        <div className="text-3xl font-bold text-green-700">{analysis.best_affinity} <span className="text-sm text-slate-500 font-normal">kcal/mol</span></div>
-                                        {analysis.num_poses > 1 && (
-                                            <div className="text-xs text-slate-500 mt-2">
-                                                Range: {analysis.energy_range_min} to {analysis.energy_range_max}
-                                            </div>
+                                    <div className="p-6 text-center">
+                                        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Best Affinity</h2>
+                                        {analysis?.best_affinity ? (
+                                            <>
+                                                <div className="text-3xl font-bold text-green-700">{analysis.best_affinity} <span className="text-sm text-slate-500 font-normal">kcal/mol</span></div>
+                                                {analysis.num_poses > 1 && (
+                                                    <div className="text-xs text-slate-500 mt-2">
+                                                        Range: {analysis.energy_range_min} to {analysis.energy_range_max}
+                                                    </div>
+                                                )}
+                                            </>
+                                        ) : (
+                                            <div className="text-3xl font-bold text-slate-300">-</div>
                                         )}
-                                    </>
-                                ) : (
-                                    <div className="text-3xl font-bold text-slate-300">-</div>
-                                )}
-                            </div>
+                                    </div>
 
-                            <div className="p-6 text-center">
-                                <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ligand</h2>
-                                <div className="text-lg font-medium text-slate-700 truncate px-4 mb-2" title={job.ligand_filename || 'Unknown'}>
-                                    {job.ligand_filename || 'Unknown'}
-                                </div>
-                                <div className="flex flex-col gap-2 mt-2">
-                                    <Link to={`/3d-viewer/${jobId}`} className="inline-flex items-center justify-center px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-bold hover:bg-blue-200 transition-colors">
-                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                        View in 3D
-                                    </Link>
-
-                                    {/* Refine / Evolution Button */}
-                                    <button
-                                        onClick={() => setShowEvolution(true)}
-                                        className="inline-flex items-center justify-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-200 transition-colors border border-purple-200"
-                                    >
-                                        <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                        Refine Results (AI)
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Multiple Pocket Selector (NEW) */}
-                        {job.status === 'SUCCEEDED' && detectedPockets.length > 1 && (
-                            <div className="p-6 bg-gradient-to-r from-primary-50 to-secondary-50 border-b border-slate-200">
-                                <div className="flex items-center justify-between mb-4">
-                                    <div>
-                                        <h3 className="font-bold text-slate-900">Binding Pockets Detected</h3>
-                                        <p className="text-sm text-slate-500">
-                                            {detectedPockets.length} potential binding sites identified
-                                        </p>
+                                    <div className="p-6 text-center">
+                                        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ligand</h2>
+                                        <div className="text-lg font-medium text-slate-700 truncate px-4 mb-2" title={job.ligand_filename || 'Unknown'}>
+                                            {job.ligand_filename || 'Unknown'}
+                                        </div>
+                                        <div className="flex flex-col gap-2 mt-2">
+                                            {/* Refine / Evolution Button */}
+                                            <button
+                                                onClick={() => setShowEvolution(true)}
+                                                className="inline-flex items-center justify-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-200 transition-colors border border-purple-200"
+                                            >
+                                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                                Refine Results (AI)
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <div className="flex flex-wrap gap-2">
-                                    {detectedPockets.map((pocket) => (
-                                        <button
-                                            key={pocket.pocket_id}
-                                            onClick={() => setSelectedPocketId(pocket.pocket_id)}
-                                            className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedPocketId === pocket.pocket_id
-                                                ? 'bg-primary-600 text-white shadow-md'
-                                                : 'bg-white text-slate-700 border border-slate-200 hover:border-primary-300'
-                                                }`}
-                                        >
-                                            <div className="flex items-center gap-2">
-                                                <span>Pocket {pocket.pocket_id}</span>
-                                                <span className={`text-xs px-1.5 py-0.5 rounded ${selectedPocketId === pocket.pocket_id
-                                                    ? 'bg-white/20'
-                                                    : 'bg-primary-100 text-primary-700'
-                                                    }`}>
-                                                    {(pocket.score * 100).toFixed(0)}%
-                                                </span>
-                                            </div>
-                                        </button>
-                                    ))}
-                                </div>
+                            {/* Multiple Pocket Selector (NEW) */}
+                            {job.status === 'SUCCEEDED' && detectedPockets.length > 1 && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden p-6">
+                                    <div className="flex items-center justify-between mb-4">
+                                        <div>
+                                            <h3 className="font-bold text-slate-900">Binding Pockets Detected</h3>
+                                            <p className="text-sm text-slate-500">
+                                                {detectedPockets.length} potential binding sites identified
+                                            </p>
+                                        </div>
+                                    </div>
 
-                                {/* Pocket Details */}
-                                {detectedPockets.find(p => p.pocket_id === selectedPocketId) && (
-                                    <div className="mt-4 p-4 bg-white rounded-lg border border-slate-200">
-                                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
-                                            <div>
-                                                <div className="text-xs text-slate-500 uppercase">Center X</div>
-                                                <div className="font-mono font-bold text-slate-900">
-                                                    {detectedPockets.find(p => p.pocket_id === selectedPocketId).center_x}
+                                    <div className="flex flex-wrap gap-2">
+                                        {detectedPockets.map((pocket) => (
+                                            <button
+                                                key={pocket.pocket_id}
+                                                onClick={() => setSelectedPocketId(pocket.pocket_id)}
+                                                className={`px-4 py-2 rounded-lg font-medium transition-all ${selectedPocketId === pocket.pocket_id
+                                                    ? 'bg-primary-600 text-white shadow-md'
+                                                    : 'bg-white text-slate-700 border border-slate-200 hover:border-primary-300'
+                                                    }`}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    <span>Pocket {pocket.pocket_id}</span>
+                                                    <span className={`text-xs px-1.5 py-0.5 rounded ${selectedPocketId === pocket.pocket_id
+                                                        ? 'bg-white/20'
+                                                        : 'bg-primary-100 text-primary-700'
+                                                        }`}>
+                                                        {(pocket.score * 100).toFixed(0)}%
+                                                    </span>
                                                 </div>
-                                            </div>
-                                            <div>
-                                                <div className="text-xs text-slate-500 uppercase">Center Y</div>
-                                                <div className="font-mono font-bold text-slate-900">
-                                                    {detectedPockets.find(p => p.pocket_id === selectedPocketId).center_y}
+                                            </button>
+                                        ))}
+                                    </div>
+
+                                    {/* Pocket Details */}
+                                    {detectedPockets.find(p => p.pocket_id === selectedPocketId) && (
+                                        <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200">
+                                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                                                <div>
+                                                    <div className="text-xs text-slate-500 uppercase">Center X</div>
+                                                    <div className="font-mono font-bold text-slate-900">
+                                                        {detectedPockets.find(p => p.pocket_id === selectedPocketId).center_x}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div>
-                                                <div className="text-xs text-slate-500 uppercase">Center Z</div>
-                                                <div className="font-mono font-bold text-slate-900">
-                                                    {detectedPockets.find(p => p.pocket_id === selectedPocketId).center_z}
+                                                <div>
+                                                    <div className="text-xs text-slate-500 uppercase">Center Y</div>
+                                                    <div className="font-mono font-bold text-slate-900">
+                                                        {detectedPockets.find(p => p.pocket_id === selectedPocketId).center_y}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <div>
-                                                <div className="text-xs text-slate-500 uppercase">Volume</div>
-                                                <div className="font-mono font-bold text-slate-900">
-                                                    {detectedPockets.find(p => p.pocket_id === selectedPocketId).volume?.toFixed(0)} Å³
+                                                <div>
+                                                    <div className="text-xs text-slate-500 uppercase">Center Z</div>
+                                                    <div className="font-mono font-bold text-slate-900">
+                                                        {detectedPockets.find(p => p.pocket_id === selectedPocketId).center_z}
+                                                    </div>
+                                                </div>
+                                                <div>
+                                                    <div className="text-xs text-slate-500 uppercase">Volume</div>
+                                                    <div className="font-mono font-bold text-slate-900">
+                                                        {detectedPockets.find(p => p.pocket_id === selectedPocketId).volume?.toFixed(0)} Å³
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Docking Results Table */}
+                            {job.status === 'SUCCEEDED' && analysis && !analysis.error && analysis.poses && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                                    <div className="p-6 border-b border-slate-200 bg-slate-50">
+                                        <h3 className="font-bold text-slate-900">Docking Poses</h3>
                                     </div>
-                                )}
-                            </div>
-                        )}
+                                    <div className="p-6">
+                                        <DockingResultsTable poses={analysis.poses} />
+                                    </div>
+                                </div>
+                            )}
 
-                        {/* Docking Results Table */}
-                        {job.status === 'SUCCEEDED' && analysis && !analysis.error && analysis.poses && (
-                            <div className="p-8 bg-white">
-                                <DockingResultsTable poses={analysis.poses} />
-                            </div>
-                        )}
+                            {/* Interaction Analysis Table */}
+                            {job.status === 'SUCCEEDED' && interactions && !interactions.error && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                                    <div className="p-6 border-b border-slate-200 bg-slate-50">
+                                        <h3 className="font-bold text-slate-900">Molecular Interactions</h3>
+                                    </div>
+                                    <div className="p-6">
+                                        <InteractionTable interactions={interactions} />
+                                    </div>
+                                </div>
+                            )}
 
-                        {/* Interaction Analysis Table */}
-                        {job.status === 'SUCCEEDED' && interactions && !interactions.error && (
-                            <div className="p-8 bg-white border-t border-slate-100">
-                                <InteractionTable interactions={interactions} />
-                            </div>
-                        )}
-
-                        {/* Drug Properties Panel (NEW) */}
-                        {job.status === 'SUCCEEDED' && (
-                            <div className="p-8 bg-white border-t border-slate-100">
+                            {/* Drug Properties Panel (NEW) */}
+                            {job.status === 'SUCCEEDED' && (
                                 <DrugPropertiesPanel jobId={jobId} />
-                            </div>
-                        )}
+                            )}
 
-                        {/* AI Explainer */}
-                        {job.status === 'SUCCEEDED' && (
-                            <div className="p-8 bg-slate-50 border-t border-slate-200">
-                                <AIExplainer jobId={jobId} />
-                            </div>
-                        )}
+                            {/* AI Explainer */}
+                            {job.status === 'SUCCEEDED' && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                                    <AIExplainer jobId={jobId} />
+                                </div>
+                            )}
 
-                        {/* Downloads Section */}
-                        {job.status === 'SUCCEEDED' && job.download_urls && (
-                            <div className="p-8 bg-white">
-                                <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
-                                    <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                    Downloads & Data
-                                </h2>
-                                <div className="grid sm:grid-cols-2 gap-4">
-                                    <a href={job.download_urls.output} className="group flex items-center justify-between px-6 py-4 border border-primary-200 rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 hover:border-primary-300 transition-all">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-primary-600 shadow-sm">
-                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="font-bold">Docked Structure</div>
-                                                <div className="text-xs opacity-75">PDBQT Format</div>
-                                            </div>
-                                        </div>
-                                        <svg className="w-5 h-5 transform group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                    </a>
-
-                                    <a href={job.download_urls.log} className="group flex items-center justify-between px-6 py-4 border border-slate-200 rounded-xl bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 shadow-sm">
-                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                            </div>
-                                            <div className="text-left">
-                                                <div className="font-bold">Execution Log</div>
-                                                <div className="text-xs opacity-75">Text Format</div>
-                                            </div>
-                                        </div>
-                                        <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                    </a>
-
-                                    {job.download_urls.config && (
-                                        <a href={job.download_urls.config} className="group flex items-center justify-between px-6 py-4 border border-green-200 rounded-xl bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-300 transition-all">
+                            {/* Downloads Section */}
+                            {job.status === 'SUCCEEDED' && job.download_urls && (
+                                <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden p-8">
+                                    <h2 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
+                                        <svg className="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                        Downloads & Data
+                                    </h2>
+                                    <div className="grid sm:grid-cols-2 gap-4">
+                                        <a href={job.download_urls.output} className="group flex items-center justify-between px-6 py-4 border border-primary-200 rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 hover:border-primary-300 transition-all">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-green-600 shadow-sm">
-                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-primary-600 shadow-sm">
+                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
                                                 </div>
                                                 <div className="text-left">
-                                                    <div className="font-bold">Config File</div>
-                                                    <div className="text-xs opacity-75">Vina Parameters</div>
+                                                    <div className="font-bold">Docked Structure</div>
+                                                    <div className="text-xs opacity-75">PDBQT Format</div>
                                                 </div>
                                             </div>
                                             <svg className="w-5 h-5 transform group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
                                         </a>
-                                    )}
-                                </div>
-                            </div>
-                        )}
 
-                        {/* Failure Message */}
-                        {job.status === 'FAILED' && (
-                            <div className="bg-red-50 border-t border-red-100 p-8">
-                                <div className="flex items-start gap-4">
-                                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0">
-                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                        <a href={job.download_urls.log} className="group flex items-center justify-between px-6 py-4 border border-slate-200 rounded-xl bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center text-slate-500 shadow-sm">
+                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                </div>
+                                                <div className="text-left">
+                                                    <div className="font-bold">Execution Log</div>
+                                                    <div className="text-xs opacity-75">Text Format</div>
+                                                </div>
+                                            </div>
+                                            <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                        </a>
+
+                                        {job.download_urls.config && (
+                                            <a href={job.download_urls.config} className="group flex items-center justify-between px-6 py-4 border border-green-200 rounded-xl bg-green-50 text-green-700 hover:bg-green-100 hover:border-green-300 transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-green-600 shadow-sm">
+                                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <div className="font-bold">Config File</div>
+                                                        <div className="text-xs opacity-75">Vina Parameters</div>
+                                                    </div>
+                                                </div>
+                                                <svg className="w-5 h-5 transform group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                            </a>
+                                        )}
                                     </div>
-                                    <div>
-                                        <h3 className="text-red-800 font-bold text-lg mb-2">Simulation Failed</h3>
-                                        <p className="text-red-600 mb-4">
-                                            The docking simulation could not be completed. This is usually due to issues with the input files (e.g., incorrect format, missing atoms) or system constraints.
-                                        </p>
-                                        <div className="bg-white border border-red-200 rounded-lg p-4 text-sm font-mono text-red-700 overflow-x-auto">
-                                            {job.error_message || "No specific error details available."}
+                                </div>
+                            )}
+
+                            {/* Failure Message */}
+                            {job.status === 'FAILED' && (
+                                <div className="bg-red-50 border-t border-red-100 p-8 rounded-2xl">
+                                    <div className="flex items-start gap-4">
+                                        <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 flex-shrink-0">
+                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                                        </div>
+                                        <div>
+                                            <h3 className="text-red-800 font-bold text-lg mb-2">Simulation Failed</h3>
+                                            <p className="text-red-600 mb-4">
+                                                The docking simulation could not be completed. This is usually due to issues with the input files (e.g., incorrect format, missing atoms) or system constraints.
+                                            </p>
+                                            <div className="bg-white border border-red-200 rounded-lg p-4 text-sm font-mono text-red-700 overflow-x-auto">
+                                                {job.error_message || "No specific error details available."}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+                            )}
+                        </div>
+
+                        {/* Right Column: Sticky 3D Viewer */}
+                        <div className="relative">
+                            <div className="sticky top-24">
+                                {pdbqtData ? (
+                                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
+                                        <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                                            <h3 className="font-bold text-slate-900">3D Visualization</h3>
+                                            <Link to={`/3d-viewer/${jobId}`} className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
+                                                Full Screen
+                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                            </Link>
+                                        </div>
+                                        <div className="h-[600px] w-full">
+                                            <MoleculeViewer
+                                                pdbqtData={pdbqtData}
+                                                width="100%"
+                                                height="100%"
+                                                title=""
+                                            />
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-slate-50 rounded-2xl border border-slate-200 p-12 text-center h-[600px] flex flex-col items-center justify-center">
+                                        <div className="w-16 h-16 bg-slate-200 rounded-full flex items-center justify-center mb-4 text-slate-400">
+                                            <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                                        </div>
+                                        <h3 className="text-slate-900 font-bold mb-2">3D Viewer</h3>
+                                        <p className="text-slate-500 text-sm max-w-xs mx-auto">
+                                            {job.status === 'SUCCEEDED'
+                                                ? "Loading structure..."
+                                                : "Visualization will be available once the simulation completes."}
+                                        </p>
+                                    </div>
+                                )}
                             </div>
-                        )}
+                        </div>
                     </div>
                 </div>
             </main>
