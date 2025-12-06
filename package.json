@@ -1,0 +1,14 @@
+{
+    "name": "gravitic-mariner-root",
+    "private": true,
+    "workspaces": [
+        "web"
+    ],
+    "scripts": {
+        "build": "cd web && npm run build",
+        "dev": "cd web && npm run dev"
+    },
+    "engines": {
+        "node": "18.x"
+    }
+}
