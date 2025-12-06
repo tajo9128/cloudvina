@@ -60,7 +60,7 @@ export default function Footer() {
                             </div>
                             <div>
                                 <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Email Us</p>
-                                <p className="font-semibold">support@biodockify.com</p>
+                                <p className="font-semibold">biodockify@hotmail.com</p>
                             </div>
                         </div>
 
@@ -73,7 +73,7 @@ export default function Footer() {
                             </div>
                             <div>
                                 <p className="text-xs text-slate-500 uppercase font-bold tracking-wider mb-1">Visit Us</p>
-                                <p className="font-semibold">Cambridge, MA 02142, USA</p>
+                                <p className="font-semibold">Bala Nagar, Hyderabad, Telangana, India</p>
                             </div>
                         </div>
                     </div>
