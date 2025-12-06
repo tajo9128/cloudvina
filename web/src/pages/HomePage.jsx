@@ -164,9 +164,9 @@ export default function HomePage() {
             <section className="py-10 bg-white border-b border-slate-200 relative z-20 -mt-8 mx-4 lg:mx-auto max-w-6xl rounded-2xl shadow-xl">
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-100">
                     {[
-                        { label: "Jobs Completed", value: 10000, suffix: "+" },
-                        { label: "Active Researchers", value: 500, suffix: "+" },
-                        { label: "Molecules Docked", value: 50000, suffix: "+" },
+                        { label: "Jobs Completed", value: 150, suffix: "+" },
+                        { label: "Active Researchers", value: 25, suffix: "+" },
+                        { label: "Molecules Docked", value: 2500, suffix: "+" },
                         { label: "Uptime", value: 99.9, suffix: "%" }
                     ].map((stat, i) => (
                         <div key={i} className="text-center px-4">
