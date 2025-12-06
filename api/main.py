@@ -24,7 +24,9 @@ from fastapi.responses import StreamingResponse
 from services.ai_explainer import AIExplainer
 from tools import router as tools_router
 from routes.admin import router as admin_router
+
 from routes.evolution import router as evolution_router
+from routes.batch import router as batch_router
 from services.cavity_detector import CavityDetector
 from services.drug_properties import DrugPropertiesCalculator
 
@@ -87,7 +89,9 @@ app.include_router(tools_router)
 app.include_router(admin_router)
 from export_routes import router as export_router
 app.include_router(export_router)
+
 app.include_router(evolution_router)
+app.include_router(batch_router)
 
 # ============================================================================
 # Configuration
