@@ -484,18 +484,7 @@ export default function HomePage() {
             </section>
 
             {/* CTA Section */}
-            <section className="py-24 bg-primary-600 relative overflow-hidden">
-                <div className="absolute inset-0 opacity-20 bg-[url('/assets/images/hero-molecular.png')] bg-cover bg-center mix-blend-overlay"></div>
-                <div className="container mx-auto px-4 relative z-10 text-center">
-                    <h2 className="text-4xl font-bold text-white mb-6">Ready to accelerate your research?</h2>
-                    <p className="text-xl text-primary-100 mb-10 max-w-2xl mx-auto">
-                        Join thousands of researchers using BioDockify to discover new therapeutics faster than ever before.
-                    </p>
-                    <Link to="/signup" className="bg-white text-primary-600 hover:bg-slate-100 font-bold text-lg px-10 py-4 rounded-xl shadow-xl transition-all inline-flex">
-                        Create Free Account
-                    </Link>
-                </div>
-            </section>
+
         </div >
     )
 }
