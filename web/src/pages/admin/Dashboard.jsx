@@ -1,7 +1,22 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { Link } from 'react-router-dom';
-import { Activity, Users, Database, Cpu, CheckCircle, Clock, AlertTriangle, RefreshCw, Zap, Shield, Play, XCircle, Plus, Search } from 'lucide-react';
+// import { Activity, Users, Database, Cpu, CheckCircle, Clock, AlertTriangle, RefreshCw, Zap, Shield, Play, XCircle, Plus, Search } from 'lucide-react';
+
+const Activity = () => <span>📈</span>;
+const Users = () => <span>👥</span>;
+const Database = () => <span>💾</span>;
+const Cpu = () => <span>🖥️</span>;
+const CheckCircle = () => <span>✅</span>;
+const Clock = () => <span>🕒</span>;
+const AlertTriangle = () => <span>⚠️</span>;
+const RefreshCw = () => <span>🔄</span>;
+const Zap = () => <span>⚡</span>;
+const Shield = () => <span>🛡️</span>;
+const Play = () => <span>▶️</span>;
+const XCircle = () => <span>❌</span>;
+const Plus = () => <span>➕</span>;
+const Search = () => <span>🔍</span>;
 
 const StatCard = ({ title, value, icon: Icon, subtext, color = "primary", trend }) => {
     const colorClasses = {

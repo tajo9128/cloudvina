@@ -1,7 +1,14 @@
 import React from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Database, Settings, LogOut, Home } from 'lucide-react';
+// import { LayoutDashboard, Users, Database, Settings, LogOut, Home } from 'lucide-react';
 import { supabase } from '../supabaseClient';
+
+const LayoutDashboard = () => <span>📊</span>;
+const Users = () => <span>👥</span>;
+const Database = () => <span>💾</span>;
+const Settings = () => <span>⚙️</span>;
+const LogOut = () => <span>🚪</span>;
+const Home = () => <span>🏠</span>;
 
 const AdminLayout = () => {
     const location = useLocation();
@@ -40,8 +47,8 @@ const AdminLayout = () => {
                                 key={item.path}
                                 to={item.path}
                                 className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200 ${isActive
-                                        ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg shadow-primary-500/20'
-                                        : 'text-slate-400 hover:bg-primary-500/10 hover:text-primary-300'
+                                    ? 'bg-gradient-to-r from-primary-600 to-primary-700 text-white shadow-lg shadow-primary-500/20'
+                                    : 'text-slate-400 hover:bg-primary-500/10 hover:text-primary-300'
                                     }`}
                             >
                                 <Icon size={20} />
