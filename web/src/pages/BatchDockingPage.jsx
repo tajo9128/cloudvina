@@ -147,9 +147,14 @@ export default function BatchDockingPage() {
         <div className="min-h-screen bg-slate-50 pt-24 pb-12">
             <main className="container mx-auto px-4">
                 <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-                    <div className="mb-8 text-center">
-                        <h1 className="text-3xl font-bold text-slate-900 mb-2">Batch Docking</h1>
-                        <p className="text-slate-500">Dock multiple ligands against a single target.</p>
+                    <div className="mb-8 flex justify-between items-center">
+                        <div>
+                            <h1 className="text-3xl font-bold text-slate-900 mb-2">Batch Docking</h1>
+                            <p className="text-slate-500">Dock multiple ligands against a single target.</p>
+                        </div>
+                        <Link to="/dock/new" className="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center">
+                            <span className="mr-2">🔬</span> Single Mode
+                        </Link>
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-8">

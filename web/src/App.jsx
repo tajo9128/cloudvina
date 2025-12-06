@@ -9,9 +9,24 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import NewJobPage from './pages/NewJobPage'
+import BatchDockingPage from './pages/BatchDockingPage'
 import JobResultsPage from './pages/JobResultsPage'
-// import AdminPage from './pages/AdminPage' // Temporarily disabled
 import ConverterPage from './pages/ConverterPage'
+
+// (Skipping down to Routes...)
+
+                        <Route
+                            path="/dock/new"
+                            element={session ? <NewJobPage /> : <Navigate to="/login" />}
+                        />
+                         <Route
+                            path="/dock/batch"
+                            element={session ? <BatchDockingPage /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/dock/:jobId"
+                            element={session ? <JobResultsPage /> : <Navigate to="/login" />}
+                        />
 import BlogPage from './pages/BlogPage'
 import BlogPostPage from './pages/BlogPostPage'
 import AboutPage from './pages/AboutPage'
