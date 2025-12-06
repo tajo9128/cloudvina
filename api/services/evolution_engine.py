@@ -2,7 +2,8 @@ import random
 try:
     import oddt
     from oddt.scoring import rfscore
-except ImportError:
+except ImportError as e:
+    print(f"Warning: ODDT import failed: {e}")
     oddt = None
     rfscore = None
     print("Warning: ODDT not found. Evolution will use RDKit scoring only.")
