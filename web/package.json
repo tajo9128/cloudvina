@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "npm install lucide-react && vite build",
     "preview": "vite preview"
   },
   "dependencies": {
