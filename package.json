@@ -4,6 +4,9 @@
     "workspaces": [
         "web"
     ],
+    "dependencies": {
+        "lucide-react": "^0.468.0"
+    },
     "scripts": {
         "build": "cd web && npm run build",
         "dev": "cd web && npm run dev"
