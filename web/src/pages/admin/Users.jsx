@@ -1,6 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
-import { Search, Ban, CheckCircle, User, Users as UsersIcon, Shield, RefreshCw, Plus, Trash2, Edit2, X } from 'lucide-react';
+// import { Search, Ban, CheckCircle, User, Users as UsersIcon, Shield, RefreshCw, Plus, Trash2, Edit2, X } from 'lucide-react';
+
+const Search = () => <span>🔍</span>;
+const Ban = () => <span>🚫</span>;
+const CheckCircle = () => <span>✅</span>;
+const User = () => <span>👤</span>;
+const UsersIcon = () => <span>👥</span>;
+const Shield = () => <span>🛡️</span>;
+const RefreshCw = () => <span>🔄</span>;
+const Plus = () => <span>➕</span>;
+const Trash2 = () => <span>🗑️</span>;
+const Edit2 = () => <span>✏️</span>;
+const X = () => <span>❌</span>;
 
 const Users = () => {
     const [users, setUsers] = useState([]);
