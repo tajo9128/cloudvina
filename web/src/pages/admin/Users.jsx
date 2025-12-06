@@ -1,11 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
-import { Search, Ban, CheckCircle, User, Users as UsersIcon, Shield, RefreshCw } from 'lucide-react';
+import { Search, Ban, CheckCircle, User, Users as UsersIcon, Shield, RefreshCw, Plus, Trash2, Edit2, X } from 'lucide-react';
 
 const Users = () => {
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
+
+    // Modal states
+    const [showAddModal, setShowAddModal] = useState(false);
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [selectedUser, setSelectedUser] = useState(null);
+
+    // Form states
+    const [formData, setFormData] = useState({
+        email: '',
+        password: '',
+        credits: 10,
+        is_admin: false,
+        role: 'user'
+    });
 
     useEffect(() => {
         fetchUsers();
@@ -15,11 +29,8 @@ const Users = () => {
         setLoading(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-
             const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users`, {
-                headers: {
-                    'Authorization': `Bearer ${session?.access_token}`
-                }
+                headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
 
             if (response.ok) {
@@ -33,28 +44,93 @@ const Users = () => {
         }
     };
 
-    const handleSuspendUser = async (userId) => {
-        const reason = prompt("Enter reason for suspension:");
-        if (!reason) return;
-
+    const handleAddUser = async (e) => {
+        e.preventDefault();
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/${userId}/suspend?reason=${encodeURIComponent(reason)}`, {
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users`, {
                 method: 'POST',
                 headers: {
+                    'Content-Type': 'application/json',
                     'Authorization': `Bearer ${session?.access_token}`
-                }
+                },
+                body: JSON.stringify(formData)
             });
 
             if (response.ok) {
-                alert('User suspended successfully');
+                alert('User created successfully');
+                setShowAddModal(false);
                 fetchUsers();
+                setFormData({ email: '', password: '', credits: 10, is_admin: false, role: 'user' });
             } else {
-                alert('Failed to suspend user');
+                const err = await response.json();
+                alert('Failed to create user: ' + (err.detail || 'Unknown error'));
             }
         } catch (error) {
-            console.error('Error suspending user:', error);
+            console.error('Error creating user:', error);
         }
+    };
+
+    const handleEditUser = async (e) => {
+        e.preventDefault();
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/${selectedUser.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({
+                    credits: parseInt(formData.credits),
+                    is_admin: formData.is_admin,
+                    role: formData.role
+                })
+            });
+
+            if (response.ok) {
+                alert('User updated successfully');
+                setShowEditModal(false);
+                fetchUsers();
+            } else {
+                alert('Failed to update user');
+            }
+        } catch (error) {
+            console.error('Error updating user:', error);
+        }
+    };
+
+    const handleDeleteUser = async (userId) => {
+        if (!confirm('Are you sure you want to PERMANENTLY delete this user? This cannot be undone.')) return;
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/${userId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${session?.access_token}` }
+            });
+
+            if (response.ok) {
+                alert('User deleted successfully');
+                fetchUsers();
+            } else {
+                const err = await response.json();
+                alert('Failed to delete user: ' + (err.detail || 'Unknown error'));
+            }
+        } catch (error) {
+            console.error('Error deleting user:', error);
+        }
+    };
+
+    const openEditModal = (user) => {
+        setSelectedUser(user);
+        setFormData({
+            ...formData,
+            credits: user.credits || 0,
+            is_admin: user.is_admin || false,
+            role: user.role || 'user'
+        });
+        setShowEditModal(true);
     };
 
     const filteredUsers = users.filter(user =>
@@ -70,15 +146,22 @@ const Users = () => {
                     <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-2">
                         <UsersIcon className="text-secondary-400" /> User Management
                     </h1>
-                    <p className="text-slate-400">Manage user accounts and access</p>
+                    <p className="text-slate-400">Manage user accounts, roles, and credits</p>
                 </div>
-                <button
-                    onClick={fetchUsers}
-                    className="flex items-center gap-2 px-4 py-2 bg-secondary-600/20 text-secondary-400 border border-secondary-500/30 rounded-lg hover:bg-secondary-600/30 transition-colors"
-                >
-                    <RefreshCw size={16} />
-                    Refresh
-                </button>
+                <div className="flex gap-3">
+                    <button
+                        onClick={fetchUsers}
+                        className="flex items-center gap-2 px-4 py-2 bg-slate-800 text-slate-300 border border-slate-700 rounded-lg hover:bg-slate-700 transition-colors"
+                    >
+                        <RefreshCw size={16} /> Refresh
+                    </button>
+                    <button
+                        onClick={() => { setShowAddModal(true); setFormData({ email: '', password: '', credits: 10, is_admin: false, role: 'user' }); }}
+                        className="flex items-center gap-2 px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-500 shadow-lg shadow-secondary-600/20 transition-all transform hover:-translate-y-0.5"
+                    >
+                        <Plus size={18} /> Add User
+                    </button>
+                </div>
             </header>
 
             {/* Search */}
@@ -86,10 +169,10 @@ const Users = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" size={20} />
                 <input
                     type="text"
-                    placeholder="Search users by email, username, or ID..."
+                    placeholder="Search users..."
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-primary-500/20 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/30 transition-all"
+                    className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-primary-500/20 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary-500/50 transition-all font-mono text-sm"
                 />
             </div>
 
@@ -100,66 +183,70 @@ const Users = () => {
                         <thead>
                             <tr className="bg-slate-800/50 border-b border-primary-500/20 text-slate-400 text-sm">
                                 <th className="p-4 font-medium">User</th>
-                                <th className="p-4 font-medium">Role</th>
-                                <th className="p-4 font-medium">Joined</th>
+                                <th className="p-4 font-medium">Plan / Role</th>
+                                <th className="p-4 font-medium">Credits</th>
                                 <th className="p-4 font-medium">Status</th>
                                 <th className="p-4 text-right font-medium">Actions</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-primary-500/10">
                             {loading ? (
-                                <tr>
-                                    <td colSpan="5" className="p-8 text-center text-slate-400">
-                                        <div className="flex items-center justify-center gap-2">
-                                            <RefreshCw className="animate-spin" size={16} />
-                                            Loading users...
-                                        </div>
-                                    </td>
-                                </tr>
+                                <tr><td colSpan="5" className="p-8 text-center text-slate-400">Loading...</td></tr>
                             ) : filteredUsers.length === 0 ? (
-                                <tr>
-                                    <td colSpan="5" className="p-8 text-center text-slate-400">No users found</td>
-                                </tr>
+                                <tr><td colSpan="5" className="p-8 text-center text-slate-400">No users found</td></tr>
                             ) : (
                                 filteredUsers.map(user => (
                                     <tr key={user.id} className="hover:bg-primary-500/5 transition-colors">
                                         <td className="p-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary-500/30 to-secondary-500/30 border border-primary-500/30 flex items-center justify-center text-primary-300">
-                                                    <User size={18} />
+                                                <div className="w-10 h-10 rounded-full bg-slate-700/50 flex items-center justify-center text-slate-300 font-bold">
+                                                    {user.email?.charAt(0).toUpperCase()}
                                                 </div>
                                                 <div>
                                                     <div className="text-white font-medium">{user.email}</div>
-                                                    <div className="text-slate-500 text-xs font-mono">{user.id?.substring(0, 12)}...</div>
+                                                    <div className="text-slate-500 text-xs font-mono">{user.id?.substring(0, 8)}...</div>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="p-4">
-                                            {user.is_admin ? (
-                                                <span className="px-3 py-1 bg-gradient-to-r from-secondary-500/20 to-secondary-600/10 text-secondary-400 rounded-full text-xs font-bold border border-secondary-500/30 flex items-center gap-1 w-fit">
-                                                    <Shield size={12} /> ADMIN
+                                            <div className="flex gap-2">
+                                                {user.is_admin && (
+                                                    <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs border border-red-500/30 flex items-center gap-1">
+                                                        <Shield size={10} /> ADMIN
+                                                    </span>
+                                                )}
+                                                <span className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs capitalize">
+                                                    {user.role || 'free'}
                                                 </span>
-                                            ) : (
-                                                <span className="px-3 py-1 bg-slate-700/50 text-slate-300 rounded-full text-xs border border-slate-600/50">USER</span>
-                                            )}
+                                            </div>
                                         </td>
-                                        <td className="p-4 text-slate-400 text-sm">
-                                            {new Date(user.created_at).toLocaleDateString()}
+                                        <td className="p-4 font-mono text-primary-400 font-bold">
+                                            {user.credits}
                                         </td>
                                         <td className="p-4">
-                                            <span className="flex items-center gap-1 text-green-400 text-sm bg-green-500/10 px-2 py-1 rounded-full border border-green-500/30 w-fit">
+                                            <span className="flex items-center gap-1 text-green-400 text-sm">
                                                 <CheckCircle size={14} /> Active
                                             </span>
                                         </td>
                                         <td className="p-4 text-right">
-                                            {!user.is_admin && (
+                                            <div className="flex justify-end gap-2">
                                                 <button
-                                                    onClick={() => handleSuspendUser(user.id)}
-                                                    className="text-red-400 hover:text-red-300 text-sm font-medium flex items-center gap-1 ml-auto bg-red-500/10 px-3 py-1 rounded-lg border border-red-500/30 hover:bg-red-500/20 transition-colors"
+                                                    onClick={() => openEditModal(user)}
+                                                    className="p-2 bg-slate-700/50 hover:bg-primary-500/20 text-slate-400 hover:text-primary-400 rounded-lg transition-colors"
+                                                    title="Edit User"
                                                 >
-                                                    <Ban size={14} /> Suspend
+                                                    <Edit2 size={16} />
                                                 </button>
-                                            )}
+                                                {!user.is_admin && (
+                                                    <button
+                                                        onClick={() => handleDeleteUser(user.id)}
+                                                        className="p-2 bg-slate-700/50 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
+                                                        title="Delete User"
+                                                    >
+                                                        <Trash2 size={16} />
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -168,6 +255,91 @@ const Users = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Add User Modal */}
+            {showAddModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-white">Add New User</h3>
+                            <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-white"><X size={24} /></button>
+                        </div>
+                        <form onSubmit={handleAddUser} className="space-y-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Email</label>
+                                <input type="email" required className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                    value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Password</label>
+                                <input type="password" required minLength={6} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                    value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-400 mb-1">Initial Credits</label>
+                                    <input type="number" required className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                        value={formData.credits} onChange={e => setFormData({ ...formData, credits: parseInt(e.target.value) })} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-400 mb-1">Role</label>
+                                    <select className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                        value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
+                                        <option value="user">User</option>
+                                        <option value="pro">Pro</option>
+                                        <option value="enterprise">Enterprise</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-2 pt-2">
+                                <input type="checkbox" id="isAdmin" className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-secondary-500 focus:ring-secondary-500"
+                                    checked={formData.is_admin} onChange={e => setFormData({ ...formData, is_admin: e.target.checked })} />
+                                <label htmlFor="isAdmin" className="text-sm text-slate-300">Grant Admin Privileges</label>
+                            </div>
+                            <button type="submit" className="w-full bg-secondary-600 hover:bg-secondary-500 text-white font-bold py-3 rounded-xl mt-4 transition-all">Create User</button>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit User Modal */}
+            {showEditModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+                        <div className="flex justify-between items-center mb-6">
+                            <h3 className="text-xl font-bold text-white">Edit User: {selectedUser?.email}</h3>
+                            <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-white"><X size={24} /></button>
+                        </div>
+                        <form onSubmit={handleEditUser} className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-400 mb-1">Credits</label>
+                                    <input type="number" required className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                        value={formData.credits} onChange={e => setFormData({ ...formData, credits: e.target.value })} />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-slate-400 mb-1">Role</label>
+                                    <select className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                        value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
+                                        <option value="user">User (Free)</option>
+                                        <option value="pro">Pro ($49)</option>
+                                        <option value="enterprise">Enterprise ($199)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                                <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Danger Zone</h4>
+                                <div className="flex items-center gap-2">
+                                    <input type="checkbox" id="editIsAdmin" className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-red-500 focus:ring-red-500"
+                                        checked={formData.is_admin} onChange={e => setFormData({ ...formData, is_admin: e.target.checked })} />
+                                    <label htmlFor="editIsAdmin" className="text-sm text-slate-300">Is Admin</label>
+                                </div>
+                            </div>
+                            <button type="submit" className="w-full bg-primary-600 hover:bg-primary-500 text-white font-bold py-3 rounded-xl mt-4 transition-all">Save Changes</button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 };

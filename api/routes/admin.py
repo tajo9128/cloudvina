@@ -211,3 +211,121 @@ async def update_system_config(
     }).execute()
     
     return {"status": "success", "data": response.data}
+
+from pydantic import BaseModel
+
+class UserCreate(BaseModel):
+    email: str
+    password: str
+    credits: int = 10
+    is_admin: bool = False
+
+class UserUpdate(BaseModel):
+    credits: Optional[int] = None
+    is_admin: Optional[bool] = None
+    role: Optional[str] = None
+
+@router.post("/users")
+async def create_user(
+    user_data: UserCreate,
+    request: Request,
+    admin: dict = Depends(verify_admin)
+):
+    """Create a new user"""
+    try:
+        # Create user in Supabase Auth
+        # Note: This requires SERVICE_KEY permissions usually. 
+        # If it fails, we catch it.
+        auth_response = supabase.auth.admin.create_user({
+            "email": user_data.email,
+            "password": user_data.password,
+            "email_confirm": True
+        })
+        
+        new_user = auth_response.user
+        
+        # Update profile with extra fields
+        if new_user:
+            supabase.table("profiles").update({
+                "credits": user_data.credits,
+                "is_admin": user_data.is_admin
+            }).eq("id", new_user.id).execute()
+            
+        # Log action
+        supabase.table("admin_actions").insert({
+            "admin_id": admin["id"],
+            "action_type": "create_user",
+            "target_id": new_user.id,
+            "target_type": "user",
+            "details": {"email": user_data.email},
+            "ip_address": request.client.host,
+            "user_agent": request.headers.get("user-agent")
+        }).execute()
+        
+        return {"status": "success", "user": new_user}
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.put("/users/{user_id}")
+async def update_user(
+    user_id: str,
+    user_data: UserUpdate,
+    request: Request,
+    admin: dict = Depends(verify_admin)
+):
+    """Update user credits and roles"""
+    
+    update_dict = {}
+    if user_data.credits is not None:
+        update_dict["credits"] = user_data.credits
+    if user_data.is_admin is not None:
+        update_dict["is_admin"] = user_data.is_admin
+    if user_data.role is not None:
+        update_dict["role"] = user_data.role
+        
+    if not update_dict:
+        return {"status": "ignored", "message": "No fields to update"}
+        
+    response = supabase.table("profiles").update(update_dict).eq("id", user_id).execute()
+    
+    # Log action
+    supabase.table("admin_actions").insert({
+        "admin_id": admin["id"],
+        "action_type": "update_user",
+        "target_id": user_id,
+        "target_type": "user",
+        "details": update_dict,
+        "ip_address": request.client.host,
+        "user_agent": request.headers.get("user-agent")
+    }).execute()
+    
+    return {"status": "success", "data": response.data}
+
+@router.delete("/users/{user_id}")
+async def delete_user(
+    user_id: str,
+    request: Request,
+    admin: dict = Depends(verify_admin)
+):
+    """Delete a user"""
+    
+    try:
+        # Delete from Auth (Users table)
+        # This cascades to profiles usually
+        supabase.auth.admin.delete_user(user_id)
+        
+        # Log action
+        supabase.table("admin_actions").insert({
+            "admin_id": admin["id"],
+            "action_type": "delete_user",
+            "target_id": user_id,
+            "target_type": "user",
+            "ip_address": request.client.host,
+            "user_agent": request.headers.get("user-agent")
+        }).execute()
+        
+        return {"status": "success", "message": f"User {user_id} deleted"}
+        
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
