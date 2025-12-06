@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import GridBoxConfigurator from '../components/GridBoxConfigurator'
