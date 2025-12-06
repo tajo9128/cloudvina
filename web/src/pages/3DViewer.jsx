@@ -190,7 +190,7 @@ const ThreeDViewer = () => {
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Header Section */}
-            <div className="bg-white border-b border-slate-200 pt-24 pb-6">
+            <div className="bg-white border-b border-slate-200 pt-4 pb-6">
                 <div className="container mx-auto px-4">
                     <div className="flex justify-between items-center">
                         <div>

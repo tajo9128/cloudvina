@@ -420,7 +420,7 @@ export default function HomePage() {
                             <div className="mb-4">
                                 <span className="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-bold uppercase tracking-wide">Starter</span>
                             </div>
-                            <h4 className="text-3xl font-bold text-white mb-2">$0 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
+                            <h4 className="text-3xl font-bold text-white mb-2">₹0 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
                             <p className="text-slate-400 mb-6">Perfect for students and testing.</p>
                             <ul className="space-y-4 mb-8">
                                 <li className="flex items-center gap-3 text-slate-300">
@@ -441,7 +441,7 @@ export default function HomePage() {
                             <div className="mb-4">
                                 <span className="px-3 py-1 rounded-full bg-primary-900/50 text-primary-300 text-xs font-bold uppercase tracking-wide">Researcher</span>
                             </div>
-                            <h4 className="text-3xl font-bold text-white mb-2">$49 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
+                            <h4 className="text-3xl font-bold text-white mb-2">₹49 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
                             <p className="text-slate-400 mb-6">For serious research projects.</p>
                             <ul className="space-y-4 mb-8">
                                 <li className="flex items-center gap-3 text-white">
@@ -465,7 +465,7 @@ export default function HomePage() {
                             <div className="mb-4">
                                 <span className="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-bold uppercase tracking-wide">Lab / Team</span>
                             </div>
-                            <h4 className="text-3xl font-bold text-white mb-2">$199 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
+                            <h4 className="text-3xl font-bold text-white mb-2">₹199 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
                             <p className="text-slate-400 mb-6">For labs and large teams.</p>
                             <ul className="space-y-4 mb-8">
                                 <li className="flex items-center gap-3 text-slate-300">
