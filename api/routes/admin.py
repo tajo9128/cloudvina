@@ -27,8 +27,9 @@ async def get_dashboard_stats(
     admin: dict = Depends(verify_admin),
     hours_back: int = 24
 ):
-    """Get comprehensive admin dashboard statistics"""
+    """Get comprehensive admin dashboard statistics and recent activity"""
     
+    # 1. Summary Stats (Counts)
     # Real-time job stats
     jobs_response = supabase.table("jobs") \
         .select("*", count="exact") \
@@ -41,7 +42,34 @@ async def get_dashboard_stats(
         .gte("created_at", (datetime.utcnow() - timedelta(hours=hours_back)).isoformat()) \
         .execute()
     
-    # System metrics
+    # 2. Detailed Lists for "All-in-One" View
+    # Recent Jobs (Top 5)
+    recent_jobs = supabase.table("jobs") \
+        .select("*, profiles(email, username)") \
+        .order("created_at", desc=True) \
+        .limit(5) \
+        .execute()
+        
+    # Recent Users (Top 5)
+    recent_users = supabase.table("profiles") \
+        .select("*") \
+        .order("created_at", desc=True) \
+        .limit(5) \
+        .execute()
+        
+    # Recent Activity (Top 10)
+    # We try-catch this in case admin_actions doesn't exist yet for some deployments
+    try:
+        activity_log = supabase.table("admin_actions") \
+            .select("*") \
+            .order("created_at", desc=True) \
+            .limit(10) \
+            .execute()
+        activity_data = activity_log.data
+    except:
+        activity_data = []
+
+    # 3. System Metrics
     try:
         system_metrics = {
             "cpu_percent": psutil.cpu_percent(),
@@ -63,18 +91,23 @@ async def get_dashboard_stats(
     jobs_data = jobs_response.data or []
     
     return {
-        "jobs": {
-            "total": jobs_response.count,
-            "completed": len([j for j in jobs_data if j.get("status") == "completed"]),
-            "failed": len([j for j in jobs_data if j.get("status") == "failed"]),
-            "running": len([j for j in jobs_data if j.get("status") == "running"]),
-            "queued": len([j for j in jobs_data if j.get("status") == "queued"])
+        "stats": {
+            "jobs": {
+                "total": jobs_response.count,
+                "completed": len([j for j in jobs_data if j.get("status") == "completed"]),
+                "failed": len([j for j in jobs_data if j.get("status") == "failed"]),
+                "running": len([j for j in jobs_data if j.get("status") == "running"]),
+                "queued": len([j for j in jobs_data if j.get("status") == "queued"])
+            },
+            "users": {
+                "total": users_response.count,
+                "active_today": users_response.count,
+            },
+            "system": system_metrics
         },
-        "users": {
-            "total": users_response.count,
-            "active_today": users_response.count,
-        },
-        "system": system_metrics
+        "recent_jobs": recent_jobs.data or [],
+        "recent_users": recent_users.data or [],
+        "activity_log": activity_data or []
     }
 
 @router.get("/jobs")
