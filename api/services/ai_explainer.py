@@ -22,7 +22,8 @@ class AIExplainer:
         Streams response for real-time display
         """
         if not self.api_key:
-            yield "data: Error: OpenRouter API key not configured."
+            import json
+            yield f"data: {json.dumps('Error: OpenRouter API key not configured.')}\n\n"
             return
 
         prompt = self._create_prompt(
@@ -72,11 +73,11 @@ class AIExplainer:
                             data_json = json.loads(data_str)
                             content = data_json.get("choices", [{}])[0].get("delta", {}).get("content", "")
                             if content:
-                                yield f"data: {content}\n\n"
+                                yield f"data: {json.dumps(content)}\n\n"
                         except json.JSONDecodeError:
                             continue
         except Exception as e:
-            yield f"data: Error: {str(e)}\n\n"
+            yield f"data: {json.dumps('Error: ' + str(e))}\n\n"
     
     def _get_system_prompt(self) -> str:
         """System prompt for educational context"""

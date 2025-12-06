@@ -122,8 +122,14 @@ export default function AIExplainer({ jobId, analysisData, interactionsData }) {
                 const lines = chunk.split('\n')
                 for (const line of lines) {
                     if (line.startsWith('data: ')) {
-                        const content = line.slice(6)
-                        aiMessage += content
+                        const raw = line.slice(6)
+                        try {
+                            const content = JSON.parse(raw)
+                            aiMessage += content
+                        } catch (e) {
+                            console.warn('Failed to parse SSE JSON:', raw)
+                            aiMessage += raw
+                        }
 
                         setMessages(prev => {
                             const newMsgs = [...prev]
