@@ -62,11 +62,21 @@ class AIExplainer:
                     return
 
                 # Stream response
+                import json
                 async for line in response.aiter_lines():
                     if line.startswith("data: "):
-                        yield line[6:]  # Remove "data: " prefix
+                        data_str = line[6:].strip()
+                        if data_str == "[DONE]":
+                            break
+                        try:
+                            data_json = json.loads(data_str)
+                            content = data_json.get("choices", [{}])[0].get("delta", {}).get("content", "")
+                            if content:
+                                yield f"data: {content}\n\n"
+                        except json.JSONDecodeError:
+                            continue
         except Exception as e:
-            yield f"data: Error: {str(e)}"
+            yield f"data: Error: {str(e)}\n\n"
     
     def _get_system_prompt(self) -> str:
         """System prompt for educational context"""
