@@ -64,7 +64,7 @@ export default function Header() {
                 {/* Logo */}
                 <Link to="/" className="flex items-center space-x-3 group">
                     <div className="text-3xl transform group-hover:scale-110 transition-transform duration-300">🧬</div>
-                    <h1 className={`text-2xl font-bold tracking-tight ${scrolled ? 'text-black' : 'text-slate-900'} transition-colors`}>
+                    <h1 className="text-xl font-bold tracking-tight text-primary-600 transition-colors">
                         Bio<span className="text-primary-600">Dockify</span>
                     </h1>
                 </Link>
@@ -75,7 +75,7 @@ export default function Header() {
                         <div key={item.name} className="relative group">
                             {item.dropdown ? (
                                 <button
-                                    className={`flex items-center gap-1 font-medium text-xs uppercase tracking-wide transition-colors ${scrolled ? 'text-black hover:text-primary-600' : 'text-slate-200 hover:text-white'
+                                    className={`flex items-center gap-1 font-medium text-sm w-max uppercase tracking-wide transition-colors ${scrolled ? 'text-black hover:text-primary-600' : 'text-slate-200 hover:text-white'
                                         }`}
                                 >
                                     {item.name}
@@ -84,8 +84,8 @@ export default function Header() {
                             ) : (
                                 <Link
                                     to={item.path}
-                                    className={`font-medium text-xs uppercase tracking-wide transition-colors ${(location.pathname === item.path && item.name !== 'Home') ? 'text-primary-600 font-bold' :
-                                            scrolled ? 'text-black hover:text-primary-600' : 'text-slate-200 hover:text-white'
+                                    className={`font-medium text-sm w-max uppercase tracking-wide transition-colors ${(location.pathname === item.path && item.name !== 'Home') ? 'text-primary-600 font-bold' :
+                                        scrolled ? 'text-black hover:text-primary-600' : 'text-slate-200 hover:text-white'
                                         }`}
                                 >
                                     {item.name}
@@ -127,7 +127,7 @@ export default function Header() {
                         Start Docking
                     </Link>
                 </div>
-            </div>
-        </header>
+            </div >
+        </header >
     )
 }
