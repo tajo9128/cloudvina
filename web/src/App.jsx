@@ -9,11 +9,10 @@ import HomePage from './pages/HomePage'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import NewJobPage from './pages/NewJobPage'
-import BatchDockingPage from './pages/BatchDockingPage' // Added
+import BatchDockingPage from './pages/BatchDockingPage'
 import JobResultsPage from './pages/JobResultsPage'
-// import AdminPage from './pages/AdminPage' // Temporarily disabled
 import ConverterPage from './pages/ConverterPage'
-import TargetPredictionPage from './pages/TargetPredictionPage' // Added
+import TargetPredictionPage from './pages/TargetPredictionPage'
 import MDSimulationPage from './pages/MDSimulationPage'
 import BlogPage from './pages/BlogPage'
 import BlogPostPage from './pages/BlogPostPage'
@@ -54,7 +53,7 @@ function App() {
     }, [])
 
     useEffect(() => {
-        console.log('BioDockify v2.2 Loaded - Build: ' + new Date().toISOString())
+        console.log('BioDockify v3.0 Loaded - Build: ' + new Date().toISOString())
     }, [])
 
     if (loading) {
@@ -86,7 +85,28 @@ function App() {
                         <Route
                             path="/dashboard"
                             element={session ? <DashboardPage /> : <Navigate to="/login" />}
-                        <Route path="/tools/prediction" element={<TargetPredictionPage />} />
+                        />
+                        <Route
+                            path="/dock/new"
+                            element={session ? <NewJobPage /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/dock/batch"
+                            element={session ? <BatchDatchDockingPage /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/dock/:jobId"
+                            element={session ? <JobResultsPage /> : <Navigate to="/login" />}
+                        />
+                        <Route path="/tools/converter" element={<ConverterPage />} />
+                        <Route
+                            path="/tools/prediction"
+                            element={session ? <TargetPredictionPage /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/md-simulation"
+                            element={session ? <MDSimulationPage /> : <Navigate to="/login" />}
+                        />
                         <Route path="/ai-analysis" element={<AIAnalysisPage />} />
                         <Route path="/blog" element={<BlogPage />} />
                         <Route path="/blog/:slug" element={<BlogPostPage />} />
