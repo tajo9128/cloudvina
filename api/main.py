@@ -1,8 +1,3 @@
-# from admin_sqladmin import setup_admin
-
-app = FastAPI(
-    title="BioDockify API",
-    description="Molecular docking as a service with AutoDock Vina",
     version="1.0.0",
     docs_url="/docs",  # Swagger UI
     redoc_url="/redoc"  # ReDoc
