@@ -300,18 +300,18 @@ export default function HomePage() {
                             <div className="space-y-6">
                                 {[
                                     {
-                                        name: "Sarah Jenkins",
+                                        name: "Priya Sharma",
                                         role: "M.Pharm Student",
-                                        university: "University of Manchester",
+                                        university: "NIPER Mohali",
                                         content: "BioDockify saved my thesis! I spent weeks trying to install AutoDock Vina on my laptop with no luck. With BioDockify, I was running simulations in minutes.",
-                                        initial: "S"
+                                        initial: "P"
                                     },
                                     {
-                                        name: "Dr. Michael Chen",
+                                        name: "Dr. Rajesh Kumar",
                                         role: "Postdoctoral Researcher",
-                                        university: "Stanford University",
+                                        university: "IISc Bangalore",
                                         content: "The cloud scalability is a game changer. I screened 5,000 compounds in a single afternoon using the batch processing feature.",
-                                        initial: "M"
+                                        initial: "R"
                                     },
                                     {
                                         name: "Prof. Emily Rodriguez",
