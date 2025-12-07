@@ -43,7 +43,7 @@ export default function HomePage() {
                     "Automatic SMILES to PDBQT Conversion"
                 ],
                 "screenshot": "https://biodockify.com/assets/images/dashboard-interface.png",
-                "softwareVersion": "3.0.0",
+                "softwareVersion": "4.0.0",
                 "author": {
                     "@type": "Organization",
                     "name": "BioDockify",
