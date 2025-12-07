@@ -187,6 +187,25 @@ const ThreeDViewer = () => {
         reader.readAsText(file);
     };
 
+    // Zoom controls
+    const handleZoomIn = () => {
+        if (!viewer) return;
+        viewer.zoom(1.2, 500);
+        viewer.render();
+    };
+
+    const handleZoomOut = () => {
+        if (!viewer) return;
+        viewer.zoom(0.8, 500);
+        viewer.render();
+    };
+
+    const handleZoomReset = () => {
+        if (!viewer) return;
+        viewer.zoomTo();
+        viewer.render();
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Header Section */}
@@ -349,6 +368,37 @@ const ThreeDViewer = () => {
                             className="w-full h-full"
                             style={{ outline: 'none' }}
                         />
+
+                        {/* Zoom Controls */}
+                        <div className="absolute top-4 right-4 flex flex-col gap-2">
+                            <button
+                                onClick={handleZoomIn}
+                                className="p-2.5 bg-white/90 backdrop-blur rounded-lg shadow-md border border-slate-200 hover:bg-white hover:shadow-lg transition-all group"
+                                title="Zoom In"
+                            >
+                                <svg className="w-5 h-5 text-slate-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={handleZoomOut}
+                                className="p-2.5 bg-white/90 backdrop-blur rounded-lg shadow-md border border-slate-200 hover:bg-white hover:shadow-lg transition-all group"
+                                title="Zoom Out"
+                            >
+                                <svg className="w-5 h-5 text-slate-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                                </svg>
+                            </button>
+                            <button
+                                onClick={handleZoomReset}
+                                className="p-2.5 bg-white/90 backdrop-blur rounded-lg shadow-md border border-slate-200 hover:bg-white hover:shadow-lg transition-all group"
+                                title="Reset View"
+                            >
+                                <svg className="w-5 h-5 text-slate-600 group-hover:text-primary-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                                </svg>
+                            </button>
+                        </div>
 
                         {/* Overlay Branding */}
                         <div className="absolute bottom-4 right-4 bg-white/90 backdrop-blur px-3 py-1.5 rounded-lg shadow-sm border border-slate-200">
