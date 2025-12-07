@@ -14,6 +14,7 @@ import JobResultsPage from './pages/JobResultsPage'
 // import AdminPage from './pages/AdminPage' // Temporarily disabled
 import ConverterPage from './pages/ConverterPage'
 import TargetPredictionPage from './pages/TargetPredictionPage' // Added
+import MDSimulationPage from './pages/MDSimulationPage'
 import BlogPage from './pages/BlogPage'
 import BlogPostPage from './pages/BlogPostPage'
 import AboutPage from './pages/AboutPage'
@@ -85,20 +86,6 @@ function App() {
                         <Route
                             path="/dashboard"
                             element={session ? <DashboardPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/dock/new"
-                            element={session ? <NewJobPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/dock/batch"
-                            element={session ? <BatchDockingPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/dock/:jobId"
-                            element={session ? <JobResultsPage /> : <Navigate to="/login" />}
-                        />
-                        <Route path="/tools/converter" element={<ConverterPage />} />
                         <Route path="/tools/prediction" element={<TargetPredictionPage />} />
                         <Route path="/ai-analysis" element={<AIAnalysisPage />} />
                         <Route path="/blog" element={<BlogPage />} />
