@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { Link } from 'react-router-dom';
-import ReactApexChart from 'react-apexcharts';
 
 // Simple Icons (Replacing Lucide for now to match style or avoid missing imports/unused vars if any)
 const Activity = () => <span>📈</span>;
@@ -46,27 +45,6 @@ const StatCard = ({ title, value, icon: Icon, subtext, color = "primary", trend 
             {subtext && <p className="text-slate-400 text-xs mt-2 relative z-10 font-medium">{subtext}</p>}
         </div>
     );
-};
-
-// Chart Config
-const chartOptions = {
-    chart: {
-        type: 'area',
-        fontFamily: 'Satoshi, sans-serif',
-        dropShadow: { enabled: true, color: '#623 CEA14', top: 10, blur: 4, left: 0, opacity: 0.1 },
-        toolbar: { show: false }
-    },
-    colors: ['#3C50E0', '#80CAEE'],
-    stroke: { curve: 'smooth', width: 2 },
-    grid: { show: true, borderColor: '#334155', strokeDashArray: 4 }, // Slate-700
-    dataLabels: { enabled: false },
-    theme: { mode: 'dark' },
-    xaxis: {
-        categories: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
-        axisBorder: { show: false },
-        axisTicks: { show: false },
-    },
-    yaxis: { title: { style: { fontSize: '0px' } } },
 };
 
 const Dashboard = () => {
@@ -162,32 +140,6 @@ const Dashboard = () => {
                 <StatCard title="Success Rate" value={`${Math.round((stats.jobs?.completed / (stats.jobs?.total || 1)) * 100)}%`} icon={CheckCircle} subtext={`${stats.jobs?.failed || 0} failed jobs`} color="green" />
                 <StatCard title="Total Users" value={stats.users?.total || 0} icon={Users} subtext="Lifetime registrations" color="purple" trend="+5 new" />
                 <StatCard title="Server Load" value={`${stats.system?.cpu_percent || 0}%`} icon={Cpu} subtext={`Mem: ${stats.system?.memory_percent || 0}%`} color="orange" />
-            </div>
-
-            {/* Charts Row (New) */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-5">
-                    <h3 className="text-lg font-bold text-white mb-2">Job Analytics</h3>
-                    <div id="chartOne" className="-ml-5">
-                        <ReactApexChart
-                            options={chartOptions}
-                            series={[{ name: 'Jobs', data: [31, 40, 28, 51, 42, 109, 100] }, { name: 'Failures', data: [11, 32, 45, 32, 34, 52, 41] }]}
-                            type="area"
-                            height={350}
-                        />
-                    </div>
-                </div>
-                <div className="bg-slate-800/40 border border-slate-700 rounded-xl p-5">
-                    <h3 className="text-lg font-bold text-white mb-2">User Registrations</h3>
-                    <div id="chartTwo" className="-ml-5">
-                        <ReactApexChart
-                            options={{ ...chartOptions, colors: ['#10B981'] }}
-                            series={[{ name: 'Users', data: [10, 15, 25, 30, 45, 50, 60] }]}
-                            type="area"
-                            height={350}
-                        />
-                    </div>
-                </div>
             </div>
 
             {/* Main Content Grid */}
