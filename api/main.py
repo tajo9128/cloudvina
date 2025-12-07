@@ -30,6 +30,9 @@ app.add_middleware(
     allow_origin_regex=r"https://.*\.vercel\.app",  # Allow all Vercel deployments
     allow_credentials=True,
     allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Security
 security = HTTPBearer()
 
