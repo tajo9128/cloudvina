@@ -25,4 +25,6 @@ biopython==1.84
 psutil==5.9.7
 scikit-learn==1.3.2
 six
+celery>=5.3.6
+redis>=5.0.1
 
