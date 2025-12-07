@@ -8,7 +8,7 @@ class AIExplainer:
     def __init__(self):
         self.api_key = os.getenv('DEEPSEEK_API_KEY')
         self.base_url = "https://api.deepseek.com"
-        self.model = "deepseek-chat"  # DeepSeek's main chat model
+        self.model = "deepseek-chat"  # Points to DeepSeek-V3
     
     async def explain_results(
         self, 
