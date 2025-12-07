@@ -84,7 +84,7 @@ export default function Header() {
                                 <Link
                                     to={item.path}
                                     className={`font-medium text-sm w-max uppercase tracking-wide transition-colors ${(location.pathname === item.path && item.name !== 'Home') ? 'text-primary-600 font-bold' :
-                                            'text-slate-900 hover:text-primary-600'
+                                        'text-slate-900 hover:text-primary-600'
                                         }`}
                                 >
                                     {item.name}
@@ -114,10 +114,19 @@ export default function Header() {
                 {/* Right Side Actions */}
                 <div className="flex items-center gap-4">
                     {user ? (
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-3">
                             <Link to="/profile" className={`font-bold transition-colors ${scrolled ? 'text-slate-700 hover:text-primary-600' : 'text-white hover:text-primary-400'}`}>
                                 Hi, {user.email?.split('@')[0]}
                             </Link>
+                            <button
+                                onClick={async () => {
+                                    await supabase.auth.signOut()
+                                    window.location.href = '/'
+                                }}
+                                className={`font-bold transition-colors ${scrolled ? 'text-slate-700 hover:text-red-600' : 'text-white hover:text-red-400'}`}
+                            >
+                                Logout
+                            </button>
                         </div>
                     ) : (
                         <Link to="/login" className={`font-bold transition-colors ${scrolled ? 'text-slate-700 hover:text-primary-600' : 'text-white hover:text-primary-400'}`}>Log In</Link>
