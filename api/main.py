@@ -92,6 +92,10 @@ app.include_router(evolution_router)
 from services.target_prediction import router as target_prediction_router
 app.include_router(target_prediction_router)
 
+# Register MD Simulation Router (Colab/Celery)
+from routes.md import router as md_router
+app.include_router(md_router)
+
 # ============================================================================
 # Configuration
 # ============================================================================
