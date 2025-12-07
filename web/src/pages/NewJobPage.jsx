@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import PreparationProgress from '../components/PreparationProgress'
 import GridBoxConfigurator from '../components/GridBoxConfigurator'
+import SEOHelmet from '../components/SEOHelmet'
 
 export default function NewJobPage() {
     const navigate = useNavigate()
@@ -305,6 +306,12 @@ export default function NewJobPage() {
 
     return (
         <div className="min-h-screen bg-slate-50 pt-24 pb-12">
+            <SEOHelmet
+                title="Free Molecular Docking Tool | AutoDock Vina Cloud - BioDockify"
+                description="Start your free molecular docking simulation online. Upload PDBQT files, configure grid boxes, and run AutoDock Vina in the cloud without installation."
+                keywords="molecular docking online, free autodock vina, protein ligand docking, cloud drug discovery, batch docking tool"
+                canonical="https://biodockify.com/dock/new"
+            />
             <main className="container mx-auto px-4">
                 <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
                     <div className="mb-8 flex justify-between items-center">

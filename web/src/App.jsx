@@ -30,6 +30,10 @@ import AdminRoute from './components/AdminRoute'
 import AdminDashboard from './pages/admin/Dashboard'
 import AdminJobs from './pages/admin/Jobs'
 import AdminUsers from './pages/admin/Users'
+import AdminPhases from './pages/admin/PhasesControl'
+import AdminPricing from './pages/admin/PricingControl'
+import AdminMessages from './pages/admin/Messages'
+import AdminCalendar from './pages/admin/Calendar' // Anticipating Calendar next
 
 const queryClient = new QueryClient()
 
@@ -77,6 +81,10 @@ function App() {
                         <Route index element={<AdminDashboard />} />
                         <Route path="jobs" element={<AdminJobs />} />
                         <Route path="users" element={<AdminUsers />} />
+                        <Route path="calendar" element={<AdminCalendar />} />
+                        <Route path="messages" element={<AdminMessages />} />
+                        <Route path="phases" element={<AdminPhases />} />
+                        <Route path="pricing" element={<AdminPricing />} />
                     </Route>
 
                     {/* Public/User Routes with Main Layout */}

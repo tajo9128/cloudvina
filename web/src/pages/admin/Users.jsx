@@ -134,6 +134,41 @@ const Users = () => {
         }
     };
 
+    const handlePaymentBlockQuery = async (user) => {
+        const isSuspended = user.role === 'suspended';
+        const action = isSuspended ? 'Resume Access' : 'Block Access';
+        const confirmMsg = isSuspended
+            ? `Resume access for ${user.email}?\n(Payment Received)`
+            : `Block access for ${user.email}?\n(Mark as Payment Overdue)`;
+
+        if (!confirm(confirmMsg)) return;
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            // We use the existing update endpoint but flip the role
+            // Ideally we'd have a specific /suspend endpoint but update works for MVP
+            const newRole = isSuspended ? 'user' : 'suspended'; // Default back to 'user' on resume
+
+            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/${user.id}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session?.access_token}`
+                },
+                body: JSON.stringify({ role: newRole })
+            });
+
+            if (response.ok) {
+                alert(`User ${isSuspended ? 'resumed' : 'blocked'} successfully.`);
+                fetchUsers();
+            } else {
+                alert('Failed to update status');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     const openEditModal = (user) => {
         setSelectedUser(user);
         setFormData({
@@ -240,119 +275,134 @@ const Users = () => {
                                                 <CheckCircle size={14} /> Active
                                             </span>
                                         </td>
-                                        <td className="p-4 text-right">
-                                            <div className="flex justify-end gap-2">
+                                        <div className="flex justify-end gap-2">
+                                            {/* Payment Block Toggle */}
+                                            <button
+                                                onClick={() => handlePaymentBlockQuery(user)}
+                                                className={`p-2 rounded-lg transition-colors ${user.role === 'suspended'
+                                                    ? 'bg-red-500/20 text-red-400 hover:bg-red-500/30'
+                                                    : 'bg-slate-700/50 text-slate-400 hover:bg-yellow-500/20 hover:text-yellow-400'
+                                                    }`}
+                                                title={user.role === 'suspended' ? "Resume: Payment Received" : "Block: Payment Overdue"}
+                                            >
+                                                {user.role === 'suspended' ? <CheckCircle size={16} /> : <Ban size={16} />}
+                                            </button>
+
+                                            <button
+                                                onClick={() => openEditModal(user)}
+                                                className="p-2 bg-slate-700/50 hover:bg-primary-500/20 text-slate-400 hover:text-primary-400 rounded-lg transition-colors"
+                                                title="Edit User"
+                                            >
+                                                <Edit2 size={16} />
+                                            </button>
+                                            {!user.is_admin && (
                                                 <button
-                                                    onClick={() => openEditModal(user)}
-                                                    className="p-2 bg-slate-700/50 hover:bg-primary-500/20 text-slate-400 hover:text-primary-400 rounded-lg transition-colors"
-                                                    title="Edit User"
+                                                    onClick={() => handleDeleteUser(user.id)}
+                                                    className="p-2 bg-slate-700/50 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
+                                                    title="Delete User"
                                                 >
-                                                    <Edit2 size={16} />
+                                                    <Trash2 size={16} />
                                                 </button>
-                                                {!user.is_admin && (
-                                                    <button
-                                                        onClick={() => handleDeleteUser(user.id)}
-                                                        className="p-2 bg-slate-700/50 hover:bg-red-500/20 text-slate-400 hover:text-red-400 rounded-lg transition-colors"
-                                                        title="Delete User"
-                                                    >
-                                                        <Trash2 size={16} />
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </td>
+                                            )}
+                                        </div>
+                                    </td>
                                     </tr>
-                                ))
+                        ))
                             )}
-                        </tbody>
-                    </table>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+            {/* Add User Modal */ }
+    {
+        showAddModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-xl font-bold text-white">Add New User</h3>
+                        <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-white"><X size={24} /></button>
+                    </div>
+                    <form onSubmit={handleAddUser} className="space-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Email</label>
+                            <input type="email" required className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-slate-400 mb-1">Password</label>
+                            <input type="password" required minLength={6} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Initial Credits</label>
+                                <input type="number" required className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                    value={formData.credits} onChange={e => setFormData({ ...formData, credits: parseInt(e.target.value) })} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Role</label>
+                                <select className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                    value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
+                                    <option value="user">User</option>
+                                    <option value="pro">Pro</option>
+                                    <option value="enterprise">Enterprise</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 pt-2">
+                            <input type="checkbox" id="isAdmin" className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-secondary-500 focus:ring-secondary-500"
+                                checked={formData.is_admin} onChange={e => setFormData({ ...formData, is_admin: e.target.checked })} />
+                            <label htmlFor="isAdmin" className="text-sm text-slate-300">Grant Admin Privileges</label>
+                        </div>
+                        <button type="submit" className="w-full bg-secondary-600 hover:bg-secondary-500 text-white font-bold py-3 rounded-xl mt-4 transition-all">Create User</button>
+                    </form>
                 </div>
             </div>
+        )
+    }
 
-            {/* Add User Modal */}
-            {showAddModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-                    <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-white">Add New User</h3>
-                            <button onClick={() => setShowAddModal(false)} className="text-slate-400 hover:text-white"><X size={24} /></button>
+    {/* Edit User Modal */ }
+    {
+        showEditModal && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+                <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
+                    <div className="flex justify-between items-center mb-6">
+                        <h3 className="text-xl font-bold text-white">Edit User: {selectedUser?.email}</h3>
+                        <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-white"><X size={24} /></button>
+                    </div>
+                    <form onSubmit={handleEditUser} className="space-y-4">
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Credits</label>
+                                <input type="number" required className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                    value={formData.credits} onChange={e => setFormData({ ...formData, credits: e.target.value })} />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-slate-400 mb-1">Role</label>
+                                <select className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
+                                    value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
+                                    <option value="user">User (Free)</option>
+                                    <option value="pro">Pro ($49)</option>
+                                    <option value="enterprise">Enterprise ($199)</option>
+                                </select>
+                            </div>
                         </div>
-                        <form onSubmit={handleAddUser} className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-400 mb-1">Email</label>
-                                <input type="email" required className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
-                                    value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-400 mb-1">Password</label>
-                                <input type="password" required minLength={6} className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
-                                    value={formData.password} onChange={e => setFormData({ ...formData, password: e.target.value })} />
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-1">Initial Credits</label>
-                                    <input type="number" required className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
-                                        value={formData.credits} onChange={e => setFormData({ ...formData, credits: parseInt(e.target.value) })} />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-1">Role</label>
-                                    <select className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
-                                        value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
-                                        <option value="user">User</option>
-                                        <option value="pro">Pro</option>
-                                        <option value="enterprise">Enterprise</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="flex items-center gap-2 pt-2">
-                                <input type="checkbox" id="isAdmin" className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-secondary-500 focus:ring-secondary-500"
+                        <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
+                            <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Danger Zone</h4>
+                            <div className="flex items-center gap-2">
+                                <input type="checkbox" id="editIsAdmin" className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-red-500 focus:ring-red-500"
                                     checked={formData.is_admin} onChange={e => setFormData({ ...formData, is_admin: e.target.checked })} />
-                                <label htmlFor="isAdmin" className="text-sm text-slate-300">Grant Admin Privileges</label>
+                                <label htmlFor="editIsAdmin" className="text-sm text-slate-300">Is Admin</label>
                             </div>
-                            <button type="submit" className="w-full bg-secondary-600 hover:bg-secondary-500 text-white font-bold py-3 rounded-xl mt-4 transition-all">Create User</button>
-                        </form>
-                    </div>
-                </div>
-            )}
-
-            {/* Edit User Modal */}
-            {showEditModal && (
-                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-                    <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl">
-                        <div className="flex justify-between items-center mb-6">
-                            <h3 className="text-xl font-bold text-white">Edit User: {selectedUser?.email}</h3>
-                            <button onClick={() => setShowEditModal(false)} className="text-slate-400 hover:text-white"><X size={24} /></button>
                         </div>
-                        <form onSubmit={handleEditUser} className="space-y-4">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-1">Credits</label>
-                                    <input type="number" required className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
-                                        value={formData.credits} onChange={e => setFormData({ ...formData, credits: e.target.value })} />
-                                </div>
-                                <div>
-                                    <label className="block text-sm font-medium text-slate-400 mb-1">Role</label>
-                                    <select className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
-                                        value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
-                                        <option value="user">User (Free)</option>
-                                        <option value="pro">Pro ($49)</option>
-                                        <option value="enterprise">Enterprise ($199)</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div className="bg-slate-800/50 p-4 rounded-lg border border-slate-700">
-                                <h4 className="text-xs font-bold text-slate-400 uppercase mb-2">Danger Zone</h4>
-                                <div className="flex items-center gap-2">
-                                    <input type="checkbox" id="editIsAdmin" className="w-4 h-4 rounded bg-slate-800 border-slate-700 text-red-500 focus:ring-red-500"
-                                        checked={formData.is_admin} onChange={e => setFormData({ ...formData, is_admin: e.target.checked })} />
-                                    <label htmlFor="editIsAdmin" className="text-sm text-slate-300">Is Admin</label>
-                                </div>
-                            </div>
-                            <button type="submit" className="w-full bg-primary-600 hover:bg-primary-500 text-white font-bold py-3 rounded-xl mt-4 transition-all">Save Changes</button>
-                        </form>
-                    </div>
+                        <button type="submit" className="w-full bg-primary-600 hover:bg-primary-500 text-white font-bold py-3 rounded-xl mt-4 transition-all">Save Changes</button>
+                    </form>
                 </div>
-            )}
-        </div>
+            </div>
+        )
+    }
+        </div >
     );
 };
 

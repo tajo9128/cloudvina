@@ -1,7 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
 import { Link } from 'react-router-dom';
+import SEOHelmet from '../components/SEOHelmet';
 
 const LeadOptimizationPage = () => {
     const [leads, setLeads] = useState([]);
@@ -143,6 +143,12 @@ const LeadOptimizationPage = () => {
 
     return (
         <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <SEOHelmet
+                title="Lead Optimization & ADMET Prediction | BioDockify"
+                description="Rank your virtual screening hits with consensus scoring. Predict ADMET properties including BBB permeability and toxicity using AI."
+                keywords="lead optimization, admet prediction, toxicity check, consensus scoring, binding affinity ranking"
+                canonical="https://biodockify.com/leads"
+            />
             <div className="max-w-7xl mx-auto">
                 <div className="mb-8">
                     <h1 className="text-3xl font-bold text-gray-900">Lead Optimization</h1>

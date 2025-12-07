@@ -52,20 +52,54 @@ async def get_md_status(job_id: str, current_user: dict = Depends(get_current_us
     """
     Checks the status of a specific MD job.
     """
-    task_result = celery_app.AsyncResult(job_id)
-    
-    response = {
-        "job_id": job_id,
-        "status": task_result.status,
-        "info": None
-    }
-    
-    # If the task is running or has custom meta (PROGRESS state)
-    if task_result.status == 'PROGRESS':
-        response["info"] = task_result.info
-    elif task_result.status == 'SUCCESS':
-        response["result"] = task_result.result
-    elif task_result.status == 'FAILURE':
-        response["error"] = str(task_result.result)
+    try:
+        task_result = celery_app.AsyncResult(job_id)
         
-    return response
+        response = {
+            "job_id": job_id,
+            "status": task_result.status,
+            "info": None
+        }
+        
+        # If the task is running or has custom meta (PROGRESS state)
+        if task_result.status == 'PROGRESS':
+            response["info"] = task_result.info
+        elif task_result.status == 'SUCCESS':
+            response["result"] = task_result.result
+        elif task_result.status == 'FAILURE':
+            response["error"] = str(task_result.result)
+            
+        return response
+    except Exception as e:
+        # Fallback if redis is down or task not found
+        return {"job_id": job_id, "status": "UNKNOWN", "error": str(e)}
+
+class BindingEnergyRequest(BaseModel):
+    ligand_resname: str = "LIG"
+    stride: int = 10  # Analyze every Nth frame
+
+@router.post("/analyze/binding-energy/{job_id}")
+async def analyze_binding_energy(job_id: str, request: BindingEnergyRequest, current_user: dict = Depends(get_current_user)):
+    """
+    Triggers MM-GBSA binding energy calculation for a completed MD job.
+    """
+    # Create a new task ID for the analysis
+    analysis_task_id = f"{job_id}_binding_energy"
+    
+    try:
+        task = celery_app.send_task(
+            "calculate_binding_energy",
+            args=[job_id, request.ligand_resname, request.stride],
+            task_id=analysis_task_id,
+            queue="worker"
+        )
+        
+        return {
+            "job_id": job_id,
+            "analysis_task_id": analysis_task_id,
+            "status": "queued",
+            "message": "Binding energy calculation started."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to queue analysis: {str(e)}")
+

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
+import SEOHelmet from '../components/SEOHelmet';
 
 const MDSimulationPage = () => {
     const [pdbFile, setPdbFile] = useState(null);
@@ -105,6 +106,12 @@ const MDSimulationPage = () => {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50 py-12 px-4">
+            <SEOHelmet
+                title="Free Molecular Dynamics Simulation | OpenMM Cloud - BioDockify"
+                description="Run all-atom molecular dynamics simulations online using OpenMM. Analyze protein stability, RMSD, and RMSF with free GPU acceleration."
+                keywords="molecular dynamics online, free md simulation, openmm cloud, protein stability analysis, rmsd calculation online"
+                canonical="https://biodockify.com/md-simulation"
+            />
             <div className="max-w-4xl mx-auto">
                 {/* Header */}
                 <div className="text-center mb-10">

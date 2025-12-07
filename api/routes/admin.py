@@ -245,6 +245,39 @@ async def update_system_config(
     
     return {"status": "success", "data": response.data}
 
+# --- New Settings Endpoints ---
+from utils.config_manager import load_config, update_section
+
+@router.get("/settings")
+async def get_admin_settings(admin: dict = Depends(verify_admin)):
+    """Get global admin settings (Phases & Pricing)"""
+    return load_config()
+
+@router.post("/settings/{section}")
+async def update_admin_settings(
+    section: str,
+    settings: Dict[str, Any],
+    request: Request,
+    admin: dict = Depends(verify_admin)
+):
+    """Update specific settings section (phases or pricing)"""
+    if section not in ["phases", "pricing"]:
+        raise HTTPException(status_code=400, detail="Invalid settings section")
+        
+    updated_config = update_section(section, settings)
+    
+    # Log admin action
+    supabase.table("admin_actions").insert({
+        "admin_id": admin["id"],
+        "action_type": f"update_{section}",
+        "target_type": "settings",
+        "details": settings,
+        "ip_address": request.client.host,
+        "user_agent": request.headers.get("user-agent")
+    }).execute()
+    
+    return {"status": "success", "data": updated_config}
+
 from pydantic import BaseModel
 
 class UserCreate(BaseModel):

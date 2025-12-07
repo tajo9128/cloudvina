@@ -225,61 +225,176 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* Features Section - Alternating Layout */}
-            <section id="features" className="pt-12 pb-24 overflow-hidden">
+            {/* Comprehensive Pipeline Section */}
+            <section id="pipeline" className="py-24 bg-white relative overflow-hidden">
                 <div className="container mx-auto px-4">
-                    <div className="text-center max-w-3xl mx-auto mb-20">
-                        <h2 className="text-primary-600 font-bold tracking-wide uppercase text-sm mb-3">Why BioDockify?</h2>
-                        <h3 className="text-3xl md:text-4xl font-bold text-slate-900">Enterprise-grade docking infrastructure</h3>
+                    <div className="text-center max-w-4xl mx-auto mb-20">
+                        <h2 className="text-primary-600 font-bold tracking-wide uppercase text-sm mb-3">End-to-End Workflow</h2>
+                        <h3 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">The Zero-Cost Drug Discovery Pipeline</h3>
+                        <p className="text-xl text-slate-600 leading-relaxed">
+                            A fully integrated, cloud-native platform that democratizes access to industrial-grade cheminformatics tools. From screening to reporting, we automate the complex biology so you can focus on the discovery.
+                        </p>
                     </div>
 
-                    <div className="grid md:grid-cols-3 gap-8">
-                        {/* Feature 1 */}
-                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100 hover:shadow-xl transition-all text-center group">
-                            <div className="relative mb-6 mx-auto w-full max-w-[280px] h-48 overflow-hidden rounded-xl">
-                                <div className="absolute inset-0 bg-primary-200/20 group-hover:bg-primary-200/30 transition-colors"></div>
-                                <img
-                                    src="/assets/images/dashboard-interface.png"
-                                    alt="Cloud Scalability"
-                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                />
-                            </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">Infinite Cloud Scalability</h3>
-                            <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                                Forget queuing on local clusters. BioDockify leverages AWS Batch to spin up thousands of instances instantly.
-                            </p>
-                        </div>
+                    <div className="relative">
+                        {/* Connecting Line (Mobile hidden) */}
+                        <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-gradient-to-b from-primary-100 via-primary-500 to-primary-100 rounded-full"></div>
 
-                        {/* Feature 2 */}
-                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100 hover:shadow-xl transition-all text-center group">
-                            <div className="relative mb-6 mx-auto w-full max-w-[280px] h-48 overflow-hidden rounded-xl">
-                                <div className="absolute inset-0 bg-secondary-200/20 group-hover:bg-secondary-200/30 transition-colors"></div>
-                                <img
-                                    src="/assets/images/hero-molecular.png"
-                                    alt="Format Support"
-                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                />
+                        <div className="space-y-24">
+                            {/* Phase 1 */}
+                            <div className="relative flex flex-col lg:flex-row items-center justify-between gap-12 group">
+                                <div className="lg:w-5/12 text-right order-2 lg:order-1">
+                                    <div className="inline-block px-4 py-1.5 rounded-full bg-blue-100 text-blue-800 text-sm font-bold mb-4">Phase 1</div>
+                                    <h4 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">High-Throughput Virtual Screening (HTVS)</h4>
+                                    <p className="text-slate-600 leading-relaxed">
+                                        Parallelized molecular docking using <strong>AutoDock Vina 1.2.5</strong>. Our architecture scales instantly on AWS Batch to screen multi-ligand libraries against your target receptor with microsecond latency.
+                                    </p>
+                                </div>
+                                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white border-4 border-primary-500 shadow-xl z-10 order-1 lg:order-2">
+                                    <span className="text-xl">🧬</span>
+                                </div>
+                                <div className="lg:w-5/12 order-3 bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm group-hover:shadow-md transition-shadow">
+                                    <h5 className="font-bold text-slate-700 mb-2 border-b pb-2">Key Capabilities</h5>
+                                    <ul className="space-y-2 text-sm text-slate-600">
+                                        <li className="flex items-center gap-2">✓ Automated PDBQT Preparation</li>
+                                        <li className="flex items-center gap-2">✓ Custom Grid Box Configuration</li>
+                                        <li className="flex items-center gap-2">✓ Multi-Ligand Batch Processing</li>
+                                    </ul>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">Universal Format Support</h3>
-                            <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                                We handle the messy work of file conversion. Upload PDB, SDF, MOL2, or SMILES and we automate the rest.
-                            </p>
-                        </div>
 
-                        {/* Feature 3 */}
-                        <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100 hover:shadow-xl transition-all text-center group">
-                            <div className="relative mb-6 mx-auto w-full max-w-[280px] h-48 overflow-hidden rounded-xl">
-                                <div className="absolute inset-0 bg-teal-200/20 group-hover:bg-teal-200/30 transition-colors"></div>
-                                <img
-                                    src="/assets/images/dashboard-interface.png"
-                                    alt="Analysis"
-                                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                                />
+                            {/* Phase 2 */}
+                            <div className="relative flex flex-col lg:flex-row items-center justify-between gap-12 group">
+                                <div className="lg:w-5/12 order-3 lg:order-1 bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm group-hover:shadow-md transition-shadow">
+                                    <h5 className="font-bold text-slate-700 mb-2 border-b pb-2">Key Capabilities</h5>
+                                    <ul className="space-y-2 text-sm text-slate-600">
+                                        <li className="flex items-center gap-2">✓ Automated Topology Generation (Amber14)</li>
+                                        <li className="flex items-center gap-2">✓ Energy Minimization & Equilibration</li>
+                                        <li className="flex items-center gap-2">✓ Production Runs (1ns - 100ns)</li>
+                                    </ul>
+                                </div>
+                                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white border-4 border-primary-500 shadow-xl z-10 order-1 lg:order-2">
+                                    <span className="text-xl">⚡</span>
+                                </div>
+                                <div className="lg:w-5/12 text-left order-2 lg:order-3">
+                                    <div className="inline-block px-4 py-1.5 rounded-full bg-purple-100 text-purple-800 text-sm font-bold mb-4">Phase 2</div>
+                                    <h4 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">Molecular Dynamics Simulation</h4>
+                                    <p className="text-slate-600 leading-relaxed">
+                                        Full-atomistic simulations powered by <strong>OpenMM</strong>. Assess the temporal stability of ligand-protein complexes in explicit solvent to filter out false positives from docking.
+                                    </p>
+                                </div>
                             </div>
-                            <h3 className="text-xl font-bold text-slate-900 mb-3">Interactive 3D Analysis</h3>
-                            <p className="text-slate-600 text-sm leading-relaxed mb-4">
-                                Visualize your docking results directly in the browser. No need to download massive files or install complex software.
-                            </p>
+
+                            {/* Phase 3 */}
+                            <div className="relative flex flex-col lg:flex-row items-center justify-between gap-12 group">
+                                <div className="lg:w-5/12 text-right order-2 lg:order-1">
+                                    <div className="inline-block px-4 py-1.5 rounded-full bg-indigo-100 text-indigo-800 text-sm font-bold mb-4">Phase 3</div>
+                                    <h4 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">Trajectory Interactivome Analysis</h4>
+                                    <p className="text-slate-600 leading-relaxed">
+                                        Deep dive into structural dynamics using <strong>MDAnalysis</strong> and PLIP. We quantify RMSD stability, RMSF flexibility, and track hydrogen bond lifetimes to validate binding modes.
+                                    </p>
+                                </div>
+                                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white border-4 border-primary-500 shadow-xl z-10 order-1 lg:order-2">
+                                    <span className="text-xl">📊</span>
+                                </div>
+                                <div className="lg:w-5/12 order-3 bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm group-hover:shadow-md transition-shadow">
+                                    <h5 className="font-bold text-slate-700 mb-2 border-b pb-2">Key Capabilities</h5>
+                                    <ul className="space-y-2 text-sm text-slate-600">
+                                        <li className="flex items-center gap-2">✓ RMSD & RMSF Plotting</li>
+                                        <li className="flex items-center gap-2">✓ H-Bond & Hydrophobic Contact Tracking</li>
+                                        <li className="flex items-center gap-2">✓ 3D Trajectory Visualization (DCD)</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Phase 4 */}
+                            <div className="relative flex flex-col lg:flex-row items-center justify-between gap-12 group">
+                                <div className="lg:w-5/12 order-3 lg:order-1 bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm group-hover:shadow-md transition-shadow">
+                                    <h5 className="font-bold text-slate-700 mb-2 border-b pb-2">Key Capabilities</h5>
+                                    <ul className="space-y-2 text-sm text-slate-600">
+                                        <li className="flex items-center gap-2">✓ Implicit Solvent Models (GB/SA)</li>
+                                        <li className="flex items-center gap-2">✓ Enthalpic & Entropic Contributions</li>
+                                        <li className="flex items-center gap-2">✓ Improved Ranking Accuracy</li>
+                                    </ul>
+                                </div>
+                                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white border-4 border-primary-500 shadow-xl z-10 order-1 lg:order-2">
+                                    <span className="text-xl">🔥</span>
+                                </div>
+                                <div className="lg:w-5/12 text-left order-2 lg:order-3">
+                                    <div className="inline-block px-4 py-1.5 rounded-full bg-orange-100 text-orange-800 text-sm font-bold mb-4">Phase 4</div>
+                                    <h4 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">MM-GBSA Binding Free Energy</h4>
+                                    <p className="text-slate-600 leading-relaxed">
+                                        Move beyond simple scoring functions. We calculate rigorous Binding Free Energy (ΔG) from MD trajectories to provide a thermodynamically accurate ranking of your top hits.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Phase 5 */}
+                            <div className="relative flex flex-col lg:flex-row items-center justify-between gap-12 group">
+                                <div className="lg:w-5/12 text-right order-2 lg:order-1">
+                                    <div className="inline-block px-4 py-1.5 rounded-full bg-teal-100 text-teal-800 text-sm font-bold mb-4">Phase 5</div>
+                                    <h4 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">Consensus Lead Ranking</h4>
+                                    <p className="text-slate-600 leading-relaxed">
+                                        Our <strong>Ranking Engine</strong> aggregates data from Docking, MD, and MM-GBSA to compute a weighted consensus score. This data-driven approach minimizes false positives and highlights true potential.
+                                    </p>
+                                </div>
+                                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white border-4 border-primary-500 shadow-xl z-10 order-1 lg:order-2">
+                                    <span className="text-xl">🏆</span>
+                                </div>
+                                <div className="lg:w-5/12 order-3 bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm group-hover:shadow-md transition-shadow">
+                                    <h5 className="font-bold text-slate-700 mb-2 border-b pb-2">Key Capabilities</h5>
+                                    <ul className="space-y-2 text-sm text-slate-600">
+                                        <li className="flex items-center gap-2">✓ Weighted Scoring Algorithms</li>
+                                        <li className="flex items-center gap-2">✓ Normalization & Standardization</li>
+                                        <li className="flex items-center gap-2">✓ Interactive Leaderboard</li>
+                                    </ul>
+                                </div>
+                            </div>
+
+                            {/* Phase 6 */}
+                            <div className="relative flex flex-col lg:flex-row items-center justify-between gap-12 group">
+                                <div className="lg:w-5/12 order-3 lg:order-1 bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm group-hover:shadow-md transition-shadow">
+                                    <h5 className="font-bold text-slate-700 mb-2 border-b pb-2">Key Capabilities</h5>
+                                    <ul className="space-y-2 text-sm text-slate-600">
+                                        <li className="flex items-center gap-2">✓ Blood-Brain Barrier (BBB) Permeability</li>
+                                        <li className="flex items-center gap-2">✓ Structural Toxicity Alerts (PAINS)</li>
+                                        <li className="flex items-center gap-2">✓ Drug-Likeness (QED) Profiling</li>
+                                    </ul>
+                                </div>
+                                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white border-4 border-primary-500 shadow-xl z-10 order-1 lg:order-2">
+                                    <span className="text-xl">🛡️</span>
+                                </div>
+                                <div className="lg:w-5/12 text-left order-2 lg:order-3">
+                                    <div className="inline-block px-4 py-1.5 rounded-full bg-red-100 text-red-800 text-sm font-bold mb-4">Phase 6</div>
+                                    <h4 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">ADMET & Safety Profiling</h4>
+                                    <p className="text-slate-600 leading-relaxed">
+                                        Fail early, fail cheap. We integrate <strong>RDKit</strong> and machine learning models to predict pharmacokinetic properties and toxicity risks before you enter the wet lab.
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* Phase 7 */}
+                            <div className="relative flex flex-col lg:flex-row items-center justify-between gap-12 group">
+                                <div className="lg:w-5/12 text-right order-2 lg:order-1">
+                                    <div className="inline-block px-4 py-1.5 rounded-full bg-green-100 text-green-800 text-sm font-bold mb-4">Phase 7</div>
+                                    <h4 className="text-2xl font-bold text-slate-900 mb-3 group-hover:text-primary-600 transition-colors">Automated Consensus Reporting</h4>
+                                    <p className="text-slate-600 leading-relaxed">
+                                        Generate publication-ready PDF reports with a single click. Summarize your top candidates, including structure visualizations, affinity scores, and ADMET profiles, ready for hand-off.
+                                    </p>
+                                </div>
+                                <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white border-4 border-primary-500 shadow-xl z-10 order-1 lg:order-2">
+                                    <span className="text-xl">📑</span>
+                                </div>
+                                <div className="lg:w-5/12 order-3 bg-slate-50 rounded-2xl p-6 border border-slate-100 shadow-sm group-hover:shadow-md transition-shadow">
+                                    <h5 className="font-bold text-slate-700 mb-2 border-b pb-2">Key Capabilities</h5>
+                                    <ul className="space-y-2 text-sm text-slate-600">
+                                        <li className="flex items-center gap-2">✓ One-Click PDF Generation</li>
+                                        <li className="flex items-center gap-2">✓ 2D Structure Rendering</li>
+                                        <li className="flex items-center gap-2">✓ Comprehensive Data Summary</li>
+                                    </ul>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
@@ -298,7 +413,7 @@ export default function HomePage() {
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 italic text-slate-600 relative">
                                 <span className="absolute top-4 left-4 text-6xl text-primary-100 font-serif leading-none opacity-50">"</span>
                                 <p className="mb-4 relative z-10">
-                                    "BioDockify has drastically simplified our screening process. We ran 500 compounds in a single afternoon for our M.Pharm thesis. Absolute lifesaver!"
+                                    "The **Zero-Cost Pipeline** is a game changer. I used Phase 2 (MD Simulation) to validate my docking results for a high-impact factor publication. It saved me months of work."
                                 </p>
                                 <div className="flex items-center gap-3 not-italic">
                                     <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500">
@@ -315,15 +430,15 @@ export default function HomePage() {
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 italic text-slate-600 relative">
                                 <span className="absolute top-4 left-4 text-6xl text-secondary-100 font-serif leading-none opacity-50">"</span>
                                 <p className="mb-4 relative z-10">
-                                    "The AI explanation feature is brilliant. It helped me write my discussion section by clearly interpreting the hydrophobic interactions."
+                                    "Phase 6 (ADMET Profiling) flagged a critical toxicity issue in my top lead before we ordered synthesis. This platform is an essential tool for **de-risking drug discovery**."
                                 </p>
                                 <div className="flex items-center gap-3 not-italic">
                                     <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500">
                                         SR
                                     </div>
                                     <div>
-                                        <div className="font-bold text-slate-900 text-sm">Sneha Rao</div>
-                                        <div className="text-xs text-slate-500">PhD Scholar, IIT Bombay</div>
+                                        <div className="font-bold text-slate-900 text-sm">Dr. Sneha Rao</div>
+                                        <div className="text-xs text-slate-500">Research Scientist, Aurigene</div>
                                     </div>
                                 </div>
                             </div>
@@ -332,15 +447,15 @@ export default function HomePage() {
                             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-100 italic text-slate-600 relative">
                                 <span className="absolute top-4 left-4 text-6xl text-teal-100 font-serif leading-none opacity-50">"</span>
                                 <p className="mb-4 relative z-10">
-                                    "Finally, a free tool that doesn't require Linux installation. The PDBQT conversion works flawlessly every time."
+                                    "The **Consensus Reporting** (Phase 7) generated a PDF that I attached directly to my thesis. The RDKit structure renderings look professional and publication-ready."
                                 </p>
                                 <div className="flex items-center gap-3 not-italic">
                                     <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500">
                                         RK
                                     </div>
                                     <div>
-                                        <div className="font-bold text-slate-900 text-sm">Dr. Rajesh Kumar</div>
-                                        <div className="text-xs text-slate-500">Assistant Professor, JSS College</div>
+                                        <div className="font-bold text-slate-900 text-sm">Rajesh Kumar</div>
+                                        <div className="text-xs text-slate-500">PhD Scholar, IIT Delhi</div>
                                     </div>
                                 </div>
                             </div>
@@ -356,20 +471,20 @@ export default function HomePage() {
                             <div className="space-y-4">
                                 {[
                                     {
-                                        q: "Is BioDockify really free for students?",
-                                        a: "Yes! BioDockify offers 130 free credits monthly for all users, which is enough for dozens of molecular docking simulations."
+                                        q: "Is the entire 7-Phase Pipeline really free?",
+                                        a: "Yes. Our 'Zero-Cost' mission means Phases 1 through 7 (Docking, MD, Analysis, Ranking, ADMET, Reporting) are available on the free tier, with generous monthly credits."
                                     },
                                     {
-                                        q: "What file formats are supported?",
-                                        a: "We support PDBQT, PDB, SDF, MOL2, and SMILES formats with automatic conversion. Upload any format and we'll handle it."
+                                        q: "How accurate is the MM-GBSA Binding Energy (Phase 4)?",
+                                        a: "We use OpenMM's implicit solvent models to calculate ΔG. While not as rigorous as FEP, it provides a significantly better ranking metric than simple docking scores."
                                     },
                                     {
-                                        q: "How accurate is the docking?",
-                                        a: "We use official AutoDock Vina 1.2.5, providing identical accuracy to local installations. Results are publication-ready."
+                                        q: "Can I download the raw simulation data?",
+                                        a: "Absolutely. You own your data. Download PDBQT files, DCD trajectories, and PDF reports at any time for offline analysis."
                                     },
                                     {
-                                        q: "Can I use this for my thesis?",
-                                        a: "Absolutely! BioDockify is designed for academic research. You get AI-powered explanations and PDF reports for your thesis."
+                                        q: "Is my data secure on the cloud?",
+                                        a: "We use AWS S3 with strict encryption. Your molecular structures and results are private and deleted automatically after 30 days unless saved."
                                     }
                                 ].map((faq, i) => (
                                     <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-slate-200 hover:border-primary-200 transition-all">
