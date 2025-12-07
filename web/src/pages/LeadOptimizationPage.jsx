@@ -102,6 +102,39 @@ const LeadOptimizationPage = () => {
         }
     };
 
+    const downloadReport = async () => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            // Trigger PDF generation
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/ranking/report`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${session.access_token}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ hits: leads })
+            });
+
+            if (res.ok) {
+                // Handle binary pdf
+                const blob = await res.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `BioDockify_Lead_Report_${new Date().toISOString().slice(0, 10)}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+            } else {
+                setError("Failed to generate report.");
+            }
+        } catch (err) {
+            console.error(err);
+            setError(err.message);
+        }
+    };
+
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -121,9 +154,17 @@ const LeadOptimizationPage = () => {
                 <div className="bg-white shadow-xl rounded-2xl overflow-hidden">
                     <div className="px-6 py-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
                         <h2 className="font-semibold text-gray-700">Ranked Compounds</h2>
-                        <span className="text-sm bg-indigo-100 text-indigo-800 py-1 px-3 rounded-full">
-                            {leads.length} Candidates
-                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={downloadReport}
+                                className="px-4 py-2 bg-white border border-gray-300 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-50 transition-colors flex items-center gap-2"
+                            >
+                                📄 Export PDF (Ranked)
+                            </button>
+                            <span className="text-sm bg-indigo-100 text-indigo-800 py-2 px-3 rounded-lg font-medium">
+                                {leads.length} Candidates
+                            </span>
+                        </div>
                     </div>
 
                     <div className="overflow-x-auto">
