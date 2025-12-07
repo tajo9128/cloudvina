@@ -92,7 +92,7 @@ function App() {
                         />
                         <Route
                             path="/dock/batch"
-                            element={session ? <BatchDatchDockingPage /> : <Navigate to="/login" />}
+                            element={session ? <BatchDockingPage /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/dock/:jobId"
