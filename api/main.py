@@ -40,30 +40,6 @@ app.add_middleware(
     allow_origin_regex=r"https://.*\.vercel\.app",  # Allow all Vercel deployments
     allow_credentials=True,
     allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# NEW: Activity logging middleware for audit trail
-# TEMPORARILY DISABLED due to RLS policy conflicts with Supabase
-# TODO: Re-enable once we implement proper tenant context for SQLAlchemy
-# from middleware.activity_logger import ActivityLoggerMiddleware
-# app.add_middleware(ActivityLoggerMiddleware)
-
-# NEW: Setup SQLAdmin (Django-style admin panel at /sqladmin)
-# admin = setup_admin(app)
-
-app.include_router(tools_router)
-app.include_router(admin_router)
-from export_routes import router as export_router
-app.include_router(export_router)
-
-app.include_router(evolution_router)
-app.include_router(batch_router)
-
-# ============================================================================
-# Configuration
-# ============================================================================
-
 # Security
 security = HTTPBearer()
 
