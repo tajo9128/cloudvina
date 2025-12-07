@@ -58,8 +58,20 @@ class AIExplainer:
                     timeout=30.0
                 )
                 
-                if response.status_code != 200:
-                    yield f"data: Error: API returned status {response.status_code}"
+                
+                if response.status_code == 429:
+                    import json
+                    yield f"data: {json.dumps('⏳ Rate limit reached. The AI service is temporarily busy. Please wait 30-60 seconds and try again, or use fewer requests per minute.')}\\n\\n"
+                    return
+                elif response.status_code != 200:
+                    import json
+                    error_detail = ""
+                    try:
+                        error_data = response.json()
+                        error_detail = error_data.get('error', {}).get('message', '')
+                    except:
+                        pass
+                    yield f"data: {json.dumps(f'Error: API returned status {response.status_code}. {error_detail}')}\\n\\n"
                     return
 
                 # Stream response
