@@ -22,7 +22,7 @@ import AboutPage from './pages/AboutPage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
-
+import PricingPage from './pages/PricingPage'
 import ThreeDViewer from './pages/3DViewer'
 import Layout from './components/Layout'
 import AdminLayout from './components/AdminLayout'
@@ -131,6 +131,7 @@ function App() {
                         <Route path="/about" element={<AboutPage />} />
                         <Route path="/privacy" element={<PrivacyPage />} />
                         <Route path="/terms" element={<TermsPage />} />
+                        <Route path="/pricing" element={<PricingPage />} />
                         <Route path="/contact" element={<ContactPage />} />
                         <Route path="/3d-viewer" element={<ThreeDViewer />} />
                         <Route path="/3d-viewer/:jobId" element={<ThreeDViewer />} />
