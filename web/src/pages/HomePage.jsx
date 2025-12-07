@@ -115,7 +115,8 @@ export default function HomePage() {
                         src="/assets/images/hero-molecular.png"
                         alt="Background"
                         className="w-full h-full object-cover opacity-20 mix-blend-overlay"
-                        <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-white leading-tight mb-6">
+                    />
+                    <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-white leading-tight mb-6">
                         Molecular Docking <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-secondary-400">Reimagined for the Cloud</span>
                     </h1>
