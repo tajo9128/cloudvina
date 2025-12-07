@@ -10,6 +10,82 @@ const MDResultsPage = () => {
     const [isPlaying, setIsPlaying] = useState(false);
     const viewerRef = useRef(null);
     const [viewer, setViewer] = useState(null);
+    const [loadingEnergy, setLoadingEnergy] = useState(false);
+
+    // Initial check for existing energy result
+    useEffect(() => {
+        if (jobData?.result?.analysis?.binding_energy) {
+            setLoadingEnergy(false);
+        }
+    }, [jobData]);
+
+    const calculateBindingEnergy = async () => {
+        try {
+            setLoadingEnergy(true);
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session) return;
+
+            // Trigger calculation
+            const response = await fetch(
+                `${import.meta.env.VITE_API_URL}/md/analyze/binding-energy/${jobId}`,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${session.access_token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ ligand_resname: 'LIG' })
+                }
+            );
+
+            if (response.ok) {
+                // Poll for status
+                pollEnergyStatus(session.access_token);
+            } else {
+                setLoadingEnergy(false);
+                alert("Failed to start analysis.");
+            }
+        } catch (error) {
+            console.error(error);
+            setLoadingEnergy(false);
+        }
+    };
+
+    const pollEnergyStatus = async (token) => {
+        const interval = setInterval(async () => {
+            try {
+                const res = await fetch(`${import.meta.env.VITE_API_URL}/md/status/${jobId}_binding_energy`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.status === 'SUCCESS' && data.result) {
+                        clearInterval(interval);
+                        setLoadingEnergy(false);
+                        // Update local jobData with new analysis
+                        setJobData(prev => ({
+                            ...prev,
+                            result: {
+                                ...prev.result,
+                                analysis: {
+                                    ...prev.result.analysis,
+                                    binding_energy: data.result.binding_energy,
+                                    std_dev: data.result.std_dev
+                                }
+                            }
+                        }));
+                    } else if (data.status === 'FAILURE') {
+                        clearInterval(interval);
+                        setLoadingEnergy(false);
+                        alert("Analysis failed: " + data.error);
+                    }
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }, 5000); // Poll every 5s
+    };
 
     useEffect(() => {
         loadJobData();
@@ -241,6 +317,55 @@ const MDResultsPage = () => {
                                     </div>
                                 )}
                             </div>
+                        </div>
+
+                        {/* Binding Energy Analysis (Phase 4) */}
+                        <div className="bg-white rounded-2xl shadow-xl p-6">
+                            <h3 className="text-xl font-bold text-gray-900 mb-4">
+                                Binding Free Energy
+                            </h3>
+
+                            {!jobData.result?.analysis?.binding_energy ? (
+                                <div className="text-center">
+                                    <p className="text-sm text-gray-600 mb-4">
+                                        Estimate binding affinity using MM-GBSA (Implicit Solvent).
+                                    </p>
+
+                                    {loadingEnergy ? (
+                                        <div className="flex flex-col items-center py-2">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mb-2"></div>
+                                            <span className="text-sm text-gray-500">Calculating... this may take 1-2 mins</span>
+                                        </div>
+                                    ) : (
+                                        <button
+                                            onClick={calculateBindingEnergy}
+                                            disabled={loadingEnergy}
+                                            className="w-full px-4 py-3 bg-gradient-to-r from-purple-600 to-indigo-600 text-white rounded-xl font-bold hover:shadow-lg transition-all transform hover:-translate-y-0.5"
+                                        >
+                                            ⚡ Calculate ΔG (MM-GBSA)
+                                        </button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-end border-b pb-2">
+                                        <span className="text-gray-600">ΔG (Binding)</span>
+                                        <div className="text-right">
+                                            <span className="text-2xl font-bold text-green-600">
+                                                {jobData.result.analysis.binding_energy.toFixed(2)}
+                                            </span>
+                                            <span className="text-xs text-gray-500 ml-1">kcal/mol</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-between items-center text-sm">
+                                        <span className="text-gray-500">Std Dev</span>
+                                        <span className="font-mono text-gray-700">± {jobData.result.analysis.std_dev?.toFixed(2)}</span>
+                                    </div>
+                                    <div className="mt-2 bg-green-50 text-green-800 text-xs p-2 rounded border border-green-100">
+                                        <strong>Interpretation:</strong> Lower (more negative) values indicate stronger binding.
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Interaction Analysis */}
