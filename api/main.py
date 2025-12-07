@@ -1,8 +1,3 @@
-    version="1.0.0",
-    docs_url="/docs",  # Swagger UI
-    redoc_url="/redoc"  # ReDoc
-)
-
 @app.on_event("startup")
 async def startup_event():
     print("="*50)
