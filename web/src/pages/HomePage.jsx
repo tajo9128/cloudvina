@@ -137,95 +137,95 @@ export default function HomePage() {
                         130 Free Credits
                     </span>
                 </div>
-        </div>
+
             </section >
 
-        {/* Video Modal */ }
+            {/* Video Modal */}
 
 
-    {/* Stats Section */ }
-    <section className="py-10 bg-white border-b border-slate-200 relative z-20 -mt-8 mx-4 lg:mx-auto max-w-6xl rounded-2xl shadow-xl">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-100">
-            {[
-                { label: "Jobs Completed", value: 150, suffix: "+" },
-                { label: "Active Researchers", value: 25, suffix: "+" },
-                { label: "Molecules Docked", value: 2500, suffix: "+" },
-                { label: "Uptime", value: 99.9, suffix: "%" }
-            ].map((stat, i) => (
-                <div key={i} className="text-center px-4">
-                    <div className="text-3xl lg:text-4xl font-bold text-slate-900 mb-1">
-                        <CountUp end={stat.value} suffix={stat.suffix} />
-                    </div>
-                    <div className="text-sm text-slate-500 font-medium uppercase tracking-wide">{stat.label}</div>
+            {/* Stats Section */}
+            <section className="py-10 bg-white border-b border-slate-200 relative z-20 -mt-8 mx-4 lg:mx-auto max-w-6xl rounded-2xl shadow-xl">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-100">
+                    {[
+                        { label: "Jobs Completed", value: 150, suffix: "+" },
+                        { label: "Active Researchers", value: 25, suffix: "+" },
+                        { label: "Molecules Docked", value: 2500, suffix: "+" },
+                        { label: "Uptime", value: 99.9, suffix: "%" }
+                    ].map((stat, i) => (
+                        <div key={i} className="text-center px-4">
+                            <div className="text-3xl lg:text-4xl font-bold text-slate-900 mb-1">
+                                <CountUp end={stat.value} suffix={stat.suffix} />
+                            </div>
+                            <div className="text-sm text-slate-500 font-medium uppercase tracking-wide">{stat.label}</div>
+                        </div>
+                    ))}
                 </div>
-            ))}
-        </div>
-    </section>
+            </section>
 
-    {/* SEO Content Section - Student Pain Points & Benefits */ }
-    <section className="py-20 bg-gradient-to-b from-white to-slate-50">
-        <div className="container mx-auto px-4">
-            <div className="max-w-7xl mx-auto">
-                <div className="text-center mb-12">
-                    <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
-                        Free Molecular Docking Online For Students & Researchers
-                    </h2>
-                    <p className="text-xl text-slate-600">
-                        AutoDock Vina Made Simple, Powerful, and Completely Free
-                    </p>
+            {/* SEO Content Section - Student Pain Points & Benefits */}
+            <section className="py-20 bg-gradient-to-b from-white to-slate-50">
+                <div className="container mx-auto px-4">
+                    <div className="max-w-7xl mx-auto">
+                        <div className="text-center mb-12">
+                            <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">
+                                Free Molecular Docking Online For Students & Researchers
+                            </h2>
+                            <p className="text-xl text-slate-600">
+                                AutoDock Vina Made Simple, Powerful, and Completely Free
+                            </p>
+                        </div>
+
+                        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            {/* Card 1 */}
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:border-primary-200 transition-all group hover:shadow-md">
+                                <div className="w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+                                    🚀
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-3">Instant Access, Zero Setup</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    No more complex installations or Linux command lines. Run AutoDock Vina directly from your browser on any device.
+                                </p>
+                            </div>
+
+                            {/* Card 2 */}
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:border-primary-200 transition-all group hover:shadow-md">
+                                <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+                                    ☁️
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-3">Cloud-Powered Speed</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Run simulations on AWS infrastructure. What takes hours on a laptop finishes in minutes on our dedicated cloud servers.
+                                </p>
+                            </div>
+
+                            {/* Card 3 */}
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:border-primary-200 transition-all group hover:shadow-md">
+                                <div className="w-14 h-14 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+                                    🎓
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-3">Built for Learning</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    AI-powered explanations help you understand binding affinities and interactions. Perfect for thesis work and presentations.
+                                </p>
+                            </div>
+
+                            {/* Card 4 */}
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:border-primary-200 transition-all group hover:shadow-md">
+                                <div className="w-14 h-14 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
+                                    💎
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-3">Unlimited Research</h3>
+                                <p className="text-slate-600 leading-relaxed">
+                                    Upgrade for high-throughput screening. Run thousands of compounds in parallel with priority queue access.
+                                </p>
+                            </div>
+                        </div>
+
+                    </div>
                 </div>
+            </section>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* Card 1 */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:border-primary-200 transition-all group hover:shadow-md">
-                        <div className="w-14 h-14 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
-                            🚀
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-3">Instant Access, Zero Setup</h3>
-                        <p className="text-slate-600 leading-relaxed">
-                            No more complex installations or Linux command lines. Run AutoDock Vina directly from your browser on any device.
-                        </p>
-                    </div>
-
-                    {/* Card 2 */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:border-primary-200 transition-all group hover:shadow-md">
-                        <div className="w-14 h-14 bg-blue-100 text-blue-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
-                            ☁️
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-3">Cloud-Powered Speed</h3>
-                        <p className="text-slate-600 leading-relaxed">
-                            Run simulations on AWS infrastructure. What takes hours on a laptop finishes in minutes on our dedicated cloud servers.
-                        </p>
-                    </div>
-
-                    {/* Card 3 */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:border-primary-200 transition-all group hover:shadow-md">
-                        <div className="w-14 h-14 bg-green-100 text-green-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
-                            🎓
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-3">Built for Learning</h3>
-                        <p className="text-slate-600 leading-relaxed">
-                            AI-powered explanations help you understand binding affinities and interactions. Perfect for thesis work and presentations.
-                        </p>
-                    </div>
-
-                    {/* Card 4 */}
-                    <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 hover:border-primary-200 transition-all group hover:shadow-md">
-                        <div className="w-14 h-14 bg-purple-100 text-purple-600 rounded-2xl flex items-center justify-center text-3xl mb-4 group-hover:scale-110 transition-transform">
-                            💎
-                        </div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-3">Unlimited Research</h3>
-                        <p className="text-slate-600 leading-relaxed">
-                            Upgrade for high-throughput screening. Run thousands of compounds in parallel with priority queue access.
-                        </p>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </section>
-
-    {/* Features Section - Alternating Layout */ }
+            {/* Features Section - Alternating Layout */}
             <section id="features" className="pt-12 pb-24 overflow-hidden">
                 <div className="container mx-auto px-4">
                     <div className="text-center max-w-3xl mx-auto mb-20">
@@ -388,92 +388,92 @@ export default function HomePage() {
                 </div>
             </section>
 
-    {/* Pricing Section */ }
-    <section id="pricing" className="py-24 bg-slate-900 text-white relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
-            <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary-500/10 rounded-full blur-3xl"></div>
-            <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-secondary-500/10 rounded-full blur-3xl"></div>
-        </div>
-
-        <div className="container mx-auto px-4 relative z-10">
-            <div className="text-center max-w-3xl mx-auto mb-16">
-                <h2 className="text-primary-400 font-bold tracking-wide uppercase text-sm mb-3">Flexible Pricing</h2>
-                <h3 className="text-4xl font-bold text-white mb-6">Research-friendly plans</h3>
-                <p className="text-slate-400 text-lg">
-                    Whether you're a student or running a large lab, we have a plan that fits your needs.
-                </p>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                {/* Free Tier */}
-                <div className="p-8 rounded-2xl border border-slate-700 bg-slate-800/50 hover:border-primary-500/50 transition-all">
-                    <div className="mb-4">
-                        <span className="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-bold uppercase tracking-wide">Starter</span>
-                    </div>
-                    <h4 className="text-3xl font-bold text-white mb-2">₹0 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
-                    <p className="text-slate-400 mb-6">Perfect for students and testing.</p>
-                    <ul className="space-y-4 mb-8">
-                        <li className="flex items-center gap-3 text-slate-300">
-                            <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                            3 Jobs per day
-                        </li>
-                        <li className="flex items-center gap-3 text-slate-300">
-                            <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                            Standard Priority
-                        </li>
-                    </ul>
-                    <Link to="/signup" className="w-full btn-secondary bg-slate-700 hover:bg-slate-600 border-none text-white">Get Started</Link>
+            {/* Pricing Section */}
+            <section id="pricing" className="py-24 bg-slate-900 text-white relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <div className="absolute top-[-10%] right-[-10%] w-[50%] h-[50%] bg-primary-500/10 rounded-full blur-3xl"></div>
+                    <div className="absolute bottom-[-10%] left-[-10%] w-[50%] h-[50%] bg-secondary-500/10 rounded-full blur-3xl"></div>
                 </div>
 
-                {/* Pro Tier */}
-                <div className="p-8 rounded-2xl border-2 border-primary-500 bg-slate-800 relative transform md:-translate-y-4 shadow-2xl shadow-primary-900/50">
-                    <div className="absolute top-0 right-0 bg-primary-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl">POPULAR</div>
-                    <div className="mb-4">
-                        <span className="px-3 py-1 rounded-full bg-primary-900/50 text-primary-300 text-xs font-bold uppercase tracking-wide">Researcher</span>
+                <div className="container mx-auto px-4 relative z-10">
+                    <div className="text-center max-w-3xl mx-auto mb-16">
+                        <h2 className="text-primary-400 font-bold tracking-wide uppercase text-sm mb-3">Flexible Pricing</h2>
+                        <h3 className="text-4xl font-bold text-white mb-6">Research-friendly plans</h3>
+                        <p className="text-slate-400 text-lg">
+                            Whether you're a student or running a large lab, we have a plan that fits your needs.
+                        </p>
                     </div>
-                    <h4 className="text-3xl font-bold text-white mb-2">₹49 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
-                    <p className="text-slate-400 mb-6">For serious research projects.</p>
-                    <ul className="space-y-4 mb-8">
-                        <li className="flex items-center gap-3 text-white">
-                            <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                            100 Jobs per day
-                        </li>
-                        <li className="flex items-center gap-3 text-white">
-                            <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                            High Priority Queue
-                        </li>
-                        <li className="flex items-center gap-3 text-white">
-                            <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                            Advanced Analytics
-                        </li>
-                    </ul>
-                    <Link to="/signup?plan=pro" className="w-full btn-primary bg-primary-500 hover:bg-primary-400 border-none">Upgrade Now</Link>
-                </div>
 
-                {/* Enterprise Tier */}
-                <div className="p-8 rounded-2xl border border-slate-700 bg-slate-800/50 hover:border-primary-500/50 transition-all">
-                    <div className="mb-4">
-                        <span className="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-bold uppercase tracking-wide">Lab / Team</span>
+                    <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+                        {/* Free Tier */}
+                        <div className="p-8 rounded-2xl border border-slate-700 bg-slate-800/50 hover:border-primary-500/50 transition-all">
+                            <div className="mb-4">
+                                <span className="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-bold uppercase tracking-wide">Starter</span>
+                            </div>
+                            <h4 className="text-3xl font-bold text-white mb-2">₹0 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
+                            <p className="text-slate-400 mb-6">Perfect for students and testing.</p>
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-slate-300">
+                                    <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                    3 Jobs per day
+                                </li>
+                                <li className="flex items-center gap-3 text-slate-300">
+                                    <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Standard Priority
+                                </li>
+                            </ul>
+                            <Link to="/signup" className="w-full btn-secondary bg-slate-700 hover:bg-slate-600 border-none text-white">Get Started</Link>
+                        </div>
+
+                        {/* Pro Tier */}
+                        <div className="p-8 rounded-2xl border-2 border-primary-500 bg-slate-800 relative transform md:-translate-y-4 shadow-2xl shadow-primary-900/50">
+                            <div className="absolute top-0 right-0 bg-primary-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl rounded-tr-xl">POPULAR</div>
+                            <div className="mb-4">
+                                <span className="px-3 py-1 rounded-full bg-primary-900/50 text-primary-300 text-xs font-bold uppercase tracking-wide">Researcher</span>
+                            </div>
+                            <h4 className="text-3xl font-bold text-white mb-2">₹49 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
+                            <p className="text-slate-400 mb-6">For serious research projects.</p>
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-white">
+                                    <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                    100 Jobs per day
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                    High Priority Queue
+                                </li>
+                                <li className="flex items-center gap-3 text-white">
+                                    <svg className="w-5 h-5 text-primary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Advanced Analytics
+                                </li>
+                            </ul>
+                            <Link to="/signup?plan=pro" className="w-full btn-primary bg-primary-500 hover:bg-primary-400 border-none">Upgrade Now</Link>
+                        </div>
+
+                        {/* Enterprise Tier */}
+                        <div className="p-8 rounded-2xl border border-slate-700 bg-slate-800/50 hover:border-primary-500/50 transition-all">
+                            <div className="mb-4">
+                                <span className="px-3 py-1 rounded-full bg-slate-700 text-slate-300 text-xs font-bold uppercase tracking-wide">Lab / Team</span>
+                            </div>
+                            <h4 className="text-3xl font-bold text-white mb-2">₹199 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
+                            <p className="text-slate-400 mb-6">For labs and large teams.</p>
+                            <ul className="space-y-4 mb-8">
+                                <li className="flex items-center gap-3 text-slate-300">
+                                    <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Unlimited Jobs
+                                </li>
+                                <li className="flex items-center gap-3 text-slate-300">
+                                    <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Dedicated Support
+                                </li>
+                            </ul>
+                            <Link to="/contact" className="w-full btn-secondary bg-slate-700 hover:bg-slate-600 border-none text-white">Contact Sales</Link>
+                        </div>
                     </div>
-                    <h4 className="text-3xl font-bold text-white mb-2">₹199 <span className="text-lg text-slate-400 font-normal">/ month</span></h4>
-                    <p className="text-slate-400 mb-6">For labs and large teams.</p>
-                    <ul className="space-y-4 mb-8">
-                        <li className="flex items-center gap-3 text-slate-300">
-                            <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                            Unlimited Jobs
-                        </li>
-                        <li className="flex items-center gap-3 text-slate-300">
-                            <svg className="w-5 h-5 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
-                            Dedicated Support
-                        </li>
-                    </ul>
-                    <Link to="/contact" className="w-full btn-secondary bg-slate-700 hover:bg-slate-600 border-none text-white">Contact Sales</Link>
                 </div>
-            </div>
-        </div>
-    </section>
+            </section>
 
-    {/* CTA Section */ }
+            {/* CTA Section */}
 
         </div >
     )
