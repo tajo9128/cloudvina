@@ -170,7 +170,7 @@ export default function HomePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-20">
                         <h2 className="text-base text-indigo-600 font-bold tracking-widest uppercase mb-2">The Enterprise Workflow</h2>
-                        <h3 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">7-Phase Discovery Engine</h3>
+                        <h3 className="text-4xl md:text-5xl font-bold text-black mb-6">7-Phase Discovery Engine</h3>
                         <p className="text-xl text-slate-600 max-w-2xl mx-auto">
                             Automate the complex biology so your team can focus on the discovery.
                             From raw PDBs to publication-ready data export.
@@ -274,7 +274,7 @@ export default function HomePage() {
             <section className="py-24 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-slate-900 mb-6">Powered by Industry Standards</h2>
+                        <h2 className="text-3xl font-bold text-black mb-6">Powered by Industry Standards</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                             <ToolCard name="AutoDock Vina" type="Docking Engine" icon={<Box />} desc="The industry standard for molecular docking." color="blue" />
                             <ToolCard name="OpenMM" type="MD Engine" icon={<Zap />} desc="High-performance toolkit for molecular simulation." color="purple" />
@@ -316,19 +316,7 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* Footer CTA */}
-            <section className="py-24 bg-[#0B1121] border-t border-slate-800 text-center">
-                <div className="max-w-4xl mx-auto px-4">
-                    <h2 className="text-3xl md:text-5xl font-bold text-white mb-8">Ready to accelerate your research?</h2>
-                    <p className="text-xl text-slate-400 mb-10">
-                        Join leading organizations using BioDockify to streamline their drug discovery pipelines.
-                    </p>
-                    <Link to="/auth/signup" className="inline-block px-12 py-5 bg-gradient-to-r from-indigo-600 to-purple-600 text-white text-xl font-bold rounded-full shadow-2xl hover:scale-105 transition-transform">
-                        Start Your Free Trial
-                    </Link>
-                    <p className="mt-6 text-slate-500 text-sm">Enterprise Security • SOC2 Compliant • 24/7 Support</p>
-                </div>
-            </section>
+
         </div>
     )
 }
@@ -354,7 +342,7 @@ function TimelineItem({ number, title, subtitle, description, tags, status, side
                     <div className={`flex items-center gap-4 mb-4 ${side === 'left' ? 'lg:justify-end' : 'lg:justify-start'}`}>
                         {side === 'right' && <div className={`p-3 rounded-xl ${bgIconClass}`}>{icon}</div>}
                         <div>
-                            <h3 className="text-xl font-bold text-slate-900">{title}</h3>
+                            <h3 className="text-xl font-bold text-black">{title}</h3>
                             <div className="text-sm font-semibold text-indigo-600 uppercase tracking-wide">{subtitle}</div>
                         </div>
                         {side === 'left' && <div className={`p-3 rounded-xl ${bgIconClass}`}>{icon}</div>}
@@ -402,7 +390,7 @@ function ToolCard({ name, type, icon, desc, color }) {
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${colors[color].split(' ')[0]} ${colors[color].split(' ')[1]}`}>
                 {icon}
             </div>
-            <h3 className="text-lg font-bold text-slate-900">{name}</h3>
+            <h3 className="text-lg font-bold text-black">{name}</h3>
             <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-3">{type}</p>
             <p className="text-slate-600 text-sm leading-relaxed mb-4">{desc}</p>
             <div className="flex items-center justify-between pt-4 border-t border-slate-100">
