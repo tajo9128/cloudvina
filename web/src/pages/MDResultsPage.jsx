@@ -73,7 +73,7 @@ const MDResultsPage = () => {
         );
     }
 
-    if (!job Data || jobData.status !== 'SUCCESS') {
+    if (!jobData || jobData.status !== 'SUCCESS') {
         return (
             <div className="min-h-screen flex items-center justify-center">
                 <div className="text-center">
