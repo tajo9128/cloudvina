@@ -6,9 +6,9 @@ class AIExplainer:
     """AI service for explaining docking results"""
     
     def __init__(self):
-        self.api_key = os.getenv('OPENROUTER_API_KEY')
-        self.base_url = "https://openrouter.ai/api/v1"
-        self.model = "google/gemini-2.0-flash-exp:free"  # Faster model
+        self.api_key = os.getenv('DEEPSEEK_API_KEY')
+        self.base_url = "https://api.deepseek.com"
+        self.model = "deepseek-chat"  # DeepSeek's main chat model
     
     async def explain_results(
         self, 
@@ -17,27 +17,13 @@ class AIExplainer:
         interactions: Dict,
         user_question: str = None
     ) -> AsyncGenerator[str, None]:
-        """
-        Generate student-friendly explanation
-        Streams response for real-time display
-        """
-        if not self.api_key:
-            import json
-            yield f"data: {json.dumps('Error: OpenRouter API key not configured.')}\n\n"
-            return
-
-        prompt = self._create_prompt(
-            job_data, analysis, interactions, user_question
-        )
-        
         try:
             async with httpx.AsyncClient() as client:
                 response = await client.post(
                     f"{self.base_url}/chat/completions",
                     headers={
                         "Authorization": f"Bearer {self.api_key}",
-                        "HTTP-Referer": "https://biodockify.com",
-                        "X-Title": "BioDockify"
+                        "Content-Type": "application/json"
                     },
                     json={
                         "model": self.model,
