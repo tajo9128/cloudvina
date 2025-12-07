@@ -85,7 +85,7 @@ app.add_middleware(
 
 app.include_router(tools_router)
 app.include_router(admin_router)
-from .export_routes import router as export_router
+from export_routes import router as export_router
 app.include_router(export_router)
 app.include_router(evolution_router)
 
@@ -1031,10 +1031,10 @@ async def export_job_json(
 async def _generate_job_export(job_id, current_user, credentials, format_type):
     """Helper to generate exports - auto-triggers analysis if missing"""
     try:
-        from .auth import get_authenticated_client
-        from .services.export import ExportService
-        from .services.vina_parser import parse_vina_log
-        from .services.interaction_analyzer import InteractionAnalyzer
+        from auth import get_authenticated_client
+        from services.export import ExportService
+        from services.vina_parser import parse_vina_log
+        from services.interaction_analyzer import InteractionAnalyzer
         import boto3
         
         auth_client = get_authenticated_client(credentials.credentials)
