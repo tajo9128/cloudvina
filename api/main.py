@@ -73,22 +73,6 @@ class JobStartRequest(BaseModel):
 # Health Check Routes
 # ============================================================================
 
-@app.get("/")
-def root():
-    """Health check endpoint"""
-    return {
-        "status": "ok",
-        "service": "BioDockify API",
-        "version": "1.0.0",
-        "timestamp": datetime.utcnow().isoformat()
-    }
-
-@app.get("/health")
-def health_check():
-    """Detailed health check"""
-    return {
-        "status": "healthy",
-        "checks": {
             "supabase": "configured" if SUPABASE_URL else "missing",
             "aws": "configured" if os.getenv("AWS_ACCESS_KEY_ID") else "missing"
         }
