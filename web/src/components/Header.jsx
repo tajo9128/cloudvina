@@ -33,7 +33,7 @@ export default function Header() {
         }
     }
 
-    const navItems = ['Features', 'AI Analysis', '3D Viewer', 'Target Prediction', 'MD Simulation', 'Ranking', 'Tools', 'Blog', 'Dashboard']
+    const navItems = ['Features', '3D Viewer', 'Target Prediction', 'MD Simulation', 'Ranking', 'Tools', 'Blog', 'Dashboard']
     if (isAdmin) {
         navItems.push('Admin')
     }
@@ -43,12 +43,12 @@ export default function Header() {
             <div className="container mx-auto px-4 flex justify-between items-center">
                 <Link to="/" className="flex items-center space-x-3 group">
                     <div className="text-3xl transform group-hover:scale-110 transition-transform duration-300">🧬</div>
-                    <h1 className={`text-2xl font-bold tracking-tight ${scrolled ? 'text-slate-900' : 'text-slate-900'} transition-colors`}>
+                    <h1 className={`text-2xl font-bold tracking-tight ${scrolled ? 'text-black' : 'text-slate-900'} transition-colors`}>
                         Bio<span className="text-primary-600">Dockify</span>
                     </h1>
                 </Link>
 
-                <nav className="hidden md:flex items-center space-x-8">
+                <nav className="hidden md:flex items-center space-x-6">
                     {navItems.map((item) => (
                         <Link
                             key={item}
@@ -57,15 +57,14 @@ export default function Header() {
                                     item === 'Tools' ? '/tools/converter' :
                                         item === 'Dashboard' ? '/dashboard' :
                                             item === 'Blog' ? '/blog' :
-                                                item === 'AI Analysis' ? '/ai-analysis' :
-                                                    item === '3D Viewer' ? '/3d-viewer' :
-                                                        item === 'Target Prediction' ? '/tools/prediction' :
-                                                            item === 'MD Simulation' ? '/md-simulation' :
-                                                                item === 'Ranking' ? '/leads' :
-                                                                    `/#${item.toLowerCase()}`
+                                                item === '3D Viewer' ? '/3d-viewer' :
+                                                    item === 'Target Prediction' ? '/tools/prediction' :
+                                                        item === 'MD Simulation' ? '/md-simulation' :
+                                                            item === 'Ranking' ? '/leads' :
+                                                                `/#${item.toLowerCase()}`
                             }
-                            className={`font-medium text-sm uppercase tracking-wide transition-colors ${(location.pathname.includes(item.toLowerCase()) && item !== 'Features') ? 'text-primary-600 font-bold' :
-                                scrolled ? 'text-slate-600 hover:text-primary-600' : 'text-slate-200 hover:text-white'
+                            className={`font-medium text-xs uppercase tracking-wide transition-colors ${(location.pathname.includes(item.toLowerCase()) && item !== 'Features') ? 'text-primary-600 font-bold' :
+                                scrolled ? 'text-black hover:text-primary-600' : 'text-slate-200 hover:text-white'
                                 }`}
                         >
                             {item}

@@ -22,7 +22,7 @@ import AboutPage from './pages/AboutPage'
 import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
-import AIAnalysisPage from './pages/AIAnalysisPage'
+
 import ThreeDViewer from './pages/3DViewer'
 import Layout from './components/Layout'
 import AdminLayout from './components/AdminLayout'
@@ -125,7 +125,7 @@ function App() {
                             path="/leads"
                             element={session ? <LeadOptimizationPage /> : <Navigate to="/login" />}
                         />
-                        <Route path="/ai-analysis" element={<AIAnalysisPage />} />
+
                         <Route path="/blog" element={<BlogPage />} />
                         <Route path="/blog/:slug" element={<BlogPostPage />} />
                         <Route path="/about" element={<AboutPage />} />
