@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../supabaseClient';
 
 const MDSimulationPage = () => {
     const [pdbFile, setPdbFile] = useState(null);
