@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 
 const MDSimulationPage = () => {
@@ -258,10 +259,16 @@ const MDSimulationPage = () => {
                         {/* Results (if completed) */}
                         {jobStatus?.status === 'SUCCESS' && jobStatus.result && (
                             <div className="mt-6 bg-green-50 border-l-4 border-green-500 p-4 rounded">
-                                <h3 className="font-bold text-green-900 mb-2">Results</h3>
-                                <pre className="text-sm text-green-800 overflow-auto">
-                                    {JSON.stringify(jobStatus.result, null, 2)}
-                                </pre>
+                                <h3 className="font-bold text-green-900 mb-2">Simulation Complete!</h3>
+                                <p className="text-sm text-green-800 mb-3">
+                                    Your MD simulation finished successfully. View detailed analysis and trajectory.
+                                </p>
+                                <Link
+                                    to={`/md-results/${jobId}`}
+                                    className="inline-block px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-semibold transition-colors"
+                                >
+                                    📊 View Results & Analysis
+                                </Link>
                             </div>
                         )}
 
