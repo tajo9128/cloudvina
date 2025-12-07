@@ -6,7 +6,7 @@ import psutil
 import os
 
 # Use absolute imports
-from auth import supabase, get_current_user
+from auth import supabase, get_current_user, get_service_client
 from aws_services import cancel_batch_job
 
 router = APIRouter(prefix="/admin", tags=["admin"])
@@ -266,25 +266,31 @@ async def create_user(
 ):
     """Create a new user"""
     try:
-        # Create user in Supabase Auth
-        # Note: This requires SERVICE_KEY permissions usually. 
-        # If it fails, we catch it.
-        auth_response = supabase.auth.admin.create_user({
-            "email": user_data.email,
-            "password": user_data.password,
-            "email_confirm": True
-        })
+        # Use Service Client for Admin Auth operations
+        service_client = get_service_client()
         
-        new_user = auth_response.user
+        # Create user in Supabase Auth
+        try:
+            auth_response = service_client.auth.admin.create_user({
+                "email": user_data.email,
+                "password": user_data.password,
+                "email_confirm": True
+            })
+            new_user = auth_response.user
+        except Exception as auth_error:
+            # Better error message for missing service key scenario
+            if "service_role" in str(auth_error) or "401" in str(auth_error):
+                raise HTTPException(status_code=500, detail="Admin configuration error: Missing Service Key")
+            raise auth_error
         
         # Update profile with extra fields
         if new_user:
-            supabase.table("profiles").update({
+            service_client.table("profiles").update({
                 "credits": user_data.credits,
                 "is_admin": user_data.is_admin
             }).eq("id", new_user.id).execute()
-            
-        # Log action
+        
+        # Log action (can use standard client)
         supabase.table("admin_actions").insert({
             "admin_id": admin["id"],
             "action_type": "create_user",
@@ -320,7 +326,9 @@ async def update_user(
     if not update_dict:
         return {"status": "ignored", "message": "No fields to update"}
         
-    response = supabase.table("profiles").update(update_dict).eq("id", user_id).execute()
+    # Use service client to update profile roles securely
+    service_client = get_service_client()
+    response = service_client.table("profiles").update(update_dict).eq("id", user_id).execute()
     
     # Log action
     supabase.table("admin_actions").insert({
@@ -344,9 +352,12 @@ async def delete_user(
     """Delete a user"""
     
     try:
+        # Use Service Client
+        service_client = get_service_client()
+        
         # Delete from Auth (Users table)
         # This cascades to profiles usually
-        supabase.auth.admin.delete_user(user_id)
+        service_client.auth.admin.delete_user(user_id)
         
         # Log action
         supabase.table("admin_actions").insert({

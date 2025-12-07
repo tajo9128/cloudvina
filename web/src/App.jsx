@@ -13,6 +13,7 @@ import BatchDockingPage from './pages/BatchDockingPage' // Added
 import JobResultsPage from './pages/JobResultsPage'
 // import AdminPage from './pages/AdminPage' // Temporarily disabled
 import ConverterPage from './pages/ConverterPage'
+import TargetPredictionPage from './pages/TargetPredictionPage' // Added
 import BlogPage from './pages/BlogPage'
 import BlogPostPage from './pages/BlogPostPage'
 import AboutPage from './pages/AboutPage'
@@ -98,6 +99,7 @@ function App() {
                             element={session ? <JobResultsPage /> : <Navigate to="/login" />}
                         />
                         <Route path="/tools/converter" element={<ConverterPage />} />
+                        <Route path="/tools/prediction" element={<TargetPredictionPage />} />
                         <Route path="/ai-analysis" element={<AIAnalysisPage />} />
                         <Route path="/blog" element={<BlogPage />} />
                         <Route path="/blog/:slug" element={<BlogPostPage />} />

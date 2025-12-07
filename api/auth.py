@@ -15,6 +15,20 @@ if not SUPABASE_URL or not SUPABASE_KEY:
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# Service Role Client (for Admin actions)
+SUPABASE_SERVICE_ROLE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+
+def get_service_client() -> Client:
+    """
+    Get a Supabase client with Service Role privileges.
+    REQUIRED for admin actions like create_user/delete_user.
+    """
+    if not SUPABASE_SERVICE_ROLE_KEY:
+        # Fallback to standard key if service key not set, but warn/fail if permissions insufficient
+        print("WARNING: SUPABASE_SERVICE_ROLE_KEY not set. Admin actions may fail.")
+        return supabase
+    return create_client(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+
 security = HTTPBearer()
 
 def get_authenticated_client(token: str) -> Client:

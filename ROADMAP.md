@@ -4,58 +4,48 @@
 
 ---
 
-## 1. Virtual Screening (Batch Docking) - HIGH PRIORITY
-
-**Status:** Not Started  
-**Effort:** 5 days  
-**Running Cost:** $3-5 per 100 ligands
-
-### What It Does
-- Upload 10-1000 ligands at once
-- Dock all against one receptor
-- Get ranked results table
-
-### Implementation Notes
-- Use AWS Batch array jobs
-- Need SDF/CSV file parser
-- Frontend: Multi-file upload + progress tracking
-
----
-
-## 2. Target Prediction - MEDIUM PRIORITY
-
-**Status:** Not Started  
-**Effort:** 1 day  
-**Running Cost:** FREE (external API)
-
-### What It Does
-- Input molecule SMILES
-- Predict which proteins it might bind
-- Uses SwissTargetPrediction API
-
-### Implementation Notes
-- Just API integration + frontend panel
-- External dependency on Swiss server
-
----
-
 ## Completed Features ✅
 
-| Feature | Date | Status |
-|---------|------|--------|
-| Blind Docking (Auto Cavity Detection) | Dec 2024 | ✅ |
-| Multiple Pocket Results | Dec 2024 | ✅ |
-| H-Bond Visualization | Dec 2024 | ✅ |
-| ADMET Prediction + Drug-Likeness | Dec 2024 | ✅ |
+| Feature | Version | Status |
+|---------|---------|--------|
+| **AI Result Explainer (DeepSeek)** | v3.0.0 | ✅ |
+| **Advanced 3D Visualization (Zoom/Spin/Styles)** | v3.0.0 | ✅ |
+| **Batch Docking (Virtual Screening)** | v3.0.0 | ✅ |
+| **ODDT Integration (Scoring)** | v3.0.0 | ✅ |
+| Blind Docking (Auto Cavity Detection) | v1.0 | ✅ |
+| ADMET Prediction | v1.0 | ✅ |
 
 ---
 
-## Cost Summary
+## Upcoming Priority Features 🚧
 
-| Usage Level | Monthly AWS Cost |
-|-------------|------------------|
-| Low (200 jobs) | ~$8 |
-| Medium (1500 jobs) | ~$60 |
-| High (10000 jobs) | ~$400 |
+### 1. Target Prediction
+- Input molecule SMILES -> Predict protein targets
+- Uses SwissTargetPrediction API
+- *Status: Planned*
 
-Free tier services: Supabase, Render, RDKit, 3Dmol.js, SwissADME
+### 2. Community Target Library
+- Curated list of 50+ ready-to-dock protein targets
+- *Status: In Design*
+
+### 3. User Accounts & History
+- Save past jobs
+- Re-analyze visualization
+- *Status: In Progress*
+
+---
+
+## Zero-Cost Infrastructure Strategy 🚀
+All planned features leverage free-tier services and open-source ecosystems to ensure sustainability without recurring costs.
+
+| Component | Technology | Cost Strategy |
+|-----------|------------|---------------|
+| **Compute** | Render (Free Tier) | Optimized for memory-efficient docking |
+| **Database** | Supabase (Free Tier) | 500MB free storage (sufficient for thousands of jobs) |
+| **Storage** | Supabase Storage | File retention policies to manage free limits |
+| **AI/ML** | DeepSeek / Pre-trained | Use API free tiers or pre-trained lightweight models |
+| **External APIs** | SwissTargetPrediction | Free academic APIs |
+
+### Future Scalability (Zero Cost)
+- **Client-Side Processing:** Move visualization and simple calculations to the browser to save server resources.
+- **Community Data:** Use public datasets (PDB, ZINC) instead of paid libraries.
