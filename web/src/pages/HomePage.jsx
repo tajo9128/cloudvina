@@ -111,7 +111,7 @@ export default function HomePage() {
                 {/* Background Overlay */}
                 <div className="absolute inset-0 z-0">
                     <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 opacity-95"></div>
-                    {/* <img src="/assets/images/hero-molecular.png" alt="Background" className="w-full h-full object-cover opacity-20 mix-blend-overlay" /> */}
+                    <img src="/assets/images/hero-molecular.png" alt="Background" className="w-full h-full object-cover opacity-20 mix-blend-overlay" />
                     <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-white leading-tight mb-6">
                         Molecular Docking <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-secondary-400">Reimagined for the Cloud</span>
