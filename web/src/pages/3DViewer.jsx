@@ -13,6 +13,9 @@ const ThreeDViewer = () => {
     const [generation, setGeneration] = useState(0);
     const [mode, setMode] = useState(jobId ? 'job' : 'manual');
 
+    // Spin state
+    const [isSpinning, setIsSpinning] = useState(false);
+
     // Interaction Visualization State (NEW)
     const [interactions, setInteractions] = useState(null);
     const [showHBonds, setShowHBonds] = useState(true);
@@ -206,6 +209,35 @@ const ThreeDViewer = () => {
         viewer.render();
     };
 
+    // Style controls
+    const handleStyleChange = (style) => {
+        if (!viewer) return;
+        const styles = {
+            stick: { stick: { radius: 0.15, colorscheme: 'Jmol' } },
+            sphere: { sphere: { scale: 0.4, colorscheme: 'Jmol' } },
+            cartoon: { cartoon: { color: 'spectrum' } },
+            both: { stick: { radius: 0.15, colorscheme: 'Jmol' }, sphere: { scale: 0.25, colorscheme: 'Jmol' } }
+        };
+        viewer.setStyle({}, styles[style] || styles.both);
+        viewer.render();
+    };
+
+    // Spin control
+    const handleSpin = () => {
+        if (!viewer) return;
+        viewer.spin(isSpinning ? false : 'y');
+        setIsSpinning(!isSpinning);
+    };
+
+    // Snapshot download
+    const handleDownloadImage = () => {
+        if (!viewer) return;
+        const link = document.createElement('a');
+        link.href = viewer.pngURI();
+        link.download = `molecule_${Date.now()}.png`;
+        link.click();
+    };
+
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Header Section */}
@@ -268,6 +300,52 @@ const ThreeDViewer = () => {
                             <p className="text-xs text-slate-400 mt-3">
                                 Supports .pdb, .sdf, .mol2, .pdbqt
                             </p>
+                        </div>
+
+                        {/* Visualization Controls Card (NEW) */}
+                        <div className="card p-6">
+                            <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-4">
+                                Display Controls
+                            </h2>
+                            <div className="space-y-3">
+                                {/* Style Buttons */}
+                                <div>
+                                    <label className="block text-xs text-slate-500 mb-2">Representation</label>
+                                    <div className="grid grid-cols-2 gap-2">
+                                        {['stick', 'sphere', 'both', 'cartoon'].map(s => (
+                                            <button
+                                                key={s}
+                                                onClick={() => handleStyleChange(s)}
+                                                className="text-xs px-3 py-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg font-medium transition-colors"
+                                            >
+                                                {s === 'both' ? 'Ball & Stick' : s.charAt(0).toUpperCase() + s.slice(1)}
+                                            </button>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                {/* Action Buttons */}
+                                <div>
+                                    <label className="block text-xs text-slate-500 mb-2">Actions</label>
+                                    <div className="space-y-2">
+                                        <button
+                                            onClick={handleSpin}
+                                            className={`w-full text-sm px-4 py-2 rounded-lg font-medium transition-colors ${isSpinning
+                                                    ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                                                    : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                                                }`}
+                                        >
+                                            {isSpinning ? '⏸ Stop Spin' : '▶ Start Spin'}
+                                        </button>
+                                        <button
+                                            onClick={handleDownloadImage}
+                                            className="w-full text-sm px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 rounded-lg font-medium transition-colors"
+                                        >
+                                            📷 Snapshot
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         {/* Interaction Display Controls (NEW) */}
