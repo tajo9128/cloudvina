@@ -53,12 +53,24 @@ export default function LoginPage() {
                     }
                 }
             } else {
-                const { error } = await supabase.auth.signInWithPassword({
+                const { data: { user }, error } = await supabase.auth.signInWithPassword({
                     email,
                     password,
                 })
                 if (error) throw error
-                navigate('/dashboard')
+
+                // Check if user is admin
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('is_admin')
+                    .eq('id', user.id)
+                    .single()
+
+                if (profile?.is_admin) {
+                    navigate('/admin')
+                } else {
+                    navigate('/dashboard')
+                }
             }
         } catch (error) {
             // Handle specific error cases with user-friendly messages
