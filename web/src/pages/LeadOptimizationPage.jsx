@@ -77,6 +77,31 @@ const LeadOptimizationPage = () => {
         }
     };
 
+    const checkADMET = async (jobId) => {
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+
+            // Call API to get properties
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/jobs/${jobId}/drug-properties`, {
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+
+                // Update local state with new properties
+                setLeads(prev => prev.map(lead => {
+                    if (lead.id === jobId) {
+                        return { ...lead, admet: data.properties };
+                    }
+                    return lead;
+                }));
+            }
+        } catch (error) {
+            console.error("ADMET check failed:", error);
+        }
+    };
+
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
@@ -109,6 +134,7 @@ const LeadOptimizationPage = () => {
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Compound</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Consensus Score</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Docking (Vina)</th>
+                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ADMET Predictions</th>
                                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                     <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                                 </tr>
@@ -145,9 +171,37 @@ const LeadOptimizationPage = () => {
                                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                             {lead.docking_score?.toFixed(1)} kcal/mol
                                         </td>
+                                        <td className="px-6 py-4 whitespace-nowrap text-sm">
+                                            {!lead.admet ? (
+                                                <button
+                                                    onClick={() => checkADMET(lead.id)}
+                                                    className="px-3 py-1 bg-blue-50 text-blue-600 text-xs rounded-full hover:bg-blue-100 transition-colors"
+                                                >
+                                                    🔮 Predict
+                                                </button>
+                                            ) : (
+                                                <div className="flex gap-2">
+                                                    {lead.admet.bbb?.permeable && (
+                                                        <span className="px-2 py-0.5 bg-purple-100 text-purple-800 text-xs rounded border border-purple-200" title="Predicted CNS active">
+                                                            🧠 BBB+
+                                                        </span>
+                                                    )}
+                                                    {lead.admet.toxicity?.has_alerts && (
+                                                        <span className="px-2 py-0.5 bg-red-100 text-red-800 text-xs rounded border border-red-200" title="Structural Alert Found">
+                                                            ⚠️ Toxic
+                                                        </span>
+                                                    )}
+                                                    {!lead.admet.bbb?.permeable && !lead.admet.toxicity?.has_alerts && (
+                                                        <span className="px-2 py-0.5 bg-green-50 text-green-700 text-xs rounded border border-green-200">
+                                                            Safe
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </td>
                                         <td className="px-6 py-4 whitespace-nowrap">
                                             <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${lead.status === 'SUCCEEDED' ? 'bg-green-100 text-green-800' :
-                                                    lead.status === 'FAILED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
+                                                lead.status === 'FAILED' ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800'
                                                 }`}>
                                                 {lead.status}
                                             </span>

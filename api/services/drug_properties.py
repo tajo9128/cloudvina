@@ -47,6 +47,8 @@ class DrugPropertiesCalculator:
                 "drug_likeness": self._assess_drug_likeness(mol),
                 "pains": self._check_pains(mol),
                 "lead_likeness": self._check_lead_likeness(mol),
+                "bbb": self._predict_bbb_permeability(mol),
+                "toxicity": self._check_toxicity_alerts(mol),
                 "admet_links": self._get_admet_links(smiles),
                 "summary": self._get_summary(mol)
             }
@@ -255,16 +257,63 @@ class DrugPropertiesCalculator:
             }
         }
     
+    def _predict_bbb_permeability(self, mol) -> Dict:
+        """
+        Predict Blood-Brain Barrier (BBB) permeability using physicochemical rules.
+        """
+        tpsa = Descriptors.TPSA(mol)
+        mw = Descriptors.MolWt(mol)
+        hbd = Lipinski.NumHDonors(mol)
+        
+        # Rule: TPSA < 90 and MW < 450 usually indicates good CNS penetration
+        is_permeable = (tpsa < 90) and (mw < 450) and (hbd < 3)
+        
+        return {
+            "permeable": is_permeable,
+            "rules": {
+                "tpsa_ok": tpsa < 90,
+                "mw_ok": mw < 450,
+                "hbd_ok": hbd < 3
+            },
+            "description": "Likely to cross BBB" if is_permeable else "Poor CNS penetration"
+        }
+
+    def _check_toxicity_alerts(self, mol) -> Dict:
+        """
+        Check for common structural alerts (Toxicophores).
+        """
+        alerts = {
+            "Nitro Group": "[N+](=O)[O-]",
+            "Hydrazine": "[NX3][NX3]",
+            "Michael Acceptor": "[CX3]=[CX3]-[CX3](=[OX1])", # Basic pattern
+            "Alkyl Halide": "[CX4][F,Cl,Br,I]",
+            "Aldehyde": "[CX3H1](=O)[#6]" 
+        }
+        
+        found_alerts = []
+        for name, smarts in alerts.items():
+            pattern = Chem.MolFromSmarts(smarts)
+            if pattern and mol.HasSubstructMatch(pattern):
+                found_alerts.append(name)
+        
+        return {
+            "has_alerts": len(found_alerts) > 0,
+            "alerts": found_alerts,
+            "risk_level": "High" if len(found_alerts) > 1 else "Medium" if len(found_alerts) == 1 else "Low"
+        }
+
     def _get_summary(self, mol) -> Dict:
         """Generate a summary for display."""
         lipinski = self._check_lipinski(mol)
         drug_likeness = self._assess_drug_likeness(mol)
+        bbb = self._predict_bbb_permeability(mol)
         
         return {
             "verdict": drug_likeness["category"],
             "score": drug_likeness["score"],
             "lipinski_violations": lipinski["violations"],
-            "oral_bioavailability": "Good" if lipinski["passed"] else "Poor"
+            "oral_bioavailability": "Good" if lipinski["passed"] else "Poor",
+            "bbb_permeant": bbb["permeable"]
         }
 
 
