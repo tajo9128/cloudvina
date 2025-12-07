@@ -1,36 +1,3 @@
-"""
-BioDockify API - FastAPI Backend
-Handles authentication, job submission, and AWS Batch orchestration
-"""
-from fastapi import FastAPI, Depends, HTTPException, status, Security, Body, UploadFile, File
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.sessions import SessionMiddleware
-from pydantic import BaseModel, EmailStr
-from typing import Optional
-import os
-from datetime import datetime
-import uuid
-
-# Import auth and AWS utilities
-from auth import supabase, get_current_user
-from aws_services import (
-    generate_presigned_upload_urls,
-    generate_presigned_download_url,
-    submit_batch_job,
-    get_batch_job_status
-)
-from fastapi.responses import StreamingResponse
-from services.ai_explainer import AIExplainer
-from tools import router as tools_router
-from routes.admin import router as admin_router
-
-from routes.evolution import router as evolution_router
-from routes.batch import router as batch_router
-from services.cavity_detector import CavityDetector
-from services.drug_properties import DrugPropertiesCalculator
-
-# NEW: Import SQLAdmin setup
 # from admin_sqladmin import setup_admin
 
 app = FastAPI(
