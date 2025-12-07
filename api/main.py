@@ -96,6 +96,10 @@ app.include_router(target_prediction_router)
 from routes.md import router as md_router
 app.include_router(md_router)
 
+# Register Lead Ranking Router
+from routes.ranking import router as ranking_router
+app.include_router(ranking_router)
+
 # ============================================================================
 # Configuration
 # ============================================================================

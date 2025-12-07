@@ -33,7 +33,7 @@ export default function Header() {
         }
     }
 
-    const navItems = ['Features', 'AI Analysis', '3D Viewer', 'Target Prediction', 'MD Simulation', 'Tools', 'Blog', 'Dashboard']
+    const navItems = ['Features', 'AI Analysis', '3D Viewer', 'Target Prediction', 'MD Simulation', 'Ranking', 'Tools', 'Blog', 'Dashboard']
     if (isAdmin) {
         navItems.push('Admin')
     }
@@ -61,7 +61,8 @@ export default function Header() {
                                                     item === '3D Viewer' ? '/3d-viewer' :
                                                         item === 'Target Prediction' ? '/tools/prediction' :
                                                             item === 'MD Simulation' ? '/md-simulation' :
-                                                                `/#${item.toLowerCase()}`
+                                                                item === 'Ranking' ? '/leads' :
+                                                                    `/#${item.toLowerCase()}`
                             }
                             className={`font-medium text-sm uppercase tracking-wide transition-colors ${(location.pathname.includes(item.toLowerCase()) && item !== 'Features') ? 'text-primary-600 font-bold' :
                                 scrolled ? 'text-slate-600 hover:text-primary-600' : 'text-slate-200 hover:text-white'

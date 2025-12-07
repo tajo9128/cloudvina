@@ -15,6 +15,7 @@ import ConverterPage from './pages/ConverterPage'
 import TargetPredictionPage from './pages/TargetPredictionPage'
 import MDSimulationPage from './pages/MDSimulationPage'
 import MDResultsPage from './pages/MDResultsPage'
+import LeadOptimizationPage from './pages/LeadOptimizationPage'
 import BlogPage from './pages/BlogPage'
 import BlogPostPage from './pages/BlogPostPage'
 import AboutPage from './pages/AboutPage'
@@ -111,6 +112,10 @@ function App() {
                         <Route
                             path="/md-results/:jobId"
                             element={session ? <MDResultsPage /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/leads"
+                            element={session ? <LeadOptimizationPage /> : <Navigate to="/login" />}
                         />
                         <Route path="/ai-analysis" element={<AIAnalysisPage />} />
                         <Route path="/blog" element={<BlogPage />} />
