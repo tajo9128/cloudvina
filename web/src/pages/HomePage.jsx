@@ -225,7 +225,7 @@ export default function HomePage() {
                                 subtitle="MM-PBSA / MM-GBSA"
                                 description="Calculate rigorous binding free energies (ΔG) including solvation effects. More accurate ranking than simple docking scores."
                                 tags={["Advanced Scoring", "Implicit Solvent", "Entropy Estimation"]}
-                                status="progress"
+                                status="completed"
                                 side="right"
                                 icon={<FlaskConical size={24} />}
                             />
@@ -237,7 +237,7 @@ export default function HomePage() {
                                 subtitle="Consensus Scoring"
                                 description="Normalize and weigh scores from Docking, MD, and MM-GBSA. Filter false positives with a robust consensus algorithm."
                                 tags={["Weighted Scoring", "Rank Aggregation", "Outlier Removal"]}
-                                status="progress"
+                                status="completed"
                                 side="left"
                                 icon={<Search size={24} />}
                             />
@@ -249,7 +249,7 @@ export default function HomePage() {
                                 subtitle="RDKit Cheminformatics"
                                 description="Screen for drug-likeness (Lipinski's Rule), toxicity alerts, and standard pharmacokinetic properties."
                                 tags={["BBB Permeability", "Toxicity", "Oral Bioavailability"]}
-                                status="progress"
+                                status="completed"
                                 side="right"
                                 icon={<Activity size={24} />}
                             />
@@ -261,7 +261,7 @@ export default function HomePage() {
                                 subtitle="Automated PDF Generation"
                                 description="Generate comprehensive PDF reports for your top candidates, ready for internal review or regulatory submission."
                                 tags={["White-Label Reports", "Data Export", "Audit Trail"]}
-                                status="progress"
+                                status="completed"
                                 side="left"
                                 icon={<FileCode size={24} />}
                             />
