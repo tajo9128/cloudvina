@@ -13,25 +13,7 @@ export default function Footer() {
 
     return (
         <footer className="bg-[#0B1121] text-white font-sans border-t border-slate-800">
-            {/* CTA Section */}
-            <div className="bg-primary-600 relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('/assets/images/grid-pattern.png')] opacity-10"></div>
-                <div className="container mx-auto px-4 py-16 relative z-10 text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Ready to Accelerate Your Research?</h2>
-                    <p className="text-primary-100 text-lg mb-8 max-w-2xl mx-auto">
-                        Join thousands of researchers using BioDockify for fast, accurate, and free molecular docking.
-                    </p>
-                    <Link
-                        to="/dock/new"
-                        className="inline-flex items-center gap-2 bg-white text-primary-600 px-8 py-4 rounded-full font-bold hover:bg-slate-50 transition-all transform hover:-translate-y-1 shadow-lg"
-                    >
-                        <span>Start Docking Now</span>
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                        </svg>
-                    </Link>
-                </div>
-            </div>
+
 
             <div className="container mx-auto px-4 py-12">
                 {/* ROW 1: Logo (1/3) + Address (2/3) */}
