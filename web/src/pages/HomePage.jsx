@@ -147,10 +147,10 @@ export default function HomePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-800/50">
                         {[
-                            { label: "Compounds Screened", value: 15600, icon: <CheckCircle size={18} className="text-green-500" /> },
-                            { label: "Active Organizations", value: 480, icon: <Factory size={18} className="text-purple-500" /> },
-                            { label: "Compute Hours", value: 25000, icon: <Clock size={18} className="text-blue-500" /> },
-                            { label: "Success Rate", value: 98, suffix: "%", icon: <LineChart size={18} className="text-yellow-500" /> }
+                            { label: "Compounds Screened", value: 1500, icon: <CheckCircle size={18} className="text-green-500" /> },
+                            { label: "Active Organizations", value: 124, icon: <Factory size={18} className="text-purple-500" /> },
+                            { label: "Compute Hours", value: 850, icon: <Clock size={18} className="text-blue-500" /> },
+                            { label: "Success Rate", value: 92, suffix: "%", icon: <LineChart size={18} className="text-yellow-500" /> }
                         ].map((stat, i) => (
                             <div key={i} className="py-8 px-4 text-center group hover:bg-slate-800/30 transition-colors">
                                 <div className="flex items-center justify-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">
@@ -312,6 +312,32 @@ export default function HomePage() {
                             <h3 className="text-xl font-bold mb-3">Biotech Startups</h3>
                             <p className="text-slate-400">Rapidly screen thousands of compounds and fail fast with predictive toxicity ADMET.</p>
                         </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* Final CTA Section */}
+            <section className="py-24 bg-indigo-600 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none mix-blend-screen">
+                    <img
+                        src="https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&q=80&w=2000"
+                        alt="White Ribbon Protein Structure"
+                        className="w-full h-full object-cover"
+                    />
+                </div>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+                    <h2 className="text-4xl font-bold text-white mb-6">Ready to Accelerate Your Research?</h2>
+                    <p className="text-xl text-indigo-100 max-w-2xl mx-auto mb-10">
+                        Join the platform that is democratizing High-Performance Computing for biology.
+                        Start your first docking run in minutes.
+                    </p>
+                    <div className="flex justify-center gap-4">
+                        <Link to="/dock/new" className="px-8 py-4 bg-white text-indigo-600 font-bold rounded-xl shadow-xl hover:bg-indigo-50 transition-all transform hover:-translate-y-1">
+                            Get Started Free
+                        </Link>
+                        <Link to="/contact" className="px-8 py-4 bg-indigo-700 text-white font-bold rounded-xl border border-indigo-500 hover:bg-indigo-800 transition-all">
+                            Talk to Us
+                        </Link>
                     </div>
                 </div>
             </section>
