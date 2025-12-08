@@ -25,6 +25,9 @@ import ContactPage from './pages/ContactPage'
 import PricingPage from './pages/PricingPage'
 import MolecularDockingPage from './pages/MolecularDockingPage'
 import ThreeDViewer from './pages/3DViewer'
+import ProfilePage from './pages/ProfilePage'
+import BillingPage from './pages/BillingPage'
+import SupportPage from './pages/SupportPage'
 import Layout from './components/Layout'
 import AdminLayout from './components/AdminLayout'
 import AdminRoute from './components/AdminRoute'
@@ -136,7 +139,13 @@ function App() {
                         <Route path="/molecular-docking-online" element={<MolecularDockingPage />} />
                         <Route path="/contact" element={<ContactPage />} />
                         <Route path="/3d-viewer" element={<ThreeDViewer />} />
+                        <Route path="/3d-viewer" element={<ThreeDViewer />} />
                         <Route path="/3d-viewer/:jobId" element={<ThreeDViewer />} />
+
+                        {/* User System Routes */}
+                        <Route path="/profile" element={session ? <ProfilePage /> : <Navigate to="/login" />} />
+                        <Route path="/billing" element={session ? <BillingPage /> : <Navigate to="/login" />} />
+                        <Route path="/support" element={session ? <SupportPage /> : <Navigate to="/login" />} />
                     </Route>
                 </Routes>
             </BrowserRouter>

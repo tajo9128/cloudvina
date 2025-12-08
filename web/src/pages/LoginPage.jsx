@@ -8,6 +8,7 @@ export default function LoginPage() {
     const [password, setPassword] = useState('')
     const [designation, setDesignation] = useState('')
     const [organization, setOrganization] = useState('')
+    const [phone, setPhone] = useState('')
     const [isSignUp, setIsSignUp] = useState(false)
     const [error, setError] = useState(null)
     const [success, setSuccess] = useState(null)
@@ -33,6 +34,7 @@ export default function LoginPage() {
                         data: {
                             designation,
                             organization,
+                            phone,
                             plan: plan
                         }
                     }
@@ -54,6 +56,7 @@ export default function LoginPage() {
                             setPassword('')
                             setDesignation('')
                             setOrganization('')
+                            setPhone('')
                         }, 5000)
                     }
                 }
@@ -195,6 +198,19 @@ export default function LoginPage() {
                                         placeholder="e.g., IIT Delhi"
                                         value={organization}
                                         onChange={(e) => setOrganization(e.target.value)}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                                        Phone Number <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="tel"
+                                        required
+                                        className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition outline-none text-slate-900"
+                                        placeholder="+91 98765 43210"
+                                        value={phone}
+                                        onChange={(e) => setPhone(e.target.value)}
                                     />
                                 </div>
 

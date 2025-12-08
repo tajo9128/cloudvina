@@ -115,19 +115,40 @@ export default function Header() {
                 {/* Right Side Actions */}
                 <div className="flex items-center gap-4">
                     {user ? (
-                        <div className="flex items-center gap-3">
-                            <Link to="/profile" className="font-bold text-slate-900 hover:text-primary-600 transition-colors">
-                                Hi, {user.email?.split('@')[0]}
-                            </Link>
-                            <button
-                                onClick={async () => {
-                                    await supabase.auth.signOut()
-                                    window.location.href = '/'
-                                }}
-                                className="font-bold text-slate-900 hover:text-red-600 transition-colors"
-                            >
-                                Logout
+                        <div className="relative group">
+                            <button className="flex items-center gap-2 font-bold text-slate-900 hover:text-primary-600 transition-colors">
+                                <span>Hi, {user.email?.split('@')[0]}</span>
+                                <ChevronDown size={16} />
                             </button>
+
+                            {/* User Dropdown */}
+                            <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-slate-100 py-1 overflow-hidden invisible opacity-0 group-hover:visible group-hover:opacity-100 transition-all transform translate-y-2 group-hover:translate-y-0">
+                                <div className="px-4 py-2 border-b border-slate-50 bg-slate-50/50">
+                                    <p className="text-xs font-bold text-slate-500 uppercase">My Account</p>
+                                </div>
+                                <Link to="/profile" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary-600">
+                                    👤 Profile
+                                </Link>
+                                <Link to="/billing" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary-600">
+                                    💳 Billing & Credits
+                                </Link>
+                                <Link to="/support" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary-600">
+                                    🎫 Support Tickets
+                                </Link>
+                                <div className="border-t border-slate-50 my-1"></div>
+                                <Link to="/dashboard" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 hover:text-primary-600">
+                                    📊 Dashboard
+                                </Link>
+                                <button
+                                    onClick={async () => {
+                                        await supabase.auth.signOut()
+                                        window.location.href = '/'
+                                    }}
+                                    className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                >
+                                    Sign Out
+                                </button>
+                            </div>
                         </div>
                     ) : (
                         <Link to="/login" className="font-bold text-slate-900 hover:text-primary-600 transition-colors">Log In</Link>

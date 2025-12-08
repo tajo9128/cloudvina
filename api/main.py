@@ -100,6 +100,10 @@ app.include_router(md_router)
 from routes.ranking import router as ranking_router
 app.include_router(ranking_router)
 
+# Register User System Router (Profile, Billing, Support)
+from routes.user_system import router as user_router
+app.include_router(user_router)
+
 # Register Reporting Router (PDF)
 from routes.reporting import router as reporting_router
 app.include_router(reporting_router)
