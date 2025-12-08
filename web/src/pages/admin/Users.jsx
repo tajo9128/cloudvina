@@ -30,7 +30,8 @@ const Users = () => {
         password: '',
         credits: 10,
         is_admin: false,
-        role: 'user'
+        role: 'user',
+        plan: 'free'
     });
 
     useEffect(() => {
@@ -73,7 +74,7 @@ const Users = () => {
                 alert('User created successfully');
                 setShowAddModal(false);
                 fetchUsers();
-                setFormData({ email: '', password: '', credits: 10, is_admin: false, role: 'user' });
+                setFormData({ email: '', password: '', credits: 10, is_admin: false, role: 'user', plan: 'free' });
             } else {
                 const err = await response.json();
                 alert('Failed to create user: ' + (err.detail || 'Unknown error'));
@@ -96,7 +97,8 @@ const Users = () => {
                 body: JSON.stringify({
                     credits: parseInt(formData.credits),
                     is_admin: formData.is_admin,
-                    role: formData.role
+                    role: formData.role,
+                    plan: formData.plan
                 })
             });
 
@@ -145,9 +147,7 @@ const Users = () => {
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            // We use the existing update endpoint but flip the role
-            // Ideally we'd have a specific /suspend endpoint but update works for MVP
-            const newRole = isSuspended ? 'user' : 'suspended'; // Default back to 'user' on resume
+            const newRole = isSuspended ? 'user' : 'suspended';
 
             const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/${user.id}`, {
                 method: 'PUT',
@@ -175,7 +175,8 @@ const Users = () => {
             ...formData,
             credits: user.credits || 0,
             is_admin: user.is_admin || false,
-            role: user.role || 'user'
+            role: user.role || 'user',
+            plan: user.plan || 'free'
         });
         setShowEditModal(true);
     };
@@ -185,6 +186,13 @@ const Users = () => {
         user.username?.toLowerCase().includes(search.toLowerCase()) ||
         user.id?.includes(search)
     );
+
+    // Calculate Stats
+    const stats = {
+        free: users.filter(u => !u.plan || u.plan === 'free').length,
+        pro: users.filter(u => u.plan === 'pro').length,
+        premium: users.filter(u => u.plan === 'premium').length
+    };
 
     return (
         <div className="p-8">
@@ -203,13 +211,53 @@ const Users = () => {
                         <RefreshCw size={16} /> Refresh
                     </button>
                     <button
-                        onClick={() => { setShowAddModal(true); setFormData({ email: '', password: '', credits: 10, is_admin: false, role: 'user' }); }}
+                        onClick={() => { setShowAddModal(true); setFormData({ email: '', password: '', credits: 10, is_admin: false, role: 'user', plan: 'free' }); }}
                         className="flex items-center gap-2 px-4 py-2 bg-secondary-600 text-white rounded-lg hover:bg-secondary-500 shadow-lg shadow-secondary-600/20 transition-all transform hover:-translate-y-0.5"
                     >
                         <Plus size={18} /> Add User
                     </button>
                 </div>
             </header>
+
+            {/* Plan Distribution Stats */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div className="bg-slate-800 p-6 rounded-xl border border-slate-700">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-slate-400 text-sm font-medium mb-1">Free Users</p>
+                            <h3 className="text-3xl font-bold text-white">{stats.free}</h3>
+                        </div>
+                        <div className="p-2 bg-slate-700 rounded-lg text-slate-300">
+                            <User size={20} />
+                        </div>
+                    </div>
+                    <div className="mt-2 text-xs text-slate-500">Standard Access (10 credits/mo)</div>
+                </div>
+                <div className="bg-slate-800 p-6 rounded-xl border border-indigo-500/30">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-indigo-400 text-sm font-medium mb-1">Pro Users</p>
+                            <h3 className="text-3xl font-bold text-white">{stats.pro}</h3>
+                        </div>
+                        <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400">
+                            <Shield size={20} />
+                        </div>
+                    </div>
+                    <div className="mt-2 text-xs text-indigo-300/60">Research Bundle (50 credits)</div>
+                </div>
+                <div className="bg-slate-800 p-6 rounded-xl border border-purple-500/30">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <p className="text-purple-400 text-sm font-medium mb-1">Premium Users</p>
+                            <h3 className="text-3xl font-bold text-white">{stats.premium}</h3>
+                        </div>
+                        <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400">
+                            <CheckCircle size={20} />
+                        </div>
+                    </div>
+                    <div className="mt-2 text-xs text-purple-300/60">Enterprise Bundle (100+ credits)</div>
+                </div>
+            </div>
 
             {/* Search */}
             <div className="mb-6 relative">
@@ -230,7 +278,8 @@ const Users = () => {
                         <thead>
                             <tr className="bg-slate-800/50 border-b border-primary-500/20 text-slate-400 text-sm">
                                 <th className="p-4 font-medium">User</th>
-                                <th className="p-4 font-medium">Plan / Role</th>
+                                <th className="p-4 font-medium">Plan</th>
+                                <th className="p-4 font-medium">Role</th>
                                 <th className="p-4 font-medium">Credits</th>
                                 <th className="p-4 font-medium">Status</th>
                                 <th className="p-4 text-right font-medium">Actions</th>
@@ -238,9 +287,9 @@ const Users = () => {
                         </thead>
                         <tbody className="divide-y divide-primary-500/10">
                             {loading ? (
-                                <tr><td colSpan="5" className="p-8 text-center text-slate-400">Loading...</td></tr>
+                                <tr><td colSpan="6" className="p-8 text-center text-slate-400">Loading...</td></tr>
                             ) : filteredUsers.length === 0 ? (
-                                <tr><td colSpan="5" className="p-8 text-center text-slate-400">No users found</td></tr>
+                                <tr><td colSpan="6" className="p-8 text-center text-slate-400">No users found</td></tr>
                             ) : (
                                 filteredUsers.map(user => (
                                     <tr key={user.id} className="hover:bg-primary-500/5 transition-colors">
@@ -256,6 +305,14 @@ const Users = () => {
                                             </div>
                                         </td>
                                         <td className="p-4">
+                                            <span className={`px-2 py-1 rounded text-xs uppercase font-bold tracking-wider ${user.plan === 'premium' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
+                                                    user.plan === 'pro' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' :
+                                                        'bg-slate-700 text-slate-400'
+                                                }`}>
+                                                {user.plan || 'FREE'}
+                                            </span>
+                                        </td>
+                                        <td className="p-4">
                                             <div className="flex gap-2">
                                                 {user.is_admin && (
                                                     <span className="px-2 py-1 bg-red-500/20 text-red-400 rounded text-xs border border-red-500/30 flex items-center gap-1">
@@ -263,7 +320,7 @@ const Users = () => {
                                                     </span>
                                                 )}
                                                 <span className="px-2 py-1 bg-slate-700 text-slate-300 rounded text-xs capitalize">
-                                                    {user.role || 'free'}
+                                                    {user.role || 'user'}
                                                 </span>
                                             </div>
                                         </td>
@@ -342,12 +399,12 @@ const Users = () => {
                                             value={formData.credits} onChange={e => setFormData({ ...formData, credits: parseInt(e.target.value) })} />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-400 mb-1">Role</label>
+                                        <label className="block text-sm font-medium text-slate-400 mb-1">Plan</label>
                                         <select className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
-                                            value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
-                                            <option value="user">User</option>
+                                            value={formData.plan} onChange={e => setFormData({ ...formData, plan: e.target.value })}>
+                                            <option value="free">Free</option>
                                             <option value="pro">Pro</option>
-                                            <option value="enterprise">Enterprise</option>
+                                            <option value="premium">Premium</option>
                                         </select>
                                     </div>
                                 </div>
@@ -380,12 +437,12 @@ const Users = () => {
                                             value={formData.credits} onChange={e => setFormData({ ...formData, credits: e.target.value })} />
                                     </div>
                                     <div>
-                                        <label className="block text-sm font-medium text-slate-400 mb-1">Role</label>
+                                        <label className="block text-sm font-medium text-slate-400 mb-1">Plan</label>
                                         <select className="w-full bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white focus:border-secondary-500 focus:outline-none"
-                                            value={formData.role} onChange={e => setFormData({ ...formData, role: e.target.value })}>
-                                            <option value="user">User (Free)</option>
-                                            <option value="pro">Pro ($49)</option>
-                                            <option value="enterprise">Enterprise ($199)</option>
+                                            value={formData.plan} onChange={e => setFormData({ ...formData, plan: e.target.value })}>
+                                            <option value="free">Free</option>
+                                            <option value="pro">Pro (₹100)</option>
+                                            <option value="premium">Premium (₹500)</option>
                                         </select>
                                     </div>
                                 </div>

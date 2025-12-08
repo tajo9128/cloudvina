@@ -21,6 +21,10 @@ export default function LoginPage() {
 
         try {
             if (isSignUp) {
+                // Capture plan from URL
+                const searchParams = new URLSearchParams(window.location.search);
+                const plan = searchParams.get('plan') || 'free';
+
                 // 1. Sign up with Supabase (DB Triggers handle profile creation)
                 const { data: authData, error: authError } = await supabase.auth.signUp({
                     email,
@@ -28,7 +32,8 @@ export default function LoginPage() {
                     options: {
                         data: {
                             designation,
-                            organization
+                            organization,
+                            plan: plan
                         }
                     }
                 })

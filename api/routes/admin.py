@@ -285,11 +285,13 @@ class UserCreate(BaseModel):
     password: str
     credits: int = 10
     is_admin: bool = False
+    plan: str = "free"
 
 class UserUpdate(BaseModel):
     credits: Optional[int] = None
     is_admin: Optional[bool] = None
     role: Optional[str] = None
+    plan: Optional[str] = None
 
 @router.post("/users")
 async def create_user(
@@ -320,7 +322,8 @@ async def create_user(
         if new_user:
             service_client.table("profiles").update({
                 "credits": user_data.credits,
-                "is_admin": user_data.is_admin
+                "is_admin": user_data.is_admin,
+                "plan": user_data.plan
             }).eq("id", new_user.id).execute()
         
         # Log action (can use standard client)
@@ -355,6 +358,8 @@ async def update_user(
         update_dict["is_admin"] = user_data.is_admin
     if user_data.role is not None:
         update_dict["role"] = user_data.role
+    if user_data.plan is not None:
+        update_dict["plan"] = user_data.plan
         
     if not update_dict:
         return {"status": "ignored", "message": "No fields to update"}
