@@ -133,7 +133,7 @@ function App() {
                         <Route path="/privacy" element={<PrivacyPage />} />
                         <Route path="/terms" element={<TermsPage />} />
                         <Route path="/pricing" element={<PricingPage />} />
-                        <Route path="/features/molecular-docking" element={<MolecularDockingPage />} />
+                        <Route path="/molecular-docking-online" element={<MolecularDockingPage />} />
                         <Route path="/contact" element={<ContactPage />} />
                         <Route path="/3d-viewer" element={<ThreeDViewer />} />
                         <Route path="/3d-viewer/:jobId" element={<ThreeDViewer />} />
