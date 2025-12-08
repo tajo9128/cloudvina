@@ -116,7 +116,7 @@ export default function Header() {
                 <div className="flex items-center gap-4">
                     {user ? (
                         <div className="flex items-center gap-3">
-                            <Link to="/profile" className={`font-bold transition-colors ${scrolled ? 'text-slate-700 hover:text-primary-600' : 'text-white hover:text-primary-400'}`}>
+                            <Link to="/profile" className="font-bold text-slate-900 hover:text-primary-600 transition-colors">
                                 Hi, {user.email?.split('@')[0]}
                             </Link>
                             <button
@@ -124,13 +124,13 @@ export default function Header() {
                                     await supabase.auth.signOut()
                                     window.location.href = '/'
                                 }}
-                                className={`font-bold transition-colors ${scrolled ? 'text-slate-700 hover:text-red-600' : 'text-white hover:text-red-400'}`}
+                                className="font-bold text-slate-900 hover:text-red-600 transition-colors"
                             >
                                 Logout
                             </button>
                         </div>
                     ) : (
-                        <Link to="/login" className={`font-bold transition-colors ${scrolled ? 'text-slate-700 hover:text-primary-600' : 'text-white hover:text-primary-400'}`}>Log In</Link>
+                        <Link to="/login" className="font-bold text-slate-900 hover:text-primary-600 transition-colors">Log In</Link>
                     )}
                     <Link to="/dock/new" className="hidden sm:block px-6 py-2.5 bg-primary-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:-translate-y-0.5 transition-all">
                         Start Docking
