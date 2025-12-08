@@ -223,18 +223,7 @@ export default function MolecularDockingPage() {
                     </div>
                 </div>
 
-                {/* FINAL CTA */}
-                <div className="bg-gradient-to-r from-primary-600 to-secondary-600 rounded-3xl p-12 text-center text-white relative overflow-hidden">
-                    <div className="relative z-10">
-                        <h2 className="text-4xl font-bold mb-6">Ready to Accelerate Your Research?</h2>
-                        <p className="text-xl text-primary-100 mb-10 max-w-2xl mx-auto">
-                            Join thousands of researchers using BioDockify for seamless, secure, and fast molecular docking online.
-                        </p>
-                        <Link to="/dock/new" className="inline-block px-10 py-5 bg-white text-primary-600 rounded-xl font-bold text-lg hover:bg-slate-50 hover:scale-105 transition-all shadow-xl">
-                            Start Free Docking
-                        </Link>
-                    </div>
-                </div>
+
             </div>
 
             <Footer />
