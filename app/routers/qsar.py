@@ -11,7 +11,36 @@ import pickle
 router = APIRouter()
 
 # Services
-qsar_service = QSARService()
+
+# Auto-QSAR Endpoint
+from app.services.auto_qsar import AutoQSARService
+
+auto_qsar_service = AutoQSARService()
+
+@router.post("/train/auto")
+async def train_auto_qsar(
+    file: UploadFile = File(...),
+    target_column: str = "activity", 
+    model_name: str = "my_custom_model",
+    user: Dict[str, Any] = Depends(get_current_user)
+):
+    """
+    Auto-QSAR: Train model from CSV (Features: Morgan, Algo: RandomForest).
+    MAX 1000 Rows (Free Tier Limit).
+    """
+    try:
+        # 1. Train
+        result = await auto_qsar_service.train_model(file, target_column, model_name)
+        
+        # 2. Upload Model to HF Hub (Optional - or just return metrics for now)
+        # For simplicity in Phase 4 MVP, we return metrics. 
+        # User can download model in future update.
+        
+        return result
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 # Schemas
 class TrainRequest(BaseModel):
