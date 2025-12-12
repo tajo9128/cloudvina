@@ -1,0 +1,25 @@
+# Dockerfile for Testing Format Conversions
+# Based on Python 3.11 with RDKit and BioPython
+
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    libxrender1 \
+    libxext6 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy requirements
+COPY api/requirements.txt .
+
+# Install Python dependencies
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy test script and API code
+COPY test_formats.py .
+COPY api/ ./api/
+
+# Run tests
+CMD ["python", "test_formats.py"]

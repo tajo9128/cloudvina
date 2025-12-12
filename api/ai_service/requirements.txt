@@ -1,0 +1,23 @@
+# Optimized for Railway Free Tier (512MB RAM Limit)
+fastapi==0.100.0
+uvicorn==0.23.0
+pydantic==2.1.1
+numpy==1.24.3
+scikit-learn==1.3.0
+rdkit==2023.3.2
+# Core API
+fastapi
+uvicorn
+
+# Chemistry
+rdkit
+
+# ML & Data
+# Use CPU-only Torch to save massive space/RAM
+# --extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.0.1+cpu
+sqlalchemy==2.0.19
+python-multipart==0.0.6
+pandas==2.0.3
+scikit-learn==1.3.0
+joblib==1.3.2

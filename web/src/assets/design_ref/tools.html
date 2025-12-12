@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tools - BioDockify</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0f766e;
+            --secondary: #f59e0b;
+            --accent: #f97316;
+            --sage: #84cc16;
+            --bg: #fafafa;
+            --text: #374151;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+        }
+        
+        .font-mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary);
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #14b8a6);
+            color: white;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(15, 118, 110, 0.3);
+        }
+        
+        .tool-card {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 40px rgba(15, 118, 110, 0.15);
+            border-color: var(--primary);
+        }
+        
+        .upload-area {
+            border: 2px dashed #d1d5db;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-area.dragover {
+            border-color: var(--primary);
+            background: rgba(15, 118, 110, 0.05);
+        }
+        
+        .converter-interface {
+            background: white;
+            border-radius: 16px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        
+        .progress-bar {
+            background: #e5e7eb;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, var(--primary), var(--sage));
+            height: 100%;
+            border-radius: 8px;
+            transition: width 0.3s ease;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .footer-bg {
+            background: linear-gradient(135deg, #1f2937, #374151);
+        }
+        
+        .file-item {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: between;
+            margin-bottom: 8px;
+        }
+        
+        .status-converting {
+            color: var(--secondary);
+        }
+        
+        .status-completed {
+            color: var(--sage);
+        }
+        
+        .status-error {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center space-x-2">
+                    <div class="w-8 h-8 bg-gradient-to-br from-teal-600 to-teal-700 rounded-lg flex items-center justify-center">
+                        <span class="text-white font-bold text-sm">🧬</span>
+                    </div>
+                    <span class="text-xl font-bold gradient-text">BioDockify</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="nav-link text-gray-700 hover:text-teal-600 font-medium">Features</a>
+                    <a href="pricing.html" class="nav-link text-gray-700 hover:text-teal-600 font-medium">Pricing</a>
+                    <a href="tools.html" class="nav-link text-teal-600 font-medium">Tools</a>
+                    <a href="#research" class="nav-link text-gray-700 hover:text-teal-600 font-medium">Research</a>
+                    <a href="#about" class="nav-link text-gray-700 hover:text-teal-600 font-medium">About</a>
+                </div>
+                
+                <div class="flex items-center space-x-4">
+                    <a href="#" class="text-gray-700 hover:text-teal-600 font-medium">Log In</a>
+                    <a href="#" class="btn-primary px-6 py-2 rounded-lg font-medium">Start Docking</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="pt-24 pb-16 bg-gradient-to-br from-teal-50 to-sage-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-5xl font-bold text-gray-900 mb-6">
+                Free Research Tools
+            </h1>
+            <p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+                Essential utilities for computational chemistry, available for free. 
+                Convert, analyze, and visualize your molecular data with ease.
+            </p>
+        </div>
+    </section>
+
+    <!-- SDF to PDBQT Converter -->
+    <section class="py-16">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="converter-interface p-8">
+                <div class="flex items-center mb-8">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg flex items-center justify-center text-white text-xl mr-4">
+                        🧪
+                    </div>
+                    <div>
+                        <h2 class="text-2xl font-bold text-gray-900">SDF to PDBQT Converter</h2>
+                        <p class="text-gray-600">Convert your ligand files from SDF format to PDBQT format instantly</p>
+                    </div>
+                </div>
+                
+                <div class="grid lg:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Upload Files</h3>
+                        <div class="upload-area p-8 text-center mb-6" id="uploadArea">
+                            <div class="text-4xl text-gray-400 mb-4">📁</div>
+                            <h4 class="text-lg font-medium text-gray-900 mb-2">Drop SDF files here</h4>
+                            <p class="text-gray-600 mb-4">or click to browse your files</p>
+                            <input type="file" id="fileInput" class="hidden" multiple accept=".sdf">
+                            <button onclick="document.getElementById('fileInput').click()" class="btn-primary px-6 py-3 rounded-lg font-medium">
+                                Choose Files
+                            </button>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <h4 class="text-md font-medium text-gray-900 mb-3">Conversion Options</h4>
+                            <div class="space-y-3">
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500">
+                                    <span class="ml-3 text-sm text-gray-700">Add polar hydrogens</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500" checked>
+                                    <span class="ml-3 text-sm text-gray-700">Compute charges</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" class="rounded border-gray-300 text-teal-600 focus:ring-teal-500">
+                                    <span class="ml-3 text-sm text-gray-700">Merge non-polar hydrogens</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <button id="convertBtn" class="w-full btn-primary py-3 rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed">
+                            Convert Files
+                        </button>
+                    </div>
+                    
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Conversion Queue</h3>
+                        <div id="fileQueue" class="mb-6">
+                            <div class="text-center text-gray-500 py-8">
+                                <div class="text-3xl mb-2">📋</div>
+                                <div>No files uploaded yet</div>
+                                <div class="text-sm">Upload SDF files to start conversion</div>
+                            </div>
+                        </div>
+                        
+                        <div id="conversionProgress" class="hidden mb-6">
+                            <div class="flex justify-between items-center mb-2">
+                                <span class="text-sm font-medium text-gray-700">Conversion Progress</span>
+                                <span class="text-sm text-gray-500" id="progressText">0/0 files</span>
+                            </div>
+                            <div class="progress-bar h-2">
+                                <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        
+                        <div id="downloadSection" class="hidden">
+                            <h4 class="text-md font-medium text-gray-900 mb-3">Download Results</h4>
+                            <div id="downloadList" class="space-y-2"></div>
+                            <button id="downloadAllBtn" class="w-full mt-4 bg-amber-500 hover:bg-amber-600 text-white py-3 rounded-lg font-medium transition-colors">
+                                Download All Files
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Additional Tools -->
+    <section class="py-16 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                    More Tools Coming Soon
+                </h2>
+                <p class="text-lg text-gray-600">
+                    We're developing advanced tools to enhance your molecular docking workflow.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="tool-card p-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg flex items-center justify-center text-white text-xl mb-4">
+                        📊
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Results Analyzer</h3>
+                    <p class="text-gray-600 mb-4">
+                        Visualize and analyze your docking results with advanced 3D rendering. Interactive charts and binding affinity analysis.
+                    </p>
+                    <div class="bg-gray-100 rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Development Status</span>
+                            <span class="text-amber-600 font-medium">In Progress</span>
+                        </div>
+                        <div class="mt-2 bg-gray-200 rounded-full h-2">
+                            <div class="bg-amber-500 h-2 rounded-full" style="width: 75%"></div>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gray-200 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
+                        Coming Soon
+                    </button>
+                </div>
+                
+                <div class="tool-card p-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white text-xl mb-4">
+                        🔬
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Molecular Editor</h3>
+                    <p class="text-gray-600 mb-4">
+                        Edit and modify molecular structures with our intuitive 3D molecular editor. Add atoms, bonds, and functional groups.
+                    </p>
+                    <div class="bg-gray-100 rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Development Status</span>
+                            <span class="text-orange-600 font-medium">Planned</span>
+                        </div>
+                        <div class="mt-2 bg-gray-200 rounded-full h-2">
+                            <div class="bg-orange-500 h-2 rounded-full" style="width: 25%"></div>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gray-200 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
+                        Coming Soon
+                    </button>
+                </div>
+                
+                <div class="tool-card p-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-sage-500 to-sage-600 rounded-lg flex items-center justify-center text-white text-xl mb-4">
+                        🤖
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">AI Predictor</h3>
+                    <p class="text-gray-600 mb-4">
+                        AI-powered binding affinity prediction and molecular optimization suggestions based on machine learning models.
+                    </p>
+                    <div class="bg-gray-100 rounded-lg p-4 mb-4">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-gray-600">Development Status</span>
+                            <span class="text-sage-600 font-medium">Research</span>
+                        </div>
+                        <div class="mt-2 bg-gray-200 rounded-full h-2">
+                            <div class="bg-sage-500 h-2 rounded-full" style="width: 10%"></div>
+                        </div>
+                    </div>
+                    <button class="w-full bg-gray-200 text-gray-500 py-3 rounded-lg font-medium cursor-not-allowed">
+                        Coming Soon
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Educational Resources -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                    Educational Resources
+                </h2>
+                <p class="text-lg text-gray-600">
+                    Learn about molecular docking and computational chemistry with our comprehensive guides.
+                </p>
+            </div>
+            
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="tool-card p-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-teal-500 to-teal-600 rounded-lg flex items-center justify-center text-white text-xl mb-4">
+                        📚
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Molecular Docking Guide</h3>
+                    <p class="text-gray-600 mb-4">
+                        Complete beginner's guide to molecular docking theory, algorithms, and best practices for drug discovery.
+                    </p>
+                    <a href="#" class="text-teal-600 hover:text-teal-700 font-medium inline-flex items-center">
+                        Read Guide →
+                    </a>
+                </div>
+                
+                <div class="tool-card p-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-amber-600 rounded-lg flex items-center justify-center text-white text-xl mb-4">
+                        🎓
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Video Tutorials</h3>
+                    <p class="text-gray-600 mb-4">
+                        Step-by-step video tutorials covering file preparation, parameter optimization, and results analysis.
+                    </p>
+                    <a href="#" class="text-teal-600 hover:text-teal-700 font-medium inline-flex items-center">
+                        Watch Tutorials →
+                    </a>
+                </div>
+                
+                <div class="tool-card p-6">
+                    <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-lg flex items-center justify-center text-white text-xl mb-4">
+                        💡
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-900 mb-3">Best Practices</h3>
+                    <p class="text-gray-600 mb-4">
+                        Industry best practices for molecular docking, validation techniques, and common pitfalls to avoid.
+                    </p>
+                    <a href="#" class="text-teal-600 hover:text-teal-700 font-medium inline-flex items-center">
+                        Learn More →
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-bg py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid md:grid-cols-4 gap-8 mb-12">
+                <div>
+                    <div class="flex items-center space-x-2 mb-6">
+                        <div class="w-8 h-8 bg-gradient-to-br from-teal-400 to-teal-500 rounded-lg flex items-center justify-center">
+                            <span class="text-white font-bold text-sm">🧬</span>
+                        </div>
+                        <span class="text-xl font-bold text-white">BioDockify</span>
+                    </div>
+                    <p class="text-gray-300 mb-6">
+                        Democratizing drug discovery with cloud-native molecular docking tools. Accelerate your research with our powerful, accessible platform.
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">🐦</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">🐙</a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors">💼</a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-white font-semibold mb-4">Product</h3>
+                    <ul class="space-y-2">
+                        <li><a href="index.html" class="text-gray-300 hover:text-white transition-colors">Features</a></li>
+                        <li><a href="pricing.html" class="text-gray-300 hover:text-white transition-colors">Pricing</a></li>
+                        <li><a href="tools.html" class="text-gray-300 hover:text-white transition-colors">SDF Converter</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-white font-semibold mb-4">Company</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#about" class="text-gray-300 hover:text-white transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Blog</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Careers</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-white font-semibold mb-4">Legal</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Terms of Service</a></li>
+                        <li><a href="#" class="text-gray-300 hover:text-white transition-colors">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-700 pt-8 text-center">
+                <p class="text-gray-400">
+                    © 2025 BioDockify. All rights reserved. Designed for Science 🧪
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+</html>

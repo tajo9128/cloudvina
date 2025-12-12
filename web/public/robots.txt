@@ -1,0 +1,26 @@
+# robots.txt for BioDockify
+# Allow all search engines to crawl site
+
+User-agent: *
+Allow: /
+
+# Disallow API endpoints and private routes
+Disallow: /api/
+Disallow: /admin/
+
+# Block AI crawlers from training data
+User-agent: GPTBot
+Disallow: /api/
+Disallow: /dock/
+
+User-agent: ChatGPT-User
+Disallow: /api/
+
+User-agent: CCBot
+Disallow: /api/
+
+User-agent: anthropic-ai
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://biodockify.com/sitemap.xml
