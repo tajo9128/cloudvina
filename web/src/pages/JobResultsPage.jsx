@@ -275,54 +275,87 @@ export default function JobResultsPage() {
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         {/* Left Column: Data & Analysis */}
                         <div className="space-y-6">
-                            {/* Status Cards */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div className="grid grid-cols-3 divide-x divide-slate-200">
-                                    <div className="p-6 text-center">
-                                        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Status</h2>
-                                        <div className="inline-flex items-center">
-                                            <span className={`px-4 py-1.5 rounded-full text-sm font-bold border 
-                                ${job.status === 'SUCCEEDED' ? 'bg-green-100 text-green-700 border-green-200' :
-                                                    job.status === 'FAILED' ? 'bg-red-100 text-red-700 border-red-200' :
-                                                        'bg-amber-100 text-amber-700 border-amber-200'}`}>
-                                                {job.status}
-                                            </span>
-                                        </div>
-                                    </div>
+                            {/* Compact Job Details Card */}
+                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
+                                <div className="flex justify-between items-start mb-4">
+                                    <h2 className="text-lg font-bold text-slate-900">Job Details</h2>
+                                    <span className={`px-3 py-1 rounded-full text-sm font-bold border ${job.status === 'SUCCEEDED' ? 'bg-green-100 text-green-700 border-green-200' : job.status === 'FAILED' ? 'bg-red-100 text-red-700 border-red-200' : 'bg-amber-100 text-amber-700 border-amber-200'}`}>
+                                        {job.status}
+                                    </span>
+                                </div>
 
-                                    <div className="p-6 text-center">
-                                        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Best Affinity</h2>
-                                        {analysis?.best_affinity ? (
-                                            <>
-                                                <div className="text-3xl font-bold text-green-700">{analysis.best_affinity} <span className="text-sm text-slate-500 font-normal">kcal/mol</span></div>
-                                                {analysis.num_poses > 1 && (
-                                                    <div className="text-xs text-slate-500 mt-2">
-                                                        Range: {analysis.energy_range_min} to {analysis.energy_range_max}
-                                                    </div>
-                                                )}
-                                            </>
-                                        ) : (
-                                            <div className="text-3xl font-bold text-slate-300">-</div>
-                                        )}
+                                <div className="grid grid-cols-2 gap-3 text-sm mb-4">
+                                    <div>
+                                        <span className="font-semibold text-slate-600">Job ID:</span>
+                                        <span className="ml-2 text-slate-900">{jobId.slice(0, 8)}...</span>
                                     </div>
-
-                                    <div className="p-6 text-center">
-                                        <h2 className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ligand</h2>
-                                        <div className="text-lg font-medium text-slate-700 truncate px-4 mb-2" title={job.ligand_filename || 'Unknown'}>
-                                            {job.ligand_filename || 'Unknown'}
-                                        </div>
-                                        <div className="flex flex-col gap-2 mt-2">
-                                            {/* Refine / Evolution Button */}
-                                            <button
-                                                onClick={() => setShowEvolution(true)}
-                                                className="inline-flex items-center justify-center px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-bold hover:bg-purple-200 transition-colors border border-purple-200"
-                                            >
-                                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                                Refine Results (AI)
-                                            </button>
-                                        </div>
+                                    <div>
+                                        <span className="font-semibold text-slate-600">Mode:</span>
+                                        <span className="ml-2 text-slate-900">{consensusResults ? 'Consensus' : 'Single Engine'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="font-semibold text-slate-600">Receptor:</span>
+                                        <span className="ml-2 text-slate-900">{job.receptor_filename || 'Unknown'}</span>
+                                    </div>
+                                    <div>
+                                        <span className="font-semibold text-slate-600">Ligand:</span>
+                                        <span className="ml-2 text-slate-900">{job.ligand_filename || 'Unknown'}</span>
+                                    </div>
+                                    <div className="col-span-2">
+                                        <span className="font-semibold text-slate-600">Created:</span>
+                                        <span className="ml-2 text-slate-900">{new Date(job.created_at).toLocaleString()}</span>
                                     </div>
                                 </div>
+
+                                {/* Best Affinity - Consensus or Single */}
+                                <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl p-4 mb-4 border border-green-200">
+                                    <div className="text-center">
+                                        <p className="text-xs font-semibold text-green-700 uppercase mb-1">Best Affinity</p>
+                                        {consensusResults ? (
+                                            <>
+                                                <p className="text-4xl font-bold text-green-800">
+                                                    {consensusResults.best_affinity ? consensusResults.best_affinity.toFixed(2) : '-'}
+                                                </p>
+                                                <p className="text-sm text-green-700 mt-1">kcal/mol</p>
+                                                <p className="text-xs text-green-600 mt-2">
+                                                    Vina: {consensusResults.engines?.vina?.best_affinity?.toFixed(2) || 'N/A'} |
+                                                    Gnina: {consensusResults.engines?.gnina?.best_affinity?.toFixed(2) || 'N/A'}
+                                                </p>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <p className="text-4xl font-bold text-green-800">
+                                                    {analysis?.best_affinity || '-'}
+                                                </p>
+                                                <p className="text-sm text-green-700 mt-1">kcal/mol</p>
+                                            </>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Download Reports Section */}
+                                {job.status === 'SUCCEEDED' && (
+                                    <div className="pt-4 border-t border-slate-200">
+                                        <h3 className="text-sm font-semibold text-slate-700 mb-3">📥 Download Reports</h3>
+                                        <div className="flex flex-wrap gap-2">
+                                            {job.download_urls?.results_csv && (
+                                                <a
+                                                    href={job.download_urls.results_csv}
+                                                    download
+                                                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                                                >
+                                                    📊 CSV Report
+                                                </a>
+                                            )}
+                                            <a
+                                                href={`${API_URL}/export/pdf/${jobId}`}
+                                                className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
+                                            >
+                                                📄 PDF Report
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
                             </div>
 
                             {/* Consensus Results Card (NEW) */}
