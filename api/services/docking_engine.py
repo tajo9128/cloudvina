@@ -72,11 +72,8 @@ class DockingEngine:
             logger.error(f"Consensus: Vina failed: {e}")
             results["engines"]["vina"] = {"error": str(e)}
 
-        # 2. Skip rDock (Not installed - build from source broken)
-        # rDock would be here, but we skip it for now
-        results["engines"]["rdock"] = {"error": "rDock not installed", "skipped": True}
 
-        # 3. Run Gnina
+        # 2. Run Gnina (rDock removed - not installed)
         try:
             out_gnina = os.path.join(base_dir, f"{base_name}_gnina.pdbqt")
             res_gnina = self._run_gnina(receptor, ligand, out_gnina, params)
@@ -86,11 +83,9 @@ class DockingEngine:
             results["engines"]["gnina"] = {"error": str(e)}
 
 
-        # Aggregation Logic
-        # Average Affinity (Vina + Gnina only, as rDock is diff scale)
+        # Aggregation Logic - Vina + Gnina only
         vina_aff = results["engines"].get("vina", {}).get("best_affinity", 0.0)
         gnina_aff = results["engines"].get("gnina", {}).get("best_affinity", 0.0)
-        rdock_aff = results["engines"].get("rdock", {}).get("best_affinity", 0.0)
         
         valid_affs = []
         if vina_aff < 0: valid_affs.append(vina_aff)
@@ -101,8 +96,7 @@ class DockingEngine:
             results["best_affinity"] = min(valid_affs) # Most negative is best
         
         # Primary output file: Vina (Standard PDBQT)
-        # CRITICAL FIX: Append rDock and Gnina scores as REMARKs to the Vina output file 
-        # so they appear in the viewer/output file even if only one file is uploaded.
+        # Append Gnina scores as REMARKs to the Vina output file
         vina_out = results["engines"].get("vina", {}).get("output_file")
         
         if vina_out and os.path.exists(vina_out):
@@ -114,11 +108,9 @@ class DockingEngine:
                     f.write(f"REMARK 200 CONSENSUS DOCKING RESULTS\n")
                     f.write(f"REMARK 200 AutoDock Vina Best: {vina_aff:.2f} kcal/mol\n")
                     f.write(f"REMARK 200 Gnina (AI) Best:    {gnina_aff:.2f} kcal/mol\n")
-                    f.write(f"REMARK 200 rDock Best:         {rdock_aff:.2f} kcal/mol\n")
+                    f.write(f"REMARK 200 Average:            {results.get('average_affinity', 0):.2f} kcal/mol\n")
                     f.write("REMARK 200 ========================================================\n")
-                    f.write(content)
-                    
-                    # Also append Gnina/rDock top poses if possible? 
+                    f.write(content) 
                     # Mixing formats is dangerous for parsers, so we stick to remarks for now.
                     # Ideally, we would convert rdock.sdf to PDBQT and append as new MODELs.
             except Exception as e:
