@@ -26,18 +26,10 @@ export default function MoleculeViewer({
             backgroundColor: 'white'
         })
 
-        const models = viewer.addModel(pdbqtData, 'pdbqt')
-
-        // Style protein with cartoon (colorful spectrum) + sticks
-        viewer.setStyle({ hetflag: false }, {
-            cartoon: { color: 'spectrum', opacity: 0.8 },
-            stick: { colorscheme: 'chainHetatm', radius: 0.15 }
-        })
-
-        // Style ligand with ball-and-stick (vibrant colors)
-        viewer.setStyle({ hetflag: true }, {
-            stick: { colorscheme: 'greenCarbon', radius: 0.25 },
-            sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
+        viewer.addModel(pdbqtData, 'pdbqt')
+        viewer.setStyle({}, {
+            stick: { colorscheme: 'Jmol', radius: 0.15 },
+            sphere: { colorscheme: 'Jmol', scale: 0.25 }
         })
 
         // H-Bonds visualization (blue dashed lines)
@@ -66,19 +58,18 @@ export default function MoleculeViewer({
             })
         }
 
-        // Cavity spheres (reduced size for less dominance)
+        // Cavity spheres
         if (cavities && showCavities && cavities.length > 0) {
             const colors = ['#22c55e', '#f97316', '#a855f7', '#ec4899', '#14b8a6']
             cavities.forEach((cavity, i) => {
                 viewer.addSphere({
                     center: { x: cavity.center_x, y: cavity.center_y, z: cavity.center_z },
-                    radius: Math.min(cavity.size_x, cavity.size_y, cavity.size_z) / 8, // Reduced from /4 to /8
-                    color: colors[i % colors.length], opacity: 0.15 // Reduced opacity from 0.3 to 0.15
+                    radius: Math.min(cavity.size_x, cavity.size_y, cavity.size_z) / 4,
+                    color: colors[i % colors.length], opacity: 0.3
                 })
-                viewer.addLabel(`P${cavity.pocket_id}`, { // Shortened label
-                    position: { x: cavity.center_x, y: cavity.center_y + 2, z: cavity.center_z },
-                    backgroundColor: colors[i % colors.length], fontColor: 'white', fontSize: 10, // Smaller font
-                    backgroundOpacity: 0.7
+                viewer.addLabel(`Pocket ${cavity.pocket_id}`, {
+                    position: { x: cavity.center_x, y: cavity.center_y + 3, z: cavity.center_z },
+                    backgroundColor: colors[i % colors.length], fontColor: 'white', fontSize: 12
                 })
             })
         }
@@ -114,28 +105,10 @@ export default function MoleculeViewer({
     const handleStyleChange = (style) => {
         if (!viewerRef.current) return
         const styles = {
-            stick: {
-                hetflag: false, // protein
-                stick: { radius: 0.15, colorscheme: 'chainHetatm' },
-                hetflag: true, // ligand
-                stick: { radius: 0.25, colorscheme: 'greenCarbon' }
-            },
-            sphere: {
-                hetflag: true, // ligand only
-                sphere: { scale: 0.4, colorscheme: 'greenCarbon' }
-            },
-            cartoon: {
-                hetflag: false, // protein
-                cartoon: { color: 'spectrum', opacity: 0.8 }
-            },
-            both: {
-                hetflag: false, // protein
-                cartoon: { color: 'spectrum', opacity: 0.8 },
-                stick: { radius: 0.15, colorscheme: 'chainHetatm' },
-                hetflag: true, // ligand
-                stick: { radius: 0.25, colorscheme: 'greenCarbon' },
-                sphere: { scale: 0.3, colorscheme: 'greenCarbon' }
-            }
+            stick: { stick: { radius: 0.15, colorscheme: 'Jmol' } },
+            sphere: { sphere: { scale: 0.4, colorscheme: 'Jmol' } },
+            cartoon: { cartoon: { color: 'spectrum' } },
+            both: { stick: { radius: 0.15, colorscheme: 'Jmol' }, sphere: { scale: 0.25, colorscheme: 'Jmol' } }
         }
         viewerRef.current.setStyle({}, styles[style] || styles.both)
         viewerRef.current.render()
