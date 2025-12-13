@@ -23,11 +23,15 @@ class ExportService:
         output = io.StringIO()
         writer = csv.writer(output)
         
-        # Write header
+        # Write header with consensus columns
         writer.writerow([
             'Job ID', 
             'Status', 
-            'Binding Affinity (kcal/mol)', 
+            'Mode',
+            'Binding Affinity (kcal/mol)',
+            'Vina Affinity (kcal/mol)',
+            'Gnina Affinity (kcal/mol)',
+            'CNN Score',
             'Created At',
             'Receptor',
             'Ligand'
@@ -35,10 +39,22 @@ class ExportService:
         
         # Write data
         for job in jobs:
+            # Check if consensus results exist
+            consensus = job.get('consensus_results') or {}
+            engines = consensus.get('engines', {})
+            vina_aff = engines.get('vina', {}).get('best_affinity', 'N/A') if engines else 'N/A'
+            gnina_aff = engines.get('gnina', {}).get('best_affinity', 'N/A') if engines else 'N/A'
+            cnn_score = engines.get('gnina', {}).get('cnn_score', 'N/A') if engines else 'N/A'
+            mode = 'Consensus' if consensus else 'Single Engine'
+            
             writer.writerow([
                 job.get('id', ''),
                 job.get('status', ''),
+                mode,
                 job.get('binding_affinity', 'N/A'),
+                vina_aff,
+                gnina_aff,
+                cnn_score,
                 job.get('created_at', ''),
                 job.get('receptor_s3_key', '').split('/')[-1] if job.get('receptor_s3_key') else '',
                 job.get('ligand_s3_key', '').split('/')[-1] if job.get('ligand_s3_key') else ''
