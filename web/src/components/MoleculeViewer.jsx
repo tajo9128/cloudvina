@@ -113,24 +113,53 @@ export default function MoleculeViewer({
     }
     const handleStyleChange = (style) => {
         if (!viewerRef.current) return
-        const viewer = viewerRef.current
-        viewer.setStyle({}, {}) // clear
-
-        if (style === 'stick') {
-            viewer.setStyle({ not: { hetflag: true } }, { stick: { radius: 0.15, colorscheme: 'chainHetatm' } })
-            viewer.setStyle({ hetflag: true }, { stick: { radius: 0.25, colorscheme: 'greenCarbon' } })
-        } else if (style === 'sphere') {
-            viewer.setStyle({ hetflag: true }, { sphere: { scale: 0.4, colorscheme: 'greenCarbon' } })
-        } else if (style === 'cartoon') {
-            viewer.setStyle({ not: { hetflag: true } }, { cartoon: { color: 'spectrum', opacity: 0.8 } })
-        } else {
-            viewer.setStyle({ not: { hetflag: true } }, { cartoon: { color: 'spectrum', opacity: 0.8 } })
-            viewer.setStyle({ hetflag: true }, { stick: { radius: 0.25, colorscheme: 'greenCarbon' } })
+        const styles = {
+            stick: {
+                hetflag: false, // protein
+                stick: { radius: 0.15, colorscheme: 'chainHetatm' },
+                hetflag: true, // ligand
+                stick: { radius: 0.25, colorscheme: 'greenCarbon' }
+            },
+            sphere: {
+                hetflag: true, // ligand only
+                sphere: { scale: 0.4, colorscheme: 'greenCarbon' }
+            },
+            cartoon: {
+                hetflag: false, // protein
+                cartoon: { color: 'spectrum', opacity: 0.8 }
+            },
+            both: {
+                hetflag: false, // protein
+                cartoon: { color: 'spectrum', opacity: 0.8 },
+                stick: { radius: 0.15, colorscheme: 'chainHetatm' },
+                hetflag: true, // ligand
+                stick: { radius: 0.25, colorscheme: 'greenCarbon' },
+                sphere: { scale: 0.3, colorscheme: 'greenCarbon' }
+            }
         }
-        viewer.render()
-        setDisplayStyle(style)
+        viewerRef.current.setStyle({}, styles[style] || styles.both)
+        viewerRef.current.render()
     }
 
+    const hasInteractions = interactions && ((interactions.hydrogen_bonds?.length > 0) || (interactions.hydrophobic_contacts?.length > 0))
+    const hasCavities = cavities && cavities.length > 0
+
+    return (
+        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full flex flex-col">
+            <div className="mb-3 flex justify-between items-center flex-wrap gap-2">
+                {title && <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>}
+                <div className="flex gap-2">
+                    <button onClick={handleDownloadImage} className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">📷 Snapshot</button>
+                    <button onClick={handleReset} className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">🔄 Reset</button>
+                    <button onClick={handleSpin} className={`text-sm px-3 py-1 rounded ${isSpinning ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 hover:bg-gray-200'}`}>{isSpinning ? '⏸ Stop' : '▶ Spin'}</button>
+                </div>
+            </div>
+
+            <div className="mb-3 flex gap-2">
+                {['stick', 'sphere', 'both', 'cartoon'].map(s => (
+                    <button key={s} onClick={() => handleStyleChange(s)} className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded capitalize">{s === 'both' ? 'Ball & Stick' : s}</button>
+                ))}
+            </div>
 
             {(hasInteractions || hasCavities) && (
                 <div className="mb-3 flex gap-3 text-sm">
