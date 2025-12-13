@@ -27,9 +27,17 @@ export default function MoleculeViewer({
         })
 
         viewer.addModel(pdbqtData, 'pdbqt')
-        viewer.setStyle({}, {
-            stick: { colorscheme: 'Jmol', radius: 0.15 },
-            sphere: { colorscheme: 'Jmol', scale: 0.25 }
+
+        // Style protein with cartoon (colorful spectrum)
+        viewer.setStyle({ hetflag: false }, {
+            cartoon: { color: 'spectrum', opacity: 0.8 },
+            stick: { colorscheme: 'chainHetatm', radius: 0.15 }
+        })
+
+        // Style ligand with ball-and-stick (vibrant green)
+        viewer.setStyle({ hetflag: true }, {
+            stick: { colorscheme: 'greenCarbon', radius: 0.25 },
+            sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
         })
 
         // H-Bonds visualization (blue dashed lines)
