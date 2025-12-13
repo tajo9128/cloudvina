@@ -126,9 +126,9 @@ export default function MoleculeViewer({
         } else {
             viewer.setStyle({ not: { hetflag: true } }, { cartoon: { color: 'spectrum', opacity: 0.8 } })
             viewer.setStyle({ hetflag: true }, { stick: { radius: 0.25, colorscheme: 'greenCarbon' } })
-        viewer.render()
-        setDisplayStyle(style)
-    }
+        }
+
+
     const hasInteractions = interactions && ((interactions.hydrogen_bonds?.length > 0) || (interactions.hydrophobic_contacts?.length > 0))
     const hasCavities = cavities && cavities.length > 0
 
