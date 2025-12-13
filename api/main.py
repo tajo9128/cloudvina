@@ -25,6 +25,7 @@ from services.ai_explainer import AIExplainer
 from tools import router as tools_router
 from routes.admin import router as admin_router
 from routes.evolution import router as evolution_router
+from routes.batch import router as batch_router  # ADD BATCH ROUTES
 from services.cavity_detector import CavityDetector
 from services.drug_properties import DrugPropertiesCalculator
 
@@ -88,6 +89,7 @@ app.include_router(admin_router)
 from export_routes import router as export_router
 app.include_router(export_router)
 app.include_router(evolution_router)
+app.include_router(batch_router)  # Enable batch job endpoints
 # Register Target Prediction Router
 from services.target_prediction import router as target_prediction_router
 app.include_router(target_prediction_router)
