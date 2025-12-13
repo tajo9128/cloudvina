@@ -214,19 +214,29 @@ class DockingEngine:
         try:
             with open(output_path, 'r') as f:
                 for line in f:
-                    if line.startswith('REMARK VINA RESULT'):
-                        # REMARK VINA RESULT:    -8.5      0.000      0.000
+                    # Vina uses: REMARK VINA RESULT:    -8.5      0.000      0.000
+                    if engine_name == 'vina' and line.startswith('REMARK VINA RESULT'):
                         parts = line.split()
                         if len(parts) >= 4:
                             best_affinity = float(parts[3])
-                            # Stop after first model (best)
                             break
                     
-                    # Gnina adds CNN scores: REMARK CNN_SCORE: 0.98
-                    if engine_name == 'gnina' and 'CNN_SCORE' in line:
-                        # Depends on exact formatted output, but usually per model.
-                        # We might need to parse differently if we want the CNN score of the top affinity pose.
-                        pass
+                    # Gnina uses: REMARK minimizedAffinity -8.12345
+                    if engine_name == 'gnina' and 'minimizedAffinity' in line:
+                        parts = line.split()
+                        if len(parts) >= 3:
+                            best_affinity = float(parts[2])
+                            # Don't break - continue to find CNN score
+                    
+                    # Gnina CNN score: REMARK CNNscore 0.654321
+                    if engine_name == 'gnina' and 'CNNscore' in line:
+                        parts = line.split()
+                        if len(parts) >= 3:
+                            best_cnn_score = float(parts[2])
+                            # If we have both, we can break
+                            if best_affinity != 0.0:
+                                break
+                                
         except FileNotFoundError:
              raise Exception(f"{engine_name} output file not found")
 
