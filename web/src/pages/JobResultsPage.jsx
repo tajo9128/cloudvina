@@ -26,6 +26,7 @@ export default function JobResultsPage() {
 
     // Consensus Results State (NEW)
     const [consensusResults, setConsensusResults] = useState(null)
+    const [selectedEngine, setSelectedEngine] = useState('vina') // 'vina' or 'gnina'
 
     const ESTIMATED_DURATION = 300 // 5 minutes in seconds
 
@@ -498,18 +499,53 @@ export default function JobResultsPage() {
                                         Downloads & Data
                                     </h2>
                                     <div className="grid sm:grid-cols-2 gap-4">
-                                        <a href={job.download_urls.output} className="group flex items-center justify-between px-6 py-4 border border-primary-200 rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 hover:border-primary-300 transition-all">
-                                            <div className="flex items-center gap-3">
-                                                <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-primary-600 shadow-sm">
-                                                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                                        {/* Consensus Mode - Separate Vina and Gnina Downloads */}
+                                        {consensusResults ? (
+                                            <>
+                                                {job.download_urls.output_vina && (
+                                                    <a href={job.download_urls.output_vina} className="group flex items-center justify-between px-6 py-4 border border-blue-200 rounded-xl bg-blue-50 text-blue-700 hover:bg-blue-100 hover:border-blue-300 transition-all">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-blue-600 shadow-sm">
+                                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                                                            </div>
+                                                            <div className="text-left">
+                                                                <div className="font-bold">Vina Structure</div>
+                                                                <div className="text-xs opacity-75">PDBQT Format</div>
+                                                            </div>
+                                                        </div>
+                                                        <svg className="w-5 h-5 transform group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                                    </a>
+                                                )}
+                                                {job.download_urls.output_gnina && (
+                                                    <a href={job.download_urls.output_gnina} className="group flex items-center justify-between px-6 py-4 border border-purple-200 rounded-xl bg-purple-50 text-purple-700 hover:bg-purple-100 hover:border-purple-300 transition-all">
+                                                        <div className="flex items-center gap-3">
+                                                            <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-purple-600 shadow-sm">
+                                                                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                                                            </div>
+                                                            <div className="text-left">
+                                                                <div className="font-bold">Gnina Structure</div>
+                                                                <div className="text-xs opacity-75">AI-Generated PDBQT</div>
+                                                            </div>
+                                                        </div>
+                                                        <svg className="w-5 h-5 transform group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                                    </a>
+                                                )}
+                                            </>
+                                        ) : (
+                                            /* Single Mode - Original Download */
+                                            <a href={job.download_urls.output} className="group flex items-center justify-between px-6 py-4 border border-primary-200 rounded-xl bg-primary-50 text-primary-700 hover:bg-primary-100 hover:border-primary-300 transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="w-10 h-10 rounded-lg bg-white flex items-center justify-center text-primary-600 shadow-sm">
+                                                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                                                    </div>
+                                                    <div className="text-left">
+                                                        <div className="font-bold">Docked Structure</div>
+                                                        <div className="text-xs opacity-75">PDBQT Format</div>
+                                                    </div>
                                                 </div>
-                                                <div className="text-left">
-                                                    <div className="font-bold">Docked Structure</div>
-                                                    <div className="text-xs opacity-75">PDBQT Format</div>
-                                                </div>
-                                            </div>
-                                            <svg className="w-5 h-5 transform group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                        </a>
+                                                <svg className="w-5 h-5 transform group-hover:translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                            </a>
+                                        )}
 
                                         <a href={job.download_urls.log} className="group flex items-center justify-between px-6 py-4 border border-slate-200 rounded-xl bg-white text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-all">
                                             <div className="flex items-center gap-3">
