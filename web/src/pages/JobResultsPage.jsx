@@ -94,12 +94,16 @@ export default function JobResultsPage() {
                 fetchPockets(session.access_token)
             }
 
-            // Fetch PDBQT data if succeeded
-            if (data.status === 'SUCCEEDED' && data.download_urls?.output && !pdbqtData) {
+            // Fetch PDBQT data for 3D viewer
+            if (data.status === 'SUCCEEDED' && !pdbqtData) {
                 try {
-                    const pdbqtRes = await fetch(data.download_urls.output)
-                    const pdbqtText = await pdbqtRes.text()
-                    setPdbqtData(pdbqtText)
+                    // For consensus, try Vina output first, fallback to standard output
+                    const pdbqtUrl = data.download_urls?.output_vina || data.download_urls?.output
+                    if (pdbqtUrl) {
+                        const pdbqtRes = await fetch(pdbqtUrl)
+                        const pdbqtText = await pdbqtRes.text()
+                        setPdbqtData(pdbqtText)
+                    }
                 } catch (err) {
                     console.error('Failed to fetch PDBQT:', err)
                 }
