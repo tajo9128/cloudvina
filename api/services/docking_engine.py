@@ -152,8 +152,14 @@ class DockingEngine:
         
         if result.returncode != 0:
             raise Exception(f"Vina failed: {result.stderr}")
-            
-        return self._parse_vina_like_output(output, "vina")
+        
+        # Parse output and include execution details
+        parsed = self._parse_vina_like_output(output, "vina")
+        parsed['stdout'] = result.stdout
+        parsed['stderr'] = result.stderr
+        parsed['command'] = ' '.join(cmd)
+        
+        return parsed
 
     def _run_gnina(self, receptor: str, ligand: str, output: str, params: Dict) -> Dict:
         """Run Gnina (AI Docking)"""
@@ -192,8 +198,13 @@ class DockingEngine:
             raise Exception(f"Gnina failed: {result.stderr}")
             
         # Gnina output is PDBQT format, compatible with Vina parser
-        # Usually contains REMARK CNN_SCORE etc.
-        return self._parse_vina_like_output(output, "gnina")
+        # Parse output and include execution details
+        parsed = self._parse_vina_like_output(output, "gnina")
+        parsed['stdout'] = result.stdout
+        parsed['stderr'] = result.stderr
+        parsed['command'] = ' '.join(cmd)
+        
+        return parsed
 
     def _parse_vina_like_output(self, output_path: str, engine_name: str) -> Dict:
         """Parse PDBQT output from Vina or Gnina"""

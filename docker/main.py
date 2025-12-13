@@ -104,7 +104,6 @@ class DockingRunner:
         try:
             self.s3.download_file(self.s3_bucket, config_key, str(config_file))
             # Parse simple Vina config for params if needed
-            # For now, we assume defaults if parsing complex
             print("Config downloaded.")
             # Basic parsing to dict
             with open(config_file) as f:
@@ -114,6 +113,36 @@ class DockingRunner:
                         config_params[k.strip()] = v.strip()
         except ClientError:
             print("No config file, using defaults.")
+        
+        # Hardcode grid size to 20x20x20 for optimal results
+        config_params['size_x'] = '20'
+        config_params['size_y'] = '20'
+        config_params['size_z'] = '20'
+        
+        # For consensus mode, create comprehensive config showing both engines
+        if self.engine_type == 'consensus':
+            consensus_config_path = self.work_dir / 'consensus_config.txt'
+            with open(consensus_config_path, 'w') as f:
+                f.write("CONSENSUS DOCKING CONFIGURATION\n")
+                f.write("="*60 + "\n\n")
+                f.write("Grid Box Parameters (Shared by both engines):\n")
+                f.write(f"  center_x = {config_params.get('center_x', '0')}\n")
+                f.write(f"  center_y = {config_params.get('center_y', '0')}\n")
+                f.write(f"  center_z = {config_params.get('center_z', '0')}\n")
+                f.write(f"  size_x = 20  # Fixed\n")
+                f.write(f"  size_y = 20  # Fixed\n")
+                f.write(f"  size_z = 20  # Fixed\n")
+                f.write(f"  exhaustiveness = {config_params.get('exhaustiveness', '8')}\n")
+                f.write(f"  cpu = 1\n\n")
+                f.write("AutoDock Vina:\n")
+                f.write("  - Scoring: Classical force field\n")
+                f.write("  - num_modes = 9\n\n")
+                f.write("Gnina (AI):\n")
+                f.write("  - Scoring: CNN + Classical\n")
+                f.write("  - CNN Model: Default (dense)\n")
+                f.write("  - num_modes = 9\n")
+            # Upload the enhanced config
+            self.upload_to_s3(consensus_config_path, f'jobs/{self.job_id}/config.txt')
 
         # Set output path
         # Vina -> pdbqt, rDock -> sdf usually
@@ -202,19 +231,58 @@ class DockingRunner:
                 if not self.upload_to_s3(output_path, upload_key):
                     sys.exit(1)
                 
-            # Create a simple log file for compatibility
+            # Create comprehensive execution log
             log_path = self.work_dir / 'log.txt'
             with open(log_path, 'w') as f:
-                f.write(f"Engine: {self.engine_type}\n")
+                f.write("="*80 + "\n")
+                f.write("BIODOCKIFY EXECUTION LOG\n")
+                f.write("="*80 + "\n\n")
+                
                 if result.get('consensus'):
-                    f.write(f"Consensus Scores:\n")
-                    for eng, res in result.get('engines', {}).items():
-                        score = res.get('best_affinity', 'N/A')
-                        f.write(f"  {eng}: {score}\n")
-                    f.write(f"Average Vina/Gnina: {result.get('average_affinity', 'N/A')}\n")
+                    f.write(f"Docking Mode: CONSENSUS (Vina + Gnina)\n")
+                    f.write(f"Job ID: {self.job_id}\n\n")
+                    
+                    # Vina Section
+                    if 'vina' in result.get('engines', {}):
+                        f.write("\n" + "="*80 + "\n")
+                        f.write("AUTODOCK VINA EXECUTION\n")
+                        f.write("="*80 + "\n")
+                        vina_res = result['engines']['vina']
+                        if 'command' in vina_res:
+                            f.write(f"\nCommand: {vina_res['command']}\n")
+                        f.write(f"\nBest Affinity: {vina_res.get('best_affinity', 'N/A')} kcal/mol\n")
+                        if vina_res.get('stdout'):
+                            f.write(f"\nFull Vina Output:\n{'-'*80}\n")
+                            f.write(vina_res['stdout'])
+                            f.write("\n" + "-"*80 + "\n")
+                   
+                    # Gnina Section
+                    if 'gnina' in result.get('engines', {}):
+                        f.write("\n" + "="*80 + "\n")
+                        f.write("GNINA (AI-POWERED CNN) EXECUTION\n")
+                        f.write("="*80 + "\n")
+                        gnina_res = result['engines']['gnina']
+                        if 'command' in gnina_res:
+                            f.write(f"\nCommand: {gnina_res['command']}\n")
+                        f.write(f"\nBest Affinity: {gnina_res.get('best_affinity', 'N/A')} kcal/mol\n")
+                        if gnina_res.get('cnn_score'):
+                            f.write(f"CNN Score: {gnina_res['cnn_score']}\n")
+                        if gnina_res.get('stdout'):
+                            f.write(f"\nFull Gnina Output:\n{'-'*80}\n")
+                            f.write(gnina_res['stdout'])
+                            f.write("\n" + "-"*80 + "\n")
+                    
+                    # Summary
+                    f.write("\n" + "="*80 + "\n")
+                    f.write("CONSENSUS SUMMARY\n")
+                    f.write("="*80 + "\n")
+                    f.write(f"Average Affinity: {result.get('average_affinity', 'N/A')} kcal/mol\n")
+                    f.write(f"Best Affinity: {result.get('best_affinity', 'N/A')} kcal/mol\n")
+                    f.write(f"Output Files: output_vina.pdbqt, output_gnina.pdbqt\n")
                 else:
+                    f.write(f"Engine: {self.engine_type}\n")
                     f.write(f"Best Score: {result.get('best_affinity')}\n")
-                f.write(f"Output: {upload_key}\n")
+                    f.write(f"Output: {upload_key}\n")
                 
             self.upload_to_s3(log_path, f'{output_prefix}/log.txt')
             
