@@ -416,10 +416,6 @@ export default function JobResultsPage() {
                                             </div>
                                         )}
                                     </div>
-
-                                    <div className="text-xs text-slate-400 text-center">
-                                        * Note: rDock scores use arbitrary units and are excluded from average calculation.
-                                    </div>
                                 </div>
                             )}
 
