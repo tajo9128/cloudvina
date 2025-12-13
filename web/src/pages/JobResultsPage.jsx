@@ -348,7 +348,7 @@ export default function JobResultsPage() {
                                                 </a>
                                             )}
                                             <a
-                                                href={`${API_URL}/export/pdf/${jobId}`}
+                                                href={`${API_URL}/jobs/${jobId}/export/pdf`}
                                                 className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
                                             >
                                                 📄 PDF Report
