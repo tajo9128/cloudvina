@@ -128,17 +128,24 @@ export default function MoleculeViewer({
                 hetflag: false, // protein
                 cartoon: { color: 'spectrum', opacity: 0.8 }
             },
-            both: {
-                hetflag: false, // protein
-                cartoon: { color: 'spectrum', opacity: 0.8 },
-                stick: { radius: 0.15, colorscheme: 'chainHetatm' },
-                hetflag: true, // ligand
-                stick: { radius: 0.25, colorscheme: 'greenCarbon' },
-                sphere: { scale: 0.3, colorscheme: 'greenCarbon' }
-            }
         }
-        viewerRef.current.setStyle({}, styles[style] || styles.both)
-        viewerRef.current.render()
+
+        const viewer = viewerRef.current
+        viewer.setStyle({}, {}) // clear
+
+        if (style === 'stick') {
+            viewer.setStyle({ not: { hetflag: true } }, { stick: { radius: 0.15, colorscheme: 'chainHetatm' } })
+            viewer.setStyle({ hetflag: true }, { stick: { radius: 0.25, colorscheme: 'greenCarbon' } })
+        } else if (style === 'sphere') {
+            viewer.setStyle({ hetflag: true }, { sphere: { scale: 0.4, colorscheme: 'greenCarbon' } })
+        } else if (style === 'cartoon') {
+            viewer.setStyle({ not: { hetflag: true } }, { cartoon: { color: 'spectrum', opacity: 0.8 } })
+        } else {
+            viewer.setStyle({ not: { hetflag: true } }, { cartoon: { color: 'spectrum', opacity: 0.8 } })
+            viewer.setStyle({ hetflag: true }, { stick: { radius: 0.25, colorscheme: 'greenCarbon' } })
+        }
+
+        viewer.render()
     }
 
     const hasInteractions = interactions && ((interactions.hydrogen_bonds?.length > 0) || (interactions.hydrophobic_contacts?.length > 0))
