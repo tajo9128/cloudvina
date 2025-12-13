@@ -130,6 +130,16 @@ class DockingEngine:
 
     def _run_vina(self, receptor: str, ligand: str, output: str, params: Dict) -> Dict:
         """Run AutoDock Vina"""
+        # Convert receptor PDB to PDBQT if needed
+        if receptor.endswith('.pdb'):
+            receptor_pdbqt = receptor.replace('.pdb', '.pdbqt')
+            clean_pdb = receptor.replace('.pdb', '_clean.pdb')
+            # Remove PDB headers that Vina can't parse
+            subprocess.run(f"grep -v '^HEADER\|^REMARK\|^AUTHOR\|^REVDAT\|^JRNL' '{receptor}' > '{clean_pdb}'", shell=True, check=True)
+            # Convert to PDBQT
+            subprocess.run(['obabel', clean_pdb, '-O', receptor_pdbqt, '-xr'], check=True)
+            receptor = receptor_pdbqt
+        
         cmd = [
             self.vina_bin,
             '--receptor', receptor,
@@ -155,8 +165,17 @@ class DockingEngine:
 
     def _run_gnina(self, receptor: str, ligand: str, output: str, params: Dict) -> Dict:
         """Run Gnina (AI Docking)"""
-        # Gnina arguments are Vina-compatible but with extra CNN options
-        # We use the 'fast' CNN model for reasonable CPU speed (~20s)
+        # Convert receptor PDB to PDBQT if needed
+        if receptor.endswith('.pdb'):
+            receptor_pdbqt = receptor.replace('.pdb', '.pdbqt')
+            clean_pdb = receptor.replace('.pdb', '_clean.pdb')
+            # Remove PDB headers
+            subprocess.run(f"grep -v '^HEADER\|^REMARK\|^AUTHOR\|^REVDAT\|^JRNL' '{receptor}' > '{clean_pdb}'", shell=True, check=True)
+            # Convert to PDBQT
+            subprocess.run(['obabel', clean_pdb, '-O', receptor_pdbqt, '-xr'], check=True)
+            receptor = receptor_pdbqt
+        
+        # Gnina arguments are Vina-compatible
         cmd = [
             '/usr/local/bin/gnina',
             '--receptor', receptor,
@@ -169,9 +188,8 @@ class DockingEngine:
             '--size_y', str(params.get('size_y', 20)),
             '--size_z', str(params.get('size_z', 20)),
             '--cpu', '1',
-            '--exhaustiveness', str(params.get('exhaustiveness', 8)),
-            '--cnn', 'fast', # Use optimized CNN scoring
-            '--addH', '0'    # Don't add hydrogens (assume input is prepped)
+            '--exhaustiveness', str(params.get('exhaustiveness', 8))
+            # CNN scoring happens automatically - removed unsupported --cnn parameter
         ]
         
         logger.info(f"Running Gnina: {' '.join(cmd)}")
