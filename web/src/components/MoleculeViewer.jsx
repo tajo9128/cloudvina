@@ -127,27 +127,10 @@ export default function MoleculeViewer({
             viewer.setStyle({ not: { hetflag: true } }, { cartoon: { color: 'spectrum', opacity: 0.8 } })
             viewer.setStyle({ hetflag: true }, { stick: { radius: 0.25, colorscheme: 'greenCarbon' } })
         }
+        viewer.render()
+        setDisplayStyle(style)
+    }
 
-
-    const hasInteractions = interactions && ((interactions.hydrogen_bonds?.length > 0) || (interactions.hydrophobic_contacts?.length > 0))
-    const hasCavities = cavities && cavities.length > 0
-
-    return (
-        <div className="bg-white rounded-lg border border-gray-200 p-4 shadow-sm h-full flex flex-col">
-            <div className="mb-3 flex justify-between items-center flex-wrap gap-2">
-                {title && <h3 className="font-semibold text-gray-900 text-lg">{title}</h3>}
-                <div className="flex gap-2">
-                    <button onClick={handleDownloadImage} className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">📷 Snapshot</button>
-                    <button onClick={handleReset} className="text-sm px-3 py-1 bg-gray-100 hover:bg-gray-200 rounded">🔄 Reset</button>
-                    <button onClick={handleSpin} className={`text-sm px-3 py-1 rounded ${isSpinning ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 hover:bg-gray-200'}`}>{isSpinning ? '⏸ Stop' : '▶ Spin'}</button>
-                </div>
-            </div>
-
-            <div className="mb-3 flex gap-2">
-                {['stick', 'sphere', 'both', 'cartoon'].map(s => (
-                    <button key={s} onClick={() => handleStyleChange(s)} className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded capitalize">{s === 'both' ? 'Ball & Stick' : s}</button>
-                ))}
-            </div>
 
             {(hasInteractions || hasCavities) && (
                 <div className="mb-3 flex gap-3 text-sm">
