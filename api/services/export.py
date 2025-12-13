@@ -108,7 +108,26 @@ class ExportService:
             ['Ligand', job.get('ligand_filename') or (job.get('ligand_s3_key', '').split('/')[-1] if job.get('ligand_s3_key') else 'Unknown')]
         ]
         
-        if analysis:
+        
+        # Check if this is a consensus docking job
+        is_consensus = analysis and analysis.get('consensus', False)
+        
+        if is_consensus:
+            # Consensus mode - show both Vina and Gnina
+            engines = analysis.get('engines', {})
+            vina_score = engines.get('vina', {}).get('best_affinity', 'N/A')
+            gnina_score = engines.get('gnina', {}).get('best_affinity', 'N/A')
+            gnina_cnn = engines.get('gnina', {}).get('cnn_score')
+            avg_score = analysis.get('average_affinity', 'N/A')
+            
+            info_data.append(['Docking Mode', 'Consensus (Vina + Gnina)'])
+            info_data.append(['Vina Affinity', f"{vina_score} kcal/mol" if vina_score != 'N/A' else 'N/A'])
+            info_data.append(['Gnina Affinity', f"{gnina_score} kcal/mol" if gnina_score != 'N/A' else 'N/A'])
+            if gnina_cnn:
+                info_data.append(['Gnina CNN Score', f"{gnina_cnn:.4f}"])
+            info_data.append(['Consensus Average', f"{avg_score} kcal/mol" if avg_score != 'N/A' else 'N/A'])
+        elif analysis:
+            # Single engine mode
             info_data.append(['Best Affinity', f"{analysis.get('best_affinity', 'N/A')} kcal/mol"])
             if analysis.get('num_poses'):
                 info_data.append(['Poses Found', str(analysis['num_poses'])])
@@ -131,23 +150,44 @@ class ExportService:
         story.append(Paragraph("<b>Computational Methodology</b>", styles['Heading2']))
         story.append(Spacer(1, 0.1*inch))
         
-        method_text = f"""
-        <b>Molecular Docking Protocol:</b> Molecular docking simulations were performed using AutoDock Vina {analysis.get('vina_version', 'latest')} 
-        as implemented in the BioDockify cloud platform. The receptor protein ({job.get('receptor_filename', 'Unknown')}) and ligand molecule 
-        ({job.get('ligand_filename', 'Unknown')}) were prepared in PDBQT format following standard protocols.
-        <br/><br/>
-        <b>Grid Box Configuration:</b> The search space grid box was centered at coordinates (X: {analysis.get('center_x', '0.0')}, 
-        Y: {analysis.get('center_y', '0.0')}, Z: {analysis.get('center_z', '0.0')}) Angstroms with dimensions of 
-        {analysis.get('size_x', '20')} × {analysis.get('size_y', '20')} × {analysis.get('size_z', '20')} Angstroms.
-        <br/><br/>
-        <b>Docking Parameters:</b> The exhaustiveness parameter was set to {analysis.get('exhaustiveness', '8')}, and a maximum of 
-        {analysis.get('num_modes', '9')} binding modes were generated. The energy range for pose clustering was 
-        {analysis.get('energy_range', '3')} kcal/mol.
-        <br/><br/>
-        <b>Analysis:</b> Binding affinities were calculated using the Vina scoring function. Root mean square deviation (RMSD) values 
-        were computed for pose clustering. Protein-ligand interactions including hydrogen bonds and hydrophobic contacts were analyzed 
-        for the best-scoring pose.
-        """
+        
+        if is_consensus:
+            method_text = f"""
+            <b>Molecular Docking Protocol:</b> Consensus molecular docking simulations were performed using both AutoDock Vina and Gnina 
+            as implemented in the BioDockify cloud platform. The receptor protein ({job.get('receptor_filename', 'Unknown')}) and ligand molecule 
+            ({job.get('ligand_filename', 'Unknown')}) were prepared in PDBQT format following standard protocols. Both engines were run independently 
+            to provide complementary binding predictions - Vina using classical force fields and Gnina using AI-powered convolutional neural networks (CNN).
+            <br/><br/>
+            <b>Grid Box Configuration:</b> The search space grid box was centered at coordinates (X: {analysis.get('center_x', '0.0')}, 
+            Y: {analysis.get('center_y', '0.0')}, Z: {analysis.get('center_z', '0.0')}) Angstroms with dimensions of 
+            {analysis.get('size_x', '20')} × {analysis.get('size_y', '20')} × {analysis.get('size_z', '20')} Angstroms.
+            <br/><br/>
+            <b>Docking Parameters:</b> The exhaustiveness parameter was set to {analysis.get('exhaustiveness', '8')}, and binding modes were 
+            generated for both engines using identical search parameters for consistency.
+            <br/><br/>
+            <b>Consensus Scoring:</b> Binding affinities were calculated using both the Vina scoring function (classical force field) and 
+            Gnina's CNN scoring (deep learning). The consensus average represents the mean of both predictions, providing a more robust 
+            binding affinity estimate. Protein-ligand interactions including hydrogen bonds and hydrophobic contacts were analyzed for the best-scoring poses.
+            """
+        else:
+            method_text = f"""
+            <b>Molecular Docking Protocol:</b> Molecular docking simulations were performed using AutoDock Vina {analysis.get('vina_version', 'latest')} 
+            as implemented in the BioDockify cloud platform. The receptor protein ({job.get('receptor_filename', 'Unknown')}) and ligand molecule 
+            ({job.get('ligand_filename', 'Unknown')}) were prepared in PDBQT format following standard protocols.
+            <br/><br/>
+            <b>Grid Box Configuration:</b> The search space grid box was centered at coordinates (X: {analysis.get('center_x', '0.0')}, 
+            Y: {analysis.get('center_y', '0.0')}, Z: {analysis.get('center_z', '0.0')}) Angstroms with dimensions of 
+            {analysis.get('size_x', '20')} × {analysis.get('size_y', '20')} × {analysis.get('size_z', '20')} Angstroms.
+            <br/><br/>
+            <b>Docking Parameters:</b> The exhaustiveness parameter was set to {analysis.get('exhaustiveness', '8')}, and a maximum of 
+            {analysis.get('num_modes', '9')} binding modes were generated. The energy range for pose clustering was 
+            {analysis.get('energy_range', '3')} kcal/mol.
+            <br/><br/>
+            <b>Analysis:</b> Binding affinities were calculated using the Vina scoring function. Root mean square deviation (RMSD) values 
+            were computed for pose clustering. Protein-ligand interactions including hydrogen bonds and hydrophobic contacts were analyzed 
+            for the best-scoring pose.
+            """
+        
         
         story.append(Paragraph(method_text, styles['Normal']))
         story.append(Spacer(1, 0.3*inch))
