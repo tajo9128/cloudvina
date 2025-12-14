@@ -1,3 +1,13 @@
+---
+title: BioDockify AI
+emoji: 🧬
+colorFrom: indigo
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # BioDockify
 
 **Democratizing Molecular Docking for Students and Researchers**
@@ -133,3 +143,15 @@ This project uses AutoDock Vina (Apache 2.0 license). Commercial use permitted w
 ---
 
 **Built with ❤️ to make science more accessible**
+
+---
+# AI.BioDockify Backend Details
+
+This is the backend service for the AI.BioDockify platform, running on Hugging Face Spaces.
+It provides:
+- QSAR Model Training (ChemBERTa)
+- Toxicity Prediction
+- Model Management
+
+## API Documentation
+Once running, visit `/docs` for Swagger UI.
