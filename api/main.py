@@ -88,6 +88,10 @@ app.include_router(admin_router)
 from export_routes import router as export_router
 app.include_router(export_router)
 app.include_router(evolution_router)
+
+# Register QSAR Router
+from routes.qsar import router as qsar_router
+app.include_router(qsar_router)
 # Register Target Prediction Router
 from services.target_prediction import router as target_prediction_router
 app.include_router(target_prediction_router)

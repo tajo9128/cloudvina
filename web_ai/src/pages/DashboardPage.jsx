@@ -9,136 +9,138 @@ import ToxicityPanel from '../components/Predictions/ToxicityPanel';
 export default function DashboardPage() {
     // ...
     // ...
-    {/* Main Content */ }
-    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            {/* Quick Predict Section */}
-            <QuickPredict />
+    return (
+        <div className="min-h-screen bg-slate-50">
+            {/* Main Content */}
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+                    {/* Quick Predict Section */}
+                    <QuickPredict />
 
-            {/* Toxicity Check Section */}
-            <ToxicityPanel />
-        </div>
-
-        <div className="mb-8">
-            <h1 className="text-3xl font-bold text-slate-900">Your Projects</h1>
-            <p className="text-slate-500 mt-2">Manage your QSAR models and drug discovery campaigns.</p>
-        </div>
-
-
-        {loading ? (
-            <div className="flex justify-center py-20">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-            </div>
-        ) : projects.length === 0 ? (
-            <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
-                    <Boxes size={32} />
+                    {/* Toxicity Check Section */}
+                    <ToxicityPanel />
                 </div>
-                <h3 className="text-lg font-medium text-slate-900">No projects yet</h3>
-                <p className="text-slate-500 max-w-sm mx-auto mt-2 mb-6">Start your first AI-powered drug discovery campaign by creating a project.</p>
-                <button
-                    onClick={() => setShowModal(true)}
-                    className="text-indigo-600 font-medium hover:text-indigo-700 hover:underline"
-                >
-                    Create your first project
-                </button>
-            </div>
-        ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {projects.map(project => (
-                    <div
-                        key={project.id}
-                        onClick={() => navigate(`/project/${project.id}`)}
-                        className="group bg-white rounded-xl border border-slate-200 p-6 hover:shadow-xl hover:shadow-indigo-100 hover:border-indigo-200 transition-all cursor-pointer relative overflow-hidden"
-                    >
-                        <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button
-                                onClick={(e) => handleDelete(project.id, e)}
-                                className="text-slate-400 hover:text-red-500 p-1 bg-white rounded shadow-sm"
+
+                <div className="mb-8">
+                    <h1 className="text-3xl font-bold text-slate-900">Your Projects</h1>
+                    <p className="text-slate-500 mt-2">Manage your QSAR models and drug discovery campaigns.</p>
+                </div>
+
+
+                {loading ? (
+                    <div className="flex justify-center py-20">
+                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
+                    </div>
+                ) : projects.length === 0 ? (
+                    <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-slate-300">
+                        <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 text-slate-400">
+                            <Boxes size={32} />
+                        </div>
+                        <h3 className="text-lg font-medium text-slate-900">No projects yet</h3>
+                        <p className="text-slate-500 max-w-sm mx-auto mt-2 mb-6">Start your first AI-powered drug discovery campaign by creating a project.</p>
+                        <button
+                            onClick={() => setShowModal(true)}
+                            className="text-indigo-600 font-medium hover:text-indigo-700 hover:underline"
+                        >
+                            Create your first project
+                        </button>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {projects.map(project => (
+                            <div
+                                key={project.id}
+                                onClick={() => navigate(`/project/${project.id}`)}
+                                className="group bg-white rounded-xl border border-slate-200 p-6 hover:shadow-xl hover:shadow-indigo-100 hover:border-indigo-200 transition-all cursor-pointer relative overflow-hidden"
                             >
-                                <Trash2 size={16} />
-                            </button>
-                        </div>
+                                <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button
+                                        onClick={(e) => handleDelete(project.id, e)}
+                                        className="text-slate-400 hover:text-red-500 p-1 bg-white rounded shadow-sm"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </div>
 
-                        <div className="flex items-start justify-between mb-4">
-                            <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                                <Activity size={20} />
+                                <div className="flex items-start justify-between mb-4">
+                                    <div className="w-10 h-10 rounded-lg bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                                        <Activity size={20} />
+                                    </div>
+                                    <span className="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded">
+                                        QSAR
+                                    </span>
+                                </div>
+
+                                <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">
+                                    {project.name}
+                                </h3>
+                                <p className="text-sm text-slate-500 line-clamp-2 h-10 mb-6">
+                                    {project.description || "No description provided."}
+                                </p>
+
+                                <div className="flex items-center justify-between text-sm pt-4 border-t border-slate-100">
+                                    <span className="text-slate-400">
+                                        {new Date(project.created_at).toLocaleDateString()}
+                                    </span>
+                                    <span className="flex items-center text-indigo-600 font-medium opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
+                                        Open <ArrowRight size={14} className="ml-1" />
+                                    </span>
+                                </div>
                             </div>
-                            <span className="text-xs font-semibold px-2 py-1 bg-slate-100 text-slate-600 rounded">
-                                QSAR
-                            </span>
-                        </div>
+                        ))}
+                    </div>
+                )}
+            </main>
 
-                        <h3 className="text-lg font-bold text-slate-900 mb-2 group-hover:text-indigo-600 transition-colors">
-                            {project.name}
-                        </h3>
-                        <p className="text-sm text-slate-500 line-clamp-2 h-10 mb-6">
-                            {project.description || "No description provided."}
-                        </p>
-
-                        <div className="flex items-center justify-between text-sm pt-4 border-t border-slate-100">
-                            <span className="text-slate-400">
-                                {new Date(project.created_at).toLocaleDateString()}
-                            </span>
-                            <span className="flex items-center text-indigo-600 font-medium opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all">
-                                Open <ArrowRight size={14} className="ml-1" />
-                            </span>
+            {/* Modal */}
+            {
+                showModal && (
+                    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                        <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform transition-all">
+                            <h2 className="text-xl font-bold mb-4">New Project</h2>
+                            <form onSubmit={handleCreate}>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Project Name</label>
+                                        <input
+                                            type="text"
+                                            required
+                                            className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
+                                            placeholder="e.g. EGFR Inhibitors"
+                                            value={newProjectName}
+                                            onChange={e => setNewProjectName(e.target.value)}
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
+                                        <textarea
+                                            className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none h-24"
+                                            placeholder="Briefly describe the goal..."
+                                            value={newProjectDesc}
+                                            onChange={e => setNewProjectDesc(e.target.value)}
+                                        />
+                                    </div>
+                                </div>
+                                <div className="mt-8 flex justify-end gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowModal(false)}
+                                        className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg font-medium transition-colors"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        type="submit"
+                                        className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-lg shadow-indigo-200 transition-colors"
+                                    >
+                                        Create Project
+                                    </button>
+                                </div>
+                            </form>
                         </div>
                     </div>
-                ))}
-            </div>
-        )}
-    </main>
-
-    {/* Modal */ }
-    {
-        showModal && (
-            <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl transform transition-all">
-                    <h2 className="text-xl font-bold mb-4">New Project</h2>
-                    <form onSubmit={handleCreate}>
-                        <div className="space-y-4">
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Project Name</label>
-                                <input
-                                    type="text"
-                                    required
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all"
-                                    placeholder="e.g. EGFR Inhibitors"
-                                    value={newProjectName}
-                                    onChange={e => setNewProjectName(e.target.value)}
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-slate-700 mb-1">Description</label>
-                                <textarea
-                                    className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition-all resize-none h-24"
-                                    placeholder="Briefly describe the goal..."
-                                    value={newProjectDesc}
-                                    onChange={e => setNewProjectDesc(e.target.value)}
-                                />
-                            </div>
-                        </div>
-                        <div className="mt-8 flex justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setShowModal(false)}
-                                className="px-4 py-2 text-slate-600 hover:bg-slate-50 rounded-lg font-medium transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                type="submit"
-                                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-lg shadow-indigo-200 transition-colors"
-                            >
-                                Create Project
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        )
-    }
+                )
+            }
         </div >
     );
 }

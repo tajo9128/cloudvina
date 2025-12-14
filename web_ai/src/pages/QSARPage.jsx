@@ -10,6 +10,7 @@ import CSVUploader from '../components/CompoundUpload/CSVUploader';
 import CompoundPreview from '../components/CompoundUpload/CompoundPreview';
 import ModelBuilder from '../components/QSARTraining/ModelBuilder';
 import ModelStats from '../components/QSARTraining/ModelStats';
+import AutoQSARPanel from '../components/QSARTraining/AutoQSARPanel';
 import PredictionSandbox from '../components/Predictions/PredictionSandbox';
 
 export default function QSARPage() {
