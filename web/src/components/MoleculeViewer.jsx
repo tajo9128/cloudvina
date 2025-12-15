@@ -3,6 +3,7 @@ import * as $3Dmol from '3dmol/build/3Dmol.js'
 
 export default function MoleculeViewer({
     pdbqtData,
+    receptorData,
     width = "100%",
     height = "100%",
     title = "3D Structure",
@@ -27,19 +28,27 @@ export default function MoleculeViewer({
             backgroundColor: 'white'
         })
 
-        viewer.addModel(pdbqtData, 'pdbqt')
+        // Add Receptor (Protein)
+        if (receptorData) {
+            viewer.addModel(receptorData, 'pdbqt')
+            // Style receptor: Cartoon (spectrum colors)
+            viewer.setStyle({ model: 0 }, {
+                cartoon: { color: 'spectrum', opacity: 0.8 },
+                stick: { colorscheme: 'chainHetatm', radius: 0.15, hidden: true } // Hide sticks for protein primarily
+            })
+        }
 
-        // Style protein with cartoon (colorful spectrum)
-        viewer.setStyle({ hetflag: false }, {
-            cartoon: { color: 'spectrum', opacity: 0.8 },
-            stick: { colorscheme: 'chainHetatm', radius: 0.15 }
-        })
-
-        // Style ligand with ball-and-stick (vibrant green)
-        viewer.setStyle({ hetflag: true }, {
-            stick: { colorscheme: 'greenCarbon', radius: 0.25 },
-            sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
-        })
+        // Add Ligand
+        if (pdbqtData) {
+            viewer.addModel(pdbqtData, 'pdbqt')
+            // Style ligand (last model): Ball & Stick (Green Carbon)
+            // If receptor exists, ligand is model 1, otherwise model 0
+            const ligandModelIndex = receptorData ? 1 : 0
+            viewer.setStyle({ model: ligandModelIndex }, {
+                stick: { colorscheme: 'greenCarbon', radius: 0.25 },
+                sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
+            })
+        }
 
         // H-Bonds visualization (blue dashed lines)
         if (interactions && showHBonds && interactions.hydrogen_bonds) {
@@ -88,7 +97,7 @@ export default function MoleculeViewer({
         viewerRef.current = viewer
 
         return () => { if (viewerRef.current) viewerRef.current.clear() }
-    }, [pdbqtData, interactions, cavities, showHBonds, showHydrophobic, showCavities])
+    }, [pdbqtData, receptorData, interactions, cavities, showHBonds, showHydrophobic, showCavities])
 
     useEffect(() => {
         const handleResize = () => { if (viewerRef.current) viewerRef.current.resize() }

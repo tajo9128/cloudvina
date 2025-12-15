@@ -19,6 +19,7 @@ export default function JobResultsPage() {
     const [error, setError] = useState(null)
     const [elapsedTime, setElapsedTime] = useState(0)
     const [pdbqtData, setPdbqtData] = useState(null)
+    const [receptorData, setReceptorData] = useState(null)
 
     // Multiple Pocket Results State (NEW)
     const [detectedPockets, setDetectedPockets] = useState([])
@@ -104,8 +105,15 @@ export default function JobResultsPage() {
                         const pdbqtText = await pdbqtRes.text()
                         setPdbqtData(pdbqtText)
                     }
+
+                    // Fetch Receptor data if available
+                    if (data.download_urls?.receptor && !receptorData) {
+                        const recRes = await fetch(data.download_urls.receptor)
+                        const recText = await recRes.text()
+                        setReceptorData(recText)
+                    }
                 } catch (err) {
-                    console.error('Failed to fetch PDBQT:', err)
+                    console.error('Failed to fetch structure data:', err)
                 }
             }
 
@@ -664,6 +672,7 @@ export default function JobResultsPage() {
                                             {(pdbqtData && pdbqtData.trim()) ? (
                                                 <MoleculeViewer
                                                     pdbqtData={pdbqtData}
+                                                    receptorData={receptorData}
                                                     width="100%"
                                                     height="100%"
                                                     title=""
