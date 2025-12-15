@@ -136,7 +136,7 @@ class ExportService:
             gnina_cnn = engines.get('gnina', {}).get('cnn_score')
             avg_score = analysis.get('average_affinity', 'N/A')
             
-            info_data.append(['Docking Mode', 'Consensus (Vina + Gnina)'])
+            info_data.append(['Docking Mode', 'Consensus'])
             info_data.append(['Vina Affinity', f"{vina_score} kcal/mol" if vina_score != 'N/A' else 'N/A'])
             info_data.append(['Gnina Affinity', f"{gnina_score} kcal/mol" if gnina_score != 'N/A' else 'N/A'])
             if gnina_cnn:
