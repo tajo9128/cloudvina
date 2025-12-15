@@ -337,29 +337,7 @@ export default function JobResultsPage() {
                                     </div>
                                 </div>
 
-                                {/* Download Reports Section */}
-                                {job.status === 'SUCCEEDED' && (
-                                    <div className="pt-4 border-t border-slate-200">
-                                        <h3 className="text-sm font-semibold text-slate-700 mb-3">📥 Download Reports</h3>
-                                        <div className="flex flex-wrap gap-2">
-                                            {job.download_urls?.results_csv && (
-                                                <a
-                                                    href={job.download_urls.results_csv}
-                                                    download
-                                                    className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                                                >
-                                                    📊 CSV Report
-                                                </a>
-                                            )}
-                                            <a
-                                                href={`${API_URL}/jobs/${jobId}/export/pdf`}
-                                                className="inline-flex items-center px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors text-sm font-medium"
-                                            >
-                                                📄 PDF Report
-                                            </a>
-                                        </div>
-                                    </div>
-                                )}
+
                             </div>
 
                             {/* Consensus Results Card (NEW) */}

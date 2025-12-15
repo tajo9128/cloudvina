@@ -209,35 +209,99 @@ class ExportService:
         story.append(Spacer(1, 0.3*inch))
         
         # Docking Poses Section
-        if analysis and analysis.get('poses'):
-            story.append(Paragraph("<b>Docking Results</b>", styles['Heading2']))
-            story.append(Spacer(1, 0.1*inch))
+        if analysis:
+            # Check for consensus poses
+            vina_poses = analysis.get('poses', [])
+            gnina_poses = analysis.get('engines', {}).get('gnina', {}).get('poses', [])
             
-            poses_header = ['Mode', 'Affinity (kcal/mol)', 'RMSD l.b.', 'RMSD u.b.']
-            poses_data = [poses_header]
-            
-            for pose in analysis['poses'][:10]:  # Limit to top 10 for PDF
-                poses_data.append([
-                    str(pose['mode']),
-                    str(pose['affinity']),
-                    f"{pose['rmsd_lb']:.3f}",
-                    f"{pose['rmsd_ub']:.3f}"
-                ])
+            # If standard Vina/Single mode
+            if vina_poses and not gnina_poses:
+                story.append(Paragraph("<b>Docking Results</b>", styles['Heading2']))
+                story.append(Spacer(1, 0.1*inch))
                 
-            t_poses = Table(poses_data, colWidths=[1*inch, 2*inch, 1.5*inch, 1.5*inch])
-            t_poses.setStyle(TableStyle([
-                ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')), # Slate-900
-                ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-                ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-                ('FONTSIZE', (0, 0), (-1, 0), 10),
-                ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
-                ('BACKGROUND', (0, 1), (-1, -1), colors.white),
-                ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
-                ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.white])
-            ]))
-            story.append(t_poses)
-            story.append(Spacer(1, 0.3*inch))
+                poses_header = ['Mode', 'Affinity (kcal/mol)', 'RMSD l.b.', 'RMSD u.b.']
+                poses_data = [poses_header]
+                
+                for pose in vina_poses[:10]:
+                    poses_data.append([
+                        str(pose['mode']),
+                        str(pose['affinity']),
+                        f"{pose['rmsd_lb']:.3f}",
+                        f"{pose['rmsd_ub']:.3f}"
+                    ])
+                    
+                t_poses = Table(poses_data, colWidths=[1*inch, 2*inch, 1.5*inch, 1.5*inch])
+                t_poses.setStyle(TableStyle([
+                    ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#0f172a')), # Slate-900
+                    ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                    ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                    ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                    ('FONTSIZE', (0, 0), (-1, 0), 10),
+                    ('BOTTOMPADDING', (0, 0), (-1, 0), 8),
+                    ('BACKGROUND', (0, 1), (-1, -1), colors.white),
+                    ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                    ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.whitesmoke, colors.white])
+                ]))
+                story.append(t_poses)
+                story.append(Spacer(1, 0.3*inch))
+                
+            # Consensus Mode - Show Both Tables
+            elif is_consensus:
+                # Vina Table
+                if vina_poses:
+                    story.append(Paragraph("<b>AutoDock Vina Results (Classical)</b>", styles['Heading2']))
+                    story.append(Spacer(1, 0.1*inch))
+                    
+                    poses_header = ['Mode', 'Affinity (kcal/mol)', 'RMSD l.b.', 'RMSD u.b.']
+                    poses_data = [poses_header]
+                    
+                    for pose in vina_poses[:10]:
+                        poses_data.append([
+                            str(pose['mode']),
+                            str(pose['affinity']),
+                            f"{pose['rmsd_lb']:.3f}",
+                            f"{pose['rmsd_ub']:.3f}"
+                        ])
+                        
+                    t_vina = Table(poses_data, colWidths=[1*inch, 2*inch, 1.5*inch, 1.5*inch])
+                    t_vina.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e40af')), # Blue-800
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.aliceblue, colors.white])
+                    ]))
+                    story.append(t_vina)
+                    story.append(Spacer(1, 0.2*inch))
+                
+                # Gnina Table
+                if gnina_poses:
+                    story.append(Paragraph("<b>Gnina Results (AI-Powered)</b>", styles['Heading2']))
+                    story.append(Spacer(1, 0.1*inch))
+                    
+                    poses_header = ['Mode', 'Affinity (kcal/mol)', 'CNN Score', 'CNN Affinity']
+                    poses_data = [poses_header]
+                    
+                    for pose in gnina_poses[:10]:
+                        poses_data.append([
+                            str(pose['mode']),
+                            str(pose['affinity']),
+                            f"{pose.get('cnn_score', 'N/A')}",
+                            f"{pose.get('cnn_affinity', 'N/A')}"
+                        ])
+                        
+                    t_gnina = Table(poses_data, colWidths=[1*inch, 2*inch, 1.5*inch, 1.5*inch])
+                    t_gnina.setStyle(TableStyle([
+                        ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#6b21a8')), # Purple-800
+                        ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
+                        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                        ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+                        ('GRID', (0, 0), (-1, -1), 0.5, colors.lightgrey),
+                        ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.lavenderblush, colors.white])
+                    ]))
+                    story.append(t_gnina)
+                    story.append(Spacer(1, 0.3*inch))
 
         # Interaction Analysis Section
         if interactions:
