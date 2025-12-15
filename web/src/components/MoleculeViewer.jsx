@@ -11,9 +11,11 @@ export default function MoleculeViewer({
     const viewerRef = useRef(null)
     const containerRef = useRef(null)
     const [isSpinning, setIsSpinning] = useState(false)
+    const [isSpinning, setIsSpinning] = useState(false)
     const [showHBonds, setShowHBonds] = useState(true)
     const [showHydrophobic, setShowHydrophobic] = useState(true)
     const [showCavities, setShowCavities] = useState(true)
+    const [currentStyle, setCurrentStyle] = useState('standard')
 
     useEffect(() => {
         if (!pdbqtData || !containerRef.current || !window.$3Dmol) return
@@ -112,13 +114,38 @@ export default function MoleculeViewer({
     }
     const handleStyleChange = (style) => {
         if (!viewerRef.current) return
-        const styles = {
-            stick: { stick: { radius: 0.15, colorscheme: 'Jmol' } },
-            sphere: { sphere: { scale: 0.4, colorscheme: 'Jmol' } },
-            cartoon: { cartoon: { color: 'spectrum' } },
-            both: { stick: { radius: 0.15, colorscheme: 'Jmol' }, sphere: { scale: 0.25, colorscheme: 'Jmol' } }
+        setCurrentStyle(style)
+
+        switch (style) {
+            case 'greenPink': // Publication: Green Protein + Pink Ligand
+                viewerRef.current.setStyle({ hetflag: false }, {
+                    cartoon: { color: '#22c55e', opacity: 1.0 } // Green protein
+                })
+                viewerRef.current.setStyle({ hetflag: true }, {
+                    stick: { color: '#db2777', radius: 0.25 } // Pink ligand
+                })
+                break
+            case 'surface': // Surface visualization
+                viewerRef.current.setStyle({ hetflag: false }, {
+                    surface: { opacity: 0.8, colorscheme: 'greenCarbon' } // Surface
+                })
+                viewerRef.current.setStyle({ hetflag: true }, {
+                    stick: { color: 'white', radius: 0.25 }, // White ligand for contrast
+                    sphere: { color: 'white', scale: 0.3 }
+                })
+                break
+            case 'standard': // Default: Spectrum + Green Ligand
+            default:
+                viewerRef.current.setStyle({ hetflag: false }, {
+                    cartoon: { color: 'spectrum', opacity: 0.8 },
+                    stick: { colorscheme: 'chainHetatm', radius: 0.15 }
+                })
+                viewerRef.current.setStyle({ hetflag: true }, {
+                    stick: { colorscheme: 'greenCarbon', radius: 0.25 },
+                    sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
+                })
+                break
         }
-        viewerRef.current.setStyle({}, styles[style] || styles.both)
         viewerRef.current.render()
     }
 
@@ -137,8 +164,20 @@ export default function MoleculeViewer({
             </div>
 
             <div className="mb-3 flex gap-2">
-                {['stick', 'sphere', 'both', 'cartoon'].map(s => (
-                    <button key={s} onClick={() => handleStyleChange(s)} className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded capitalize">{s === 'both' ? 'Ball & Stick' : s}</button>
+                {[
+                    { id: 'standard', label: '🌈 Standard' },
+                    { id: 'greenPink', label: '🌿 Publication' },
+                    { id: 'surface', label: '🧊 Surface' }
+                ].map(s => (
+                    <button
+                        key={s.id}
+                        onClick={() => handleStyleChange(s.id)}
+                        className={`text-xs px-3 py-1.5 rounded font-medium transition-colors ${currentStyle === s.id
+                            ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                            : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}`}
+                    >
+                        {s.label}
+                    </button>
                 ))}
             </div>
 
