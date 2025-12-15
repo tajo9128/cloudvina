@@ -671,10 +671,6 @@ export default function JobResultsPage() {
                                     <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
                                         <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
                                             <h3 className="font-bold text-slate-900">3D Visualization</h3>
-                                            <Link to={`/3d-viewer/${jobId}`} className="text-xs text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
-                                                Full Screen
-                                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                                            </Link>
                                         </div>
                                         <div className="h-[600px] w-full relative">
                                             {(pdbqtData && pdbqtData.trim()) ? (
