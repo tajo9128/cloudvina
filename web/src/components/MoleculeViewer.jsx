@@ -28,8 +28,11 @@ export default function MoleculeViewer({
             backgroundColor: 'white'
         })
 
+        // Helper to check if string looks like PDBQT/PDB
+        const isValidPDB = (str) => str && (str.includes('ATOM') || str.includes('HETATM') || str.includes('REMARK'))
+
         // Add Receptor (Protein)
-        if (receptorData) {
+        if (receptorData && isValidPDB(receptorData)) {
             viewer.addModel(receptorData, 'pdbqt')
             // Style receptor: Cartoon (spectrum colors)
             viewer.setStyle({ model: 0 }, {
@@ -39,7 +42,7 @@ export default function MoleculeViewer({
         }
 
         // Add Ligand
-        if (pdbqtData) {
+        if (pdbqtData && isValidPDB(pdbqtData)) {
             viewer.addModel(pdbqtData, 'pdbqt')
             // Style ligand (last model): Ball & Stick (Green Carbon)
             // If receptor exists, ligand is model 1, otherwise model 0

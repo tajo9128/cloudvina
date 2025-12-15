@@ -108,9 +108,17 @@ export default function JobResultsPage() {
 
                     // Fetch Receptor data if available
                     if (data.download_urls?.receptor && !receptorData) {
-                        const recRes = await fetch(data.download_urls.receptor)
-                        const recText = await recRes.text()
-                        setReceptorData(recText)
+                        try {
+                            const recRes = await fetch(data.download_urls.receptor)
+                            if (recRes.ok) {
+                                const recText = await recRes.text()
+                                if (recText && recText.trim().length > 0) {
+                                    setReceptorData(recText)
+                                }
+                            }
+                        } catch (e) {
+                            console.warn('Failed to load receptor:', e)
+                        }
                     }
                 } catch (err) {
                     console.error('Failed to fetch structure data:', err)
