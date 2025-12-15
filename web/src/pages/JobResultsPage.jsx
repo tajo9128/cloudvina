@@ -660,15 +660,21 @@ export default function JobResultsPage() {
                                                 <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
                                             </Link>
                                         </div>
-                                        <div className="h-[600px] w-full">
-                                            <MoleculeViewer
-                                                pdbqtData={pdbqtData}
-                                                width="100%"
-                                                height="100%"
-                                                title=""
-                                                interactions={interactions}
-                                                cavities={detectedPockets}
-                                            />
+                                        <div className="h-[600px] w-full relative">
+                                            {(pdbqtData && pdbqtData.trim()) ? (
+                                                <MoleculeViewer
+                                                    pdbqtData={pdbqtData}
+                                                    width="100%"
+                                                    height="100%"
+                                                    title=""
+                                                    interactions={interactions}
+                                                    cavities={detectedPockets}
+                                                />
+                                            ) : (
+                                                <div className="flex items-center justify-center h-full text-slate-400">
+                                                    Unable to load structure data.
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                 ) : (
