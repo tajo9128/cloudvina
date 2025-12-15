@@ -68,7 +68,7 @@ export default function MoleculeViewer({
             case 'standard':
             default:
                 viewer.setStyle({ hetflag: false }, {
-                    cartoon: { color: 'spectrum', opacity: 0.8 },
+                    cartoon: { colorscheme: 'ssPyMOL', opacity: 0.9 },
                     stick: { colorscheme: 'chainHetatm', radius: 0.15 }
                 })
                 viewer.setStyle({ hetflag: true }, {
@@ -77,6 +77,7 @@ export default function MoleculeViewer({
                 })
                 break
         }
+
 
         // H-Bonds visualization
         if (interactions && showHBonds && interactions.hydrogen_bonds) {
