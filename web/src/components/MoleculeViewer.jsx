@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import * as $3Dmol from '3dmol/build/3Dmol.js'
 
 export default function MoleculeViewer({
     pdbqtData,
@@ -16,13 +17,13 @@ export default function MoleculeViewer({
     const [showCavities, setShowCavities] = useState(true)
 
     useEffect(() => {
-        if (!pdbqtData || !containerRef.current || !window.$3Dmol) return
+        if (!pdbqtData || !containerRef.current) return
 
         if (viewerRef.current) {
             viewerRef.current.clear()
         }
 
-        const viewer = window.$3Dmol.createViewer(containerRef.current, {
+        const viewer = $3Dmol.createViewer(containerRef.current, {
             backgroundColor: 'white'
         })
 
