@@ -11,10 +11,10 @@ export default function MoleculeViewer({
     const viewerRef = useRef(null)
     const containerRef = useRef(null)
     const [isSpinning, setIsSpinning] = useState(false)
-    const [isSpinning, setIsSpinning] = useState(false)
     const [showHBonds, setShowHBonds] = useState(true)
     const [showHydrophobic, setShowHydrophobic] = useState(true)
     const [showCavities, setShowCavities] = useState(true)
+    const [showLabels, setShowLabels] = useState(false)
     const [currentStyle, setCurrentStyle] = useState('standard')
 
     useEffect(() => {
@@ -30,19 +30,55 @@ export default function MoleculeViewer({
 
         viewer.addModel(pdbqtData, 'pdbqt')
 
-        // Style protein with cartoon (colorful spectrum)
-        viewer.setStyle({ hetflag: false }, {
-            cartoon: { color: 'spectrum', opacity: 0.8 },
-            stick: { colorscheme: 'chainHetatm', radius: 0.15 }
-        })
+        // Apply style based on state
+        viewer.removeAllSurfaces()
+        switch (currentStyle) {
+            case 'greenPink': // Publication
+                viewer.setStyle({ hetflag: false }, {
+                    cartoon: { color: '#22c55e', opacity: 1.0 }
+                })
+                viewer.setStyle({ hetflag: true }, {
+                    stick: { color: '#db2777', radius: 0.25 }
+                })
+                break
+            case 'surface': // Focused Surface
+                // Protein as faint cartoon
+                viewer.setStyle({ hetflag: false }, {
+                    cartoon: { color: 'spectrum', opacity: 0.4 }
+                })
+                // Ligand as pink stick
+                viewer.setStyle({ hetflag: true }, {
+                    stick: { color: '#db2777', radius: 0.25 }
+                })
+                // Add surface ONLY for binding pocket (residues within 6A of ligand)
+                // Use a safe selection strategy
+                const ligandSel = { hetflag: true }
+                // Select atoms within 6A of ligand AND are protein (hetflag: false)
+                const pocketSel = {
+                    and: [
+                        { hetflag: false },
+                        { within: { distance: 6, sel: ligandSel } }
+                    ]
+                }
+                viewer.addSurface($3Dmol.SurfaceType.VDW, {
+                    opacity: 0.85,
+                    color: 'white',
+                }, pocketSel, pocketSel)
+                break
+            case 'standard':
+            default:
+                viewer.setStyle({ hetflag: false }, {
+                    cartoon: { color: 'spectrum', opacity: 0.8 },
+                    stick: { colorscheme: 'chainHetatm', radius: 0.15 }
+                })
+                viewer.setStyle({ hetflag: true }, {
+                    stick: { colorscheme: 'greenCarbon', radius: 0.25 },
+                    sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
+                })
+                break
+        }
 
-        // Style ligand with ball-and-stick (vibrant green)
-        viewer.setStyle({ hetflag: true }, {
-            stick: { colorscheme: 'greenCarbon', radius: 0.25 },
-            sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
-        })
-
-        // H-Bonds visualization (blue dashed lines)
+        // H-Bonds visualization
         if (interactions && showHBonds && interactions.hydrogen_bonds) {
             interactions.hydrogen_bonds.forEach(bond => {
                 if (bond.ligand_coords && bond.protein_coords) {
@@ -51,11 +87,36 @@ export default function MoleculeViewer({
                         end: { x: bond.protein_coords[0], y: bond.protein_coords[1], z: bond.protein_coords[2] },
                         radius: 0.08, color: '#2563eb', dashed: true, dashLength: 0.25, gapLength: 0.1
                     })
+
+                    if (showLabels) {
+                        const dist = Math.sqrt(
+                            Math.pow(bond.ligand_coords[0] - bond.protein_coords[0], 2) +
+                            Math.pow(bond.ligand_coords[1] - bond.protein_coords[1], 2) +
+                            Math.pow(bond.ligand_coords[2] - bond.protein_coords[2], 2)
+                        ).toFixed(2)
+
+                        viewer.addLabel(`${dist}Å`, {
+                            position: {
+                                x: (bond.ligand_coords[0] + bond.protein_coords[0]) / 2,
+                                y: (bond.ligand_coords[1] + bond.protein_coords[1]) / 2,
+                                z: (bond.ligand_coords[2] + bond.protein_coords[2]) / 2
+                            },
+                            backgroundColor: 'black', fontColor: 'white', fontSize: 10,
+                            showBackground: true, backgroundOpacity: 0.7, opacity: 0.8
+                        })
+
+                        if (bond.res_name && bond.res_num) {
+                            viewer.addLabel(`${bond.res_name}${bond.res_num}`, {
+                                position: { x: bond.protein_coords[0], y: bond.protein_coords[1], z: bond.protein_coords[2] },
+                                backgroundColor: '#2563eb', fontColor: 'white', fontSize: 11
+                            })
+                        }
+                    }
                 }
             })
         }
 
-        // Hydrophobic contacts (yellow dotted lines)
+        // Hydrophobic contacts
         if (interactions && showHydrophobic && interactions.hydrophobic_contacts) {
             interactions.hydrophobic_contacts.forEach(contact => {
                 if (contact.ligand_coords && contact.protein_coords) {
@@ -64,6 +125,13 @@ export default function MoleculeViewer({
                         end: { x: contact.protein_coords[0], y: contact.protein_coords[1], z: contact.protein_coords[2] },
                         radius: 0.05, color: '#eab308', dashed: true, dashLength: 0.15, gapLength: 0.15
                     })
+
+                    if (showLabels && contact.res_name && contact.res_num) {
+                        viewer.addLabel(`${contact.res_name}${contact.res_num}`, {
+                            position: { x: contact.protein_coords[0], y: contact.protein_coords[1], z: contact.protein_coords[2] },
+                            backgroundColor: '#eab308', fontColor: 'black', fontSize: 10, opacity: 0.8
+                        })
+                    }
                 }
             })
         }
@@ -89,7 +157,7 @@ export default function MoleculeViewer({
         viewerRef.current = viewer
 
         return () => { if (viewerRef.current) viewerRef.current.clear() }
-    }, [pdbqtData, interactions, cavities, showHBonds, showHydrophobic, showCavities])
+    }, [pdbqtData, interactions, cavities, showHBonds, showHydrophobic, showCavities, showLabels, currentStyle])
 
     useEffect(() => {
         const handleResize = () => { if (viewerRef.current) viewerRef.current.resize() }
@@ -115,38 +183,6 @@ export default function MoleculeViewer({
     const handleStyleChange = (style) => {
         if (!viewerRef.current) return
         setCurrentStyle(style)
-
-        switch (style) {
-            case 'greenPink': // Publication: Green Protein + Pink Ligand
-                viewerRef.current.setStyle({ hetflag: false }, {
-                    cartoon: { color: '#22c55e', opacity: 1.0 } // Green protein
-                })
-                viewerRef.current.setStyle({ hetflag: true }, {
-                    stick: { color: '#db2777', radius: 0.25 } // Pink ligand
-                })
-                break
-            case 'surface': // Surface visualization
-                viewerRef.current.setStyle({ hetflag: false }, {
-                    surface: { opacity: 0.8, colorscheme: 'greenCarbon' } // Surface
-                })
-                viewerRef.current.setStyle({ hetflag: true }, {
-                    stick: { color: 'white', radius: 0.25 }, // White ligand for contrast
-                    sphere: { color: 'white', scale: 0.3 }
-                })
-                break
-            case 'standard': // Default: Spectrum + Green Ligand
-            default:
-                viewerRef.current.setStyle({ hetflag: false }, {
-                    cartoon: { color: 'spectrum', opacity: 0.8 },
-                    stick: { colorscheme: 'chainHetatm', radius: 0.15 }
-                })
-                viewerRef.current.setStyle({ hetflag: true }, {
-                    stick: { colorscheme: 'greenCarbon', radius: 0.25 },
-                    sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
-                })
-                break
-        }
-        viewerRef.current.render()
     }
 
     const hasInteractions = interactions && ((interactions.hydrogen_bonds?.length > 0) || (interactions.hydrophobic_contacts?.length > 0))
@@ -163,22 +199,39 @@ export default function MoleculeViewer({
                 </div>
             </div>
 
-            <div className="mb-3 flex gap-2">
-                {[
-                    { id: 'standard', label: '🌈 Standard' },
-                    { id: 'greenPink', label: '🌿 Publication' },
-                    { id: 'surface', label: '🧊 Surface' }
-                ].map(s => (
-                    <button
-                        key={s.id}
-                        onClick={() => handleStyleChange(s.id)}
-                        className={`text-xs px-3 py-1.5 rounded font-medium transition-colors ${currentStyle === s.id
-                            ? 'bg-primary-100 text-primary-700 border border-primary-200'
-                            : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}`}
-                    >
-                        {s.label}
-                    </button>
-                ))}
+            <div className="mb-3 flex items-center justify-between flex-wrap gap-2">
+                <div className="flex gap-2">
+                    {[
+                        { id: 'standard', label: '🌈 Standard' },
+                        { id: 'greenPink', label: '🌿 Publication' },
+                        { id: 'surface', label: '🧊 Surface' }
+                    ].map(s => (
+                        <button
+                            key={s.id}
+                            onClick={() => handleStyleChange(s.id)}
+                            className={`text-xs px-3 py-1.5 rounded font-medium transition-colors ${currentStyle === s.id
+                                ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                                : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}`}
+                        >
+                            {s.label}
+                        </button>
+                    ))}
+                </div>
+
+                {hasInteractions && (
+                    <div className="flex items-center gap-2">
+                        <label className="inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={showLabels}
+                                onChange={(e) => setShowLabels(e.target.checked)}
+                                className="sr-only peer"
+                            />
+                            <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span className="ms-2 text-xs font-medium text-gray-700">Labels</span>
+                        </label>
+                    </div>
+                )}
             </div>
 
             {(hasInteractions || hasCavities) && (
