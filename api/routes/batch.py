@@ -250,8 +250,8 @@ async def submit_csv_batch(
         if len(smiles_list) == 0:
             raise HTTPException(status_code=400, detail="No valid SMILES found in CSV")
         
-        if len(smiles_list) > 100:
-            raise HTTPException(status_code=400, detail=f"Maximum 100 compounds per batch. Found: {len(smiles_list)}")
+        if len(smiles_list) > 5000:
+            raise HTTPException(status_code=400, detail=f"Maximum 5000 compounds per batch. Found: {len(smiles_list)}")
         
         # Get optional name column
         name_col = None
@@ -317,8 +317,8 @@ async def submit_csv_batch(
                 'receptor_s3_key': receptor_key,
                 'ligand_s3_key': ligand_key,
                 'receptor_filename': receptor_file.filename,
-                'ligand_filename': f"{compound_name}.pdbqt",
-                'smiles': smiles  # Store original SMILES
+                'ligand_filename': f"{compound_name}.pdbqt"
+                # Note: smiles stored in ligand_filename prefix for reference
             }
             
             auth_client.table('jobs').insert(job_data).execute()

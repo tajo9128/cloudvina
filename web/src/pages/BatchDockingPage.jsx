@@ -266,7 +266,7 @@ export default function BatchDockingPage() {
                             </div>
                         ) : (
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">CSV File with SMILES (Max 100 rows)</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">CSV File with SMILES (Max 5000 rows)</label>
                                 <input
                                     type="file"
                                     accept=".csv"
