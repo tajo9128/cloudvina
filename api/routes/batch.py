@@ -250,8 +250,8 @@ async def submit_csv_batch(
         if len(smiles_list) == 0:
             raise HTTPException(status_code=400, detail="No valid SMILES found in CSV")
         
-        if len(smiles_list) > 5000:
-            raise HTTPException(status_code=400, detail=f"Maximum 5000 compounds per batch. Found: {len(smiles_list)}")
+        if len(smiles_list) > 50:
+            raise HTTPException(status_code=400, detail=f"Maximum 50 compounds per batch. Found: {len(smiles_list)}")
         
         # Get optional name column
         name_col = None
