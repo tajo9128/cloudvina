@@ -260,14 +260,22 @@ async def submit_csv_batch(
         
         # 2. Upload Receptor to S3
         receptor_content = await receptor_file.read()
+        if not receptor_content or len(receptor_content) == 0:
+            raise HTTPException(status_code=400, detail="Receptor file is empty")
+        
         receptor_ext = os.path.splitext(receptor_file.filename)[1].lower() or '.pdb'
         receptor_key = f"batches/{batch_id}/receptor{receptor_ext}"
         
-        s3_client.put_object(
-            Bucket=S3_BUCKET,
-            Key=receptor_key,
-            Body=receptor_content
-        )
+        try:
+            s3_client.put_object(
+                Bucket=S3_BUCKET,
+                Key=receptor_key,
+                Body=receptor_content
+            )
+            print(f"Successfully uploaded receptor to {receptor_key} ({len(receptor_content)} bytes)")
+        except Exception as e:
+            print(f"Failed to upload receptor: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to upload receptor to S3: {str(e)}")
         
         # Auto-calculate receptor center if grid is at origin (0,0,0)
         if grid_center_x == 0 and grid_center_y == 0 and grid_center_z == 0:
