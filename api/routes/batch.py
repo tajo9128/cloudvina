@@ -74,8 +74,6 @@ async def submit_batch(
         num_files = len(request.ligand_filenames)
         if num_files > 100:
             raise HTTPException(status_code=400, detail="Maximum 100 ligands per batch")
-        if num_files % 10 != 0:
-            raise HTTPException(status_code=400, detail="Batch size must be a multiple of 10 (e.g., 10, 20...100)")
 
         # Generate URLs
         rec_url, rec_key, lig_urls, lig_keys = generate_batch_urls(

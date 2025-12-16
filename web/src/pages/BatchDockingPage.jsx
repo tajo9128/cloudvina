@@ -35,10 +35,6 @@ export default function BatchDockingPage() {
                 setError("Maximum 100 files allowed per batch.")
                 return
             }
-            if (files.length % 10 !== 0) {
-                setError("Batch size must be a multiple of 10 (e.g., 10, 20, 30... 100).")
-                return
-            }
             setLigandFiles(files)
             setError(null)
         }
