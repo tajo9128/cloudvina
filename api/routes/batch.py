@@ -6,6 +6,9 @@ from typing import List, Optional
 import uuid
 import os
 import boto3
+from rdkit import Chem
+from meeko import MoleculePreparation
+import io
 
 router = APIRouter(prefix="/jobs/batch", tags=["Batch Jobs"])
 security = HTTPBearer()
@@ -258,26 +261,43 @@ async def submit_csv_batch(
                 name_col = col
                 break
         
-        # 2. Upload Receptor to S3
+        
+        # 2. Upload Receptor to S3 (Convert PDB -> PDBQT if needed)
         receptor_content = await receptor_file.read()
         if not receptor_content or len(receptor_content) == 0:
             raise HTTPException(status_code=400, detail="Receptor file is empty")
         
         receptor_ext = os.path.splitext(receptor_file.filename)[1].lower() or '.pdb'
-        receptor_key = f"batches/{batch_id}/receptor{receptor_ext}"
+        receptor_key = f"batches/{batch_id}/receptor.pdbqt" # Always store as PDBQT
         
         try:
+            # Check if conversion is needed (PDB -> PDBQT)
+            final_content = receptor_content
+            if receptor_ext == '.pdb':
+                print(f"Converting receptor {receptor_file.filename} from PDB to PDBQT...")
+                pdb_string = receptor_content.decode('utf-8')
+                mol = Chem.MolFromPDBBlock(pdb_string)
+                if mol:
+                    preparator = MoleculePreparation()
+                    preparator.prepare(mol)
+                    pdbqt_string = preparator.write_pdbqt_string()
+                    final_content = pdbqt_string.encode('utf-8')
+                    print("Receptor conversion successful")
+                else:
+                    print("Warning: PDB parsing failed, falling back to original content")
+            
             s3_client.put_object(
                 Bucket=S3_BUCKET,
                 Key=receptor_key,
-                Body=receptor_content
+                Body=final_content
             )
-            print(f"Successfully uploaded receptor to {receptor_key} ({len(receptor_content)} bytes)")
+            print(f"Successfully uploaded receptor to {receptor_key} ({len(final_content)} bytes)")
         except Exception as e:
-            print(f"Failed to upload receptor: {str(e)}")
-            raise HTTPException(status_code=500, detail=f"Failed to upload receptor to S3: {str(e)}")
+            print(f"Failed to upload/convert receptor: {str(e)}")
+            raise HTTPException(status_code=500, detail=f"Failed to process receptor: {str(e)}")
         
         # Auto-calculate receptor center if grid is at origin (0,0,0)
+        # Use existing content for parsing
         if grid_center_x == 0 and grid_center_y == 0 and grid_center_z == 0:
             try:
                 # Parse PDB/PDBQT to find geometric center
