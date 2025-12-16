@@ -271,6 +271,29 @@ async def submit_csv_batch(
             Body=receptor_content
         )
         
+        # Auto-calculate receptor center if grid is at origin (0,0,0)
+        if grid_center_x == 0 and grid_center_y == 0 and grid_center_z == 0:
+            try:
+                # Parse PDB/PDBQT to find geometric center
+                coords = []
+                for line in receptor_content.decode('utf-8').split('\n'):
+                    if line.startswith('ATOM') or line.startswith('HETATM'):
+                        try:
+                            x = float(line[30:38].strip())
+                            y = float(line[38:46].strip())
+                            z = float(line[46:54].strip())
+                            coords.append((x, y, z))
+                        except (ValueError, IndexError):
+                            continue
+                
+                if coords:
+                    grid_center_x = sum(c[0] for c in coords) / len(coords)
+                    grid_center_y = sum(c[1] for c in coords) / len(coords)
+                    grid_center_z = sum(c[2] for c in coords) / len(coords)
+                    print(f"Auto-calculated receptor center: ({grid_center_x:.2f}, {grid_center_y:.2f}, {grid_center_z:.2f})")
+            except Exception as e:
+                print(f"Failed to auto-calculate center: {e}")
+        
         # 3. Convert each SMILES to PDBQT and create jobs
         grid_params = {
             'grid_center_x': grid_center_x,
