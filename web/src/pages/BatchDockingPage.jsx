@@ -31,8 +31,8 @@ export default function BatchDockingPage() {
     const handleLigandChange = (e) => {
         if (e.target.files) {
             const files = Array.from(e.target.files)
-            if (files.length > 100) {
-                setError("Maximum 100 files allowed per batch.")
+            if (files.length > 10) { // SIMPLIFIED: Limit to 10
+                setError("Maximum 10 files allowed per batch (Simplified Mode).")
                 return
             }
             setLigandFiles(files)
@@ -108,7 +108,26 @@ export default function BatchDockingPage() {
                 }
             }
 
-            // 3. Start Batch
+            // 3. Start Batch with UI Updates
+            // Note: The backend now performs conversion/preparation synchronously during this call
+            const steps = [
+                'Validating files...',
+                'Converting Receptor to PDBQT (Protein Prep)...',
+                'Converting Ligands to PDBQT (Ligand Prep)...',
+                'Generating Vina Configs...',
+                'Submitting to AWS Batch...'
+            ]
+
+            // Simulate steps for UI feedback (since backend does it all in one call)
+            // Ideally backend would stream progress, but for now we show what's happening
+            let stepIdx = 0
+            const progressInterval = setInterval(() => {
+                if (stepIdx < steps.length) {
+                    setLoading(steps[stepIdx]) // Use status text instead of just bool
+                    stepIdx++
+                }
+            }, 800)
+
             const startRes = await fetch(`${API_URL}/jobs/batch/${batch_id}/start`, {
                 method: 'POST',
                 headers: {
@@ -128,10 +147,13 @@ export default function BatchDockingPage() {
                 })
             })
 
+            clearInterval(progressInterval)
+
             if (!startRes.ok) throw new Error('Failed to start batch execution')
 
             setUploadProgress(100)
-            alert(`Batch started successfully! ${totalLigands} jobs submitted.`)
+            setLoading(false)
+            alert(`✅ Batch Started Successfully!\n\nCompleted Steps:\n1. Protein Prep (Receptor -> PDBQT)\n2. Ligand Prep (Ligands -> PDBQT)\n3. Config Generation\n4. AWS Batch Submission\n\n${totalLigands} jobs are now running.`)
             navigate(`/dock/batch/${batch_id}`)
 
         } catch (err) {
@@ -249,7 +271,7 @@ export default function BatchDockingPage() {
                         {/* Conditional: Ligand Files or CSV */}
                         {uploadMode === 'files' ? (
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Ligands (Select Multiple, Max 100)</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Ligands (Select Multiple, Max 10)</label>
                                 <input
                                     type="file"
                                     multiple
@@ -315,9 +337,9 @@ export default function BatchDockingPage() {
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-primary-600 hover:bg-primary-700'}`}
+                            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg ${loading ? 'bg-primary-400 cursor-wait' : 'bg-primary-600 hover:bg-primary-700'}`}
                         >
-                            {loading ? 'Processing Batch...' : uploadMode === 'csv' ? '🧪 Dock SMILES Compounds' : '🚀 Launch Batch Docking'}
+                            {loading ? (typeof loading === 'string' ? loading : 'Processing Batch...') : uploadMode === 'csv' ? '🧪 Dock SMILES Compounds' : '🚀 Launch Batch Docking'}
                         </button>
                     </form>
                 </div>
