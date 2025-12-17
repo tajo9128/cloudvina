@@ -69,6 +69,7 @@ async def submit_batch(
     """
     Submit a batch of ligands for docking against one receptor.
     """
+    print(f"DEBUG: Endpoint called: submit_batch (files)")
     try:
         auth_client = get_authenticated_client(credentials.credentials)
         batch_id = str(uuid.uuid4())
@@ -127,6 +128,7 @@ async def start_batch(
     """
     Start all jobs in a batch after upload.
     """
+    print(f"DEBUG: Endpoint called: start_batch for {batch_id}")
     try:
         from services.config_generator import generate_vina_config
         from services.smiles_converter import pdb_to_pdbqt
