@@ -124,7 +124,7 @@ export default function BatchDockingPage() {
                         grid_size_y: parseFloat(gridParams.size_y),
                         grid_size_z: parseFloat(gridParams.size_z)
                     },
-                    engine: 'vina'  // Default engine for file-based batch
+                    engine: engine  // Use selected engine
                 })
             })
 
@@ -168,7 +168,7 @@ export default function BatchDockingPage() {
             formData.append('grid_size_x', parseFloat(gridParams.size_x))
             formData.append('grid_size_y', parseFloat(gridParams.size_y))
             formData.append('grid_size_z', parseFloat(gridParams.size_z))
-            formData.append('engine', 'consensus') // Forced
+            formData.append('engine', engine) // Use selected engine
 
             setUploadProgress(20)
 
@@ -275,15 +275,30 @@ export default function BatchDockingPage() {
                             </div>
                         )}
 
-                        {/* Configuration Info (Read Only) */}
-                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
-                            <h3 className="font-bold text-slate-700 mb-2">Configuration (Fixed)</h3>
+                        {/* Configuration */}
+                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
+                            <h3 className="font-bold text-slate-700">Configuration</h3>
+
+                            {/* Engine Selection */}
+                            <div>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Docking Engine</label>
+                                <select
+                                    value={engine}
+                                    onChange={(e) => setEngine(e.target.value)}
+                                    className="block w-full text-sm rounded-lg border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                >
+                                    <option value="vina">Vina (Classic)</option>
+                                    <option value="gnina">Gnina (Deep Learning)</option>
+                                    <option value="consensus">Consensus (Vina + Gnina)</option>
+                                </select>
+                            </div>
+
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
-                                    <span className="text-slate-500">Engine:</span> <span className="font-mono font-bold text-primary-600">Consensus (Vina + Gnina)</span>
+                                    <span className="text-slate-500">Grid Box:</span> <span className="font-mono text-slate-900">Center({gridParams.center_x},{gridParams.center_y},{gridParams.center_z})</span>
                                 </div>
                                 <div>
-                                    <span className="text-slate-500">Grid Box:</span> <span className="font-mono text-slate-900">Center(0,0,0) Size(20,20,20)</span>
+                                    <span className="text-slate-500">Size:</span> <span className="font-mono text-slate-900">({gridParams.size_x},{gridParams.size_y},{gridParams.size_z})</span>
                                 </div>
                             </div>
                         </div>
