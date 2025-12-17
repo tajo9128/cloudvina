@@ -129,6 +129,7 @@ async def start_batch(
     """
     try:
         from services.config_generator import generate_vina_config
+        from services.smiles_converter import pdb_to_pdbqt
         from aws_services import submit_batch_job as submit_to_aws
 
         auth_client = get_authenticated_client(credentials.credentials)
@@ -156,12 +157,38 @@ async def start_batch(
                 print(f"DEBUG: Original receptor key: {job['receptor_s3_key']}")
                 print(f"DEBUG: Original ligand key: {job['ligand_s3_key']}")
                 
-                # Define job-specific S3 keys
+                # Define job-specific S3 keys (destination always PDBQT)
                 job_receptor_key = f"jobs/{job_id}/receptor_input.pdbqt"
                 job_ligand_key = f"jobs/{job_id}/ligand_input.pdbqt"
                 
-                # Copy receptor from batch to job folder (if source uses batch_id path)
-                if 'batch' in job['receptor_s3_key'] or batch_id in job['receptor_s3_key']:
+                # --- RECEPTOR PREPARATION ---
+                # Check if we need to convert or copy
+                if job['receptor_filename'].lower().endswith('.pdb'):
+                     # Convert PDB -> PDBQT
+                     print(f"DEBUG: Converting receptor {job['receptor_filename']} to PDBQT")
+                     try:
+                         # Download PDB content
+                         pdb_obj = s3_client.get_object(Bucket=S3_BUCKET, Key=job['receptor_s3_key'])
+                         pdb_content = pdb_obj['Body'].read().decode('utf-8')
+                         
+                         # Convert
+                         pdbqt_content, err = pdb_to_pdbqt(pdb_content, add_hydrogens=True)
+                         if err or not pdbqt_content:
+                             raise Exception(f"Receptor conversion failed: {err}")
+                             
+                         # Upload PDBQT
+                         s3_client.put_object(
+                             Bucket=S3_BUCKET,
+                             Key=job_receptor_key,
+                             Body=pdbqt_content.encode('utf-8')
+                         )
+                         print(f"DEBUG: Receptor conversion & upload successful")
+                     except Exception as conv_err:
+                         print(f"ERROR: Receptor preparation failed: {conv_err}")
+                         raise
+                
+                elif 'batch' in job['receptor_s3_key'] or batch_id in job['receptor_s3_key']:
+                    # Source is likely PDBQT, just copy
                     try:
                         print(f"DEBUG: Copying receptor from {job['receptor_s3_key']} to {job_receptor_key}")
                         s3_client.copy_object(
@@ -174,12 +201,37 @@ async def start_batch(
                         print(f"ERROR: Failed to copy receptor: {copy_err}")
                         raise
                 else:
-                    # Already in correct location (CSV batch case)
+                    # Already in correct location (CSV batch case, already converted)
                     print(f"DEBUG: Receptor already in correct location")
                     job_receptor_key = job['receptor_s3_key']
-                
-                # Copy ligand from batch to job folder (if source uses batch_id path)
-                if 'batch' in job['ligand_s3_key'] or batch_id in job['ligand_s3_key']:
+
+
+                # --- LIGAND PREPARATION ---
+                if job['ligand_filename'].lower().endswith('.pdb'):
+                     # Convert PDB -> PDBQT
+                     print(f"DEBUG: Converting ligand {job['ligand_filename']} to PDBQT")
+                     try:
+                         # Download PDB content
+                         pdb_obj = s3_client.get_object(Bucket=S3_BUCKET, Key=job['ligand_s3_key'])
+                         pdb_content = pdb_obj['Body'].read().decode('utf-8')
+                         
+                         # Convert
+                         pdbqt_content, err = pdb_to_pdbqt(pdb_content, add_hydrogens=True)
+                         if err or not pdbqt_content:
+                             raise Exception(f"Ligand conversion failed: {err}")
+                             
+                         # Upload PDBQT
+                         s3_client.put_object(
+                             Bucket=S3_BUCKET,
+                             Key=job_ligand_key,
+                             Body=pdbqt_content.encode('utf-8')
+                         )
+                         print(f"DEBUG: Ligand conversion & upload successful")
+                     except Exception as conv_err:
+                         print(f"ERROR: Ligand preparation failed: {conv_err}")
+                         raise
+
+                elif 'batch' in job['ligand_s3_key'] or batch_id in job['ligand_s3_key']:
                     try:
                         print(f"DEBUG: Copying ligand from {job['ligand_s3_key']} to {job_ligand_key}")
                         s3_client.copy_object(
@@ -271,7 +323,7 @@ async def submit_csv_batch(
     """
     import pandas as pd
     import io
-    from services.smiles_converter import smiles_to_pdbqt
+    from services.smiles_converter import smiles_to_pdbqt, pdb_to_pdbqt
     from services.config_generator import generate_vina_config
     from aws_services import submit_batch_job as submit_to_aws
     
