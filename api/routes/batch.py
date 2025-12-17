@@ -273,19 +273,26 @@ async def submit_csv_batch(
         try:
             # Check if conversion is needed (PDB -> PDBQT)
             final_content = receptor_content
-            if receptor_ext == '.pdb':
+            
+            # If extension is .pdb or content looks like PDB (lines starting with ATOM but no ROOT/BRANCH), convert
+            is_pdb_ext = receptor_ext.lower() == '.pdb'
+            
+            if is_pdb_ext:
                 print(f"Converting receptor {receptor_file.filename} from PDB to PDBQT...")
-                pdb_string = receptor_content.decode('utf-8')
-                mol = Chem.MolFromPDBBlock(pdb_string)
-                if mol:
-                    mol = Chem.AddHs(mol, addCoords=True) # Add explicit Hs with coordinates
-                    preparator = MoleculePreparation()
-                    preparator.prepare(mol)
-                    pdbqt_string = preparator.write_pdbqt_string()
-                    final_content = pdbqt_string.encode('utf-8')
-                    print("Receptor conversion successful")
-                else:
-                    print("Warning: PDB parsing failed, falling back to original content")
+                try:
+                    pdb_string = receptor_content.decode('utf-8')
+                    mol = Chem.MolFromPDBBlock(pdb_string)
+                    if mol:
+                        mol = Chem.AddHs(mol, addCoords=True) # Add explicit Hs with coordinates
+                        preparator = MoleculePreparation()
+                        preparator.prepare(mol)
+                        pdbqt_string = preparator.write_pdbqt_string()
+                        final_content = pdbqt_string.encode('utf-8')
+                        print("Receptor conversion successful")
+                    else:
+                        print("Warning: RDKit PDB parsing failed (returned None), using original content")
+                except Exception as conv_err:
+                     print(f"Warning: Receptor conversion failed: {conv_err}. Using original content.")
             
             s3_client.put_object(
                 Bucket=S3_BUCKET,
@@ -295,6 +302,7 @@ async def submit_csv_batch(
             print(f"Successfully uploaded receptor to {receptor_key} ({len(final_content)} bytes)")
         except Exception as e:
             print(f"Failed to upload/convert receptor: {str(e)}")
+            # Fail hard if we can't upload the receptor
             raise HTTPException(status_code=500, detail=f"Failed to process receptor: {str(e)}")
         
         # Auto-calculate receptor center if grid is at origin (0,0,0)
