@@ -360,8 +360,20 @@ async def submit_csv_batch(
             
             # Upload ligand PDBQT to S3
             job_id = str(uuid.uuid4())
-            ligand_key = f"jobs/{job_id}/ligand.pdbqt"
+            ligand_key = f"jobs/{job_id}/ligand_input.pdbqt"
             
+            # IMPORTANT: Copy receptor to this job's folder
+            # Each job needs its own receptor copy since container expects jobs/{JOB_ID}/receptor_input.pdbqt
+            receptor_for_job = f"jobs/{job_id}/receptor_input.pdbqt"
+            
+            # Copy receptor from batch location to job location
+            s3_client.copy_object(
+                Bucket=S3_BUCKET,
+                CopySource={'Bucket': S3_BUCKET, 'Key': receptor_key},
+                Key=receptor_for_job
+            )
+            
+            # Upload ligand
             s3_client.put_object(
                 Bucket=S3_BUCKET,
                 Key=ligand_key,
@@ -374,11 +386,10 @@ async def submit_csv_batch(
                 'user_id': current_user.id,
                 'status': 'PENDING',
                 'batch_id': batch_id,
-                'receptor_s3_key': receptor_key,
+                'receptor_s3_key': receptor_for_job,  # Use job-specific receptor copy
                 'ligand_s3_key': ligand_key,
                 'receptor_filename': receptor_file.filename,
                 'ligand_filename': f"{compound_name}.pdbqt"
-                # Note: smiles stored in ligand_filename prefix for reference
             }
             
             auth_client.table('jobs').insert(job_data).execute()
@@ -386,7 +397,7 @@ async def submit_csv_batch(
             # Generate config and submit to AWS
             try:
                 generate_vina_config(job_id, grid_params=grid_params)
-                aws_job_id = submit_to_aws(job_id, receptor_key, ligand_key, engine=engine)
+                aws_job_id = submit_to_aws(job_id, receptor_for_job, ligand_key, engine=engine)
                 
                 auth_client.table('jobs').update({
                     'status': 'SUBMITTED',
