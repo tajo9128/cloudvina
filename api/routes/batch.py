@@ -27,9 +27,10 @@ class BatchStartRequest(BaseModel):
 
 def generate_batch_urls(batch_id: str, receptor_filename: str, ligand_filenames: List[str]):
     try:
-        # Shared Receptor Key
+        # IMPORTANT: Use jobs/{batch_id}/ path (not batches/) to match container expectations
+        # Container script downloads from jobs/{JOB_ID}/ path
         receptor_ext = os.path.splitext(receptor_filename)[1].lower() or '.pdb'
-        receptor_key = f"batches/{batch_id}/receptor{receptor_ext}"
+        receptor_key = f"jobs/{batch_id}/receptor_input{receptor_ext}"
         
         receptor_url = s3_client.generate_presigned_url(
             'put_object',
@@ -42,9 +43,8 @@ def generate_batch_urls(batch_id: str, receptor_filename: str, ligand_filenames:
 
         for filename in ligand_filenames:
             ligand_ext = os.path.splitext(filename)[1].lower() or '.pdbqt'
-            # Use unique path per ligand to avoid collisions if filenames are same (though list implies distinct)
-            # But safer to just use filename in the batch folder
-            key = f"batches/{batch_id}/ligands/{filename}"
+            # Use jobs/{batch_id}/ligands/ path for batch jobs
+            key = f"jobs/{batch_id}/ligands/{filename}"
             ligand_keys[filename] = key
             
             url = s3_client.generate_presigned_url(
@@ -268,7 +268,7 @@ async def submit_csv_batch(
             raise HTTPException(status_code=400, detail="Receptor file is empty")
         
         receptor_ext = os.path.splitext(receptor_file.filename)[1].lower() or '.pdb'
-        receptor_key = f"batches/{batch_id}/receptor.pdbqt" # Always store as PDBQT
+        receptor_key = f"jobs/{batch_id}/receptor_input.pdbqt" # Always store as PDBQT, use jobs/ path
         
         try:
             # Check if conversion is needed (PDB -> PDBQT)
