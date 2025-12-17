@@ -16,7 +16,7 @@ export default function BatchDockingPage() {
     // NEW: Upload Mode Toggle (files vs csv)
     const [uploadMode, setUploadMode] = useState('files') // 'files' or 'csv'
     const [csvFile, setCsvFile] = useState(null)
-    const [engine, setEngine] = useState('consensus') // FIXED: Always consensus
+    const [engine, setEngine] = useState('consensus') // Default: Consensus per user request
 
     // Grid Box State (FIXED)
     const [gridParams, setGridParams] = useState({
@@ -309,9 +309,8 @@ export default function BatchDockingPage() {
                                     onChange={(e) => setEngine(e.target.value)}
                                     className="block w-full text-sm rounded-lg border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                                 >
-                                    <option value="vina">Vina (Classic)</option>
-                                    <option value="gnina">Gnina (Deep Learning)</option>
                                     <option value="consensus">Consensus (Vina + Gnina)</option>
+                                    <option value="vina">Vina (Classic)</option>
                                 </select>
                             </div>
 
