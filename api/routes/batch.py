@@ -353,6 +353,8 @@ async def submit_csv_batch(
             pdbqt_content, error = smiles_to_pdbqt(smiles, compound_name)
             
             if error:
+                # LOGIC: If one fails conversion, we record it but CONTINUE to the next one.
+                # This ensures optimal yield (e.g. 9/10 run successfully).
                 conversion_errors.append({"index": idx, "smiles": smiles[:30], "error": error})
                 continue
             
@@ -397,6 +399,7 @@ async def submit_csv_batch(
                     "smiles": smiles[:30] + "..." if len(smiles) > 30 else smiles
                 })
             except Exception as e:
+                # LOGIC: If submission fails, we mark this single job as FAILED but CONTINUE the batch.
                 print(f"Failed to submit job {job_id}: {e}")
                 auth_client.table('jobs').update({
                     'status': 'FAILED',

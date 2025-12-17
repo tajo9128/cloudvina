@@ -189,7 +189,7 @@ export default function BatchDockingPage() {
             const result = await res.json()
             setUploadProgress(100)
 
-            alert(`Batch submitted! ${result.jobs_created} jobs created. ${result.conversion_errors || 0} conversion errors.`)
+            alert(`Batch Processing Started!\n✅ ${result.jobs_created} jobs successfully running.\n⚠️ ${result.conversion_errors || 0} skipped (invalid SMILES).`)
             navigate('/dashboard')
 
         } catch (err) {

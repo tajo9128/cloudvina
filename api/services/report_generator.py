@@ -93,17 +93,18 @@ class ReportGenerator:
     def _mol_to_image(self, name: str, smiles: str):
         """Convert SMILES to a ReportLab Image object"""
         try:
-            # Try to get SMILES from name if not provided (simple fallback not implemented, relies on pass)
-            # Use RDKit
-            if not smiles:
-                 # Attempt to infer or return None
-                 # For BioDockify, we usually have filename, maybe we can't easily get SMILES without reading file.
-                 # If SMILES is missing, we skip image.
-                 return None
+            # Check for empty/None inputs
+            if not smiles or not isinstance(smiles, str):
+                return None
             
             mol = Chem.MolFromSmiles(smiles)
             if not mol:
                 return None
+            
+            # Generate 2D coords if not present
+            if not mol.GetNumConformers():
+                from rdkit.Chem import AllChem
+                AllChem.Compute2DCoords(mol)
                 
             img_data = Draw.MolToImage(mol, size=(150, 150))
             
@@ -115,5 +116,6 @@ class ReportGenerator:
             return Image(img_io, width=1.5*inch, height=1.5*inch)
             
         except Exception as e:
-            print(f"Error drawing molecule: {e}")
+            # Fallback for any imaging error (fonts, cairo, libs, etc.)
+            print(f"Warning: Could not generate image for {name} ({smiles}): {e}")
             return None
