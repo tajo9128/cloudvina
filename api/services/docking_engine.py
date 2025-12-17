@@ -159,6 +159,15 @@ class DockingEngine:
         parsed['stderr'] = result.stderr
         parsed['command'] = ' '.join(cmd)
         
+        # Parse poses from stdout using VinaParser
+        try:
+            from services.vina_parser import parse_vina_log
+            log_parsed = parse_vina_log(result.stdout)
+            if log_parsed and 'poses' in log_parsed:
+                parsed['poses'] = log_parsed['poses']
+        except Exception as e:
+            logger.warning(f"Failed to parse Vina log for poses: {e}")
+        
         return parsed
 
     def _run_gnina(self, receptor: str, ligand: str, output: str, params: Dict) -> Dict:
@@ -204,6 +213,17 @@ class DockingEngine:
         parsed['stderr'] = result.stderr
         parsed['command'] = ' '.join(cmd)
         
+        # Parse poses from stdout using VinaParser logic (Gnina output is compatible)
+        try:
+            from services.vina_parser import parse_vina_log
+            log_parsed = parse_vina_log(result.stdout)
+            if log_parsed and 'poses' in log_parsed:
+                parsed['poses'] = log_parsed['poses']
+                # Gnina specific: try to extract CNN scores for each pose if present in stdout
+                # Standard VinaParser doesn't capture extra columns, but at least we get affinities
+        except Exception as e:
+            logger.warning(f"Failed to parse Gnina log for poses: {e}")
+            
         return parsed
 
     def _parse_vina_like_output(self, output_path: str, engine_name: str) -> Dict:

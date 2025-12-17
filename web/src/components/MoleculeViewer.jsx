@@ -16,6 +16,8 @@ export default function MoleculeViewer({
     const [showHBonds, setShowHBonds] = useState(true)
     const [showHydrophobic, setShowHydrophobic] = useState(true)
     const [showCavities, setShowCavities] = useState(true)
+    const [showLabels, setShowLabels] = useState(false)
+    const [currentStyle, setCurrentStyle] = useState('standard')
 
     useEffect(() => {
         if (!pdbqtData || !containerRef.current) return
@@ -34,73 +36,61 @@ export default function MoleculeViewer({
         // Add Receptor (Protein)
         if (receptorData && isValidPDB(receptorData)) {
             viewer.addModel(receptorData, 'pdbqt')
-            // Style receptor: Cartoon (spectrum colors)
-            viewer.setStyle({ model: 0 }, {
-                cartoon: { color: 'spectrum', opacity: 0.8 },
-                stick: { colorscheme: 'chainHetatm', radius: 0.15, hidden: true } // Hide sticks for protein primarily
-            })
         }
 
         // Add Ligand
         if (pdbqtData && isValidPDB(pdbqtData)) {
             viewer.addModel(pdbqtData, 'pdbqt')
-            // Style ligand (last model): Ball & Stick (Green Carbon)
-            // If receptor exists, ligand is model 1, otherwise model 0
-            const ligandModelIndex = receptorData ? 1 : 0
-            viewer.setStyle({ model: ligandModelIndex }, {
-                stick: { colorscheme: 'greenCarbon', radius: 0.25 },
-                sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
-            })
         }
 
-        // H-Bonds visualization (blue dashed lines)
-        if (interactions && showHBonds && interactions.hydrogen_bonds) {
-            interactions.hydrogen_bonds.forEach(bond => {
-                if (bond.ligand_coords && bond.protein_coords) {
-                    viewer.addCylinder({
-                        start: { x: bond.ligand_coords[0], y: bond.ligand_coords[1], z: bond.ligand_coords[2] },
-                        end: { x: bond.protein_coords[0], y: bond.protein_coords[1], z: bond.protein_coords[2] },
-                        radius: 0.08, color: '#2563eb', dashed: true, dashLength: 0.25, gapLength: 0.1
-                    })
-                }
-            })
-        }
-
-        // Hydrophobic contacts (yellow dotted lines)
-        if (interactions && showHydrophobic && interactions.hydrophobic_contacts) {
-            interactions.hydrophobic_contacts.forEach(contact => {
-                if (contact.ligand_coords && contact.protein_coords) {
-                    viewer.addCylinder({
-                        start: { x: contact.ligand_coords[0], y: contact.ligand_coords[1], z: contact.ligand_coords[2] },
-                        end: { x: contact.protein_coords[0], y: contact.protein_coords[1], z: contact.protein_coords[2] },
-                        radius: 0.05, color: '#eab308', dashed: true, dashLength: 0.15, gapLength: 0.15
-                    })
-                }
-            })
-        }
-
-        // Cavity spheres
-        if (cavities && showCavities && cavities.length > 0) {
-            const colors = ['#22c55e', '#f97316', '#a855f7', '#ec4899', '#14b8a6']
-            cavities.forEach((cavity, i) => {
-                viewer.addSphere({
-                    center: { x: cavity.center_x, y: cavity.center_y, z: cavity.center_z },
-                    radius: Math.min(cavity.size_x, cavity.size_y, cavity.size_z) / 4,
-                    color: colors[i % colors.length], opacity: 0.3
+        // Apply style based on state
+        viewer.removeAllSurfaces()
+        switch (currentStyle) {
+            case 'greenPink': // Publication
+                viewer.setStyle({ hetflag: false }, {
+                    cartoon: { color: '#22c55e', opacity: 1.0 }
                 })
-                viewer.addLabel(`Pocket ${cavity.pocket_id}`, {
-                    position: { x: cavity.center_x, y: cavity.center_y + 3, z: cavity.center_z },
-                    backgroundColor: colors[i % colors.length], fontColor: 'white', fontSize: 12
+                viewer.setStyle({ hetflag: true }, {
+                    stick: { color: '#db2777', radius: 0.25 }
                 })
-            })
+                break
+            case 'surface': // Focused Surface
+                // Protein as faint cartoon
+                viewer.setStyle({ hetflag: false }, {
+                    cartoon: { color: 'spectrum', opacity: 0.4 }
+                })
+                // Ligand as pink stick
+                viewer.setStyle({ hetflag: true }, {
+                    stick: { color: '#db2777', radius: 0.25 }
+                })
+                // Add surface ONLY for binding pocket (residues within 6A of ligand)
+                const ligandSel = { hetflag: true }
+                // Select atoms within 6A of ligand AND are protein (hetflag: false)
+                const pocketSel = {
+                    and: [
+                        { hetflag: false },
+                        { within: { distance: 6, sel: ligandSel } }
+                    ]
+                }
+                viewer.addSurface($3Dmol.SurfaceType.VDW, {
+                    opacity: 0.85,
+                    color: 'white',
+                }, pocketSel, pocketSel)
+                break
+            case 'standard':
+            default:
+                // Standard: Cartoon protein, Green stick ligand
+                viewer.setStyle({ hetflag: false }, {
+                    cartoon: { color: 'spectrum', opacity: 0.8 }, // Kept 'spectrum' from robust fix
+                    stick: { colorscheme: 'chainHetatm', radius: 0.15, hidden: true }
+                })
+                viewer.setStyle({ hetflag: true }, {
+                    stick: { colorscheme: 'greenCarbon', radius: 0.25 },
+                    sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
+                })
+                break
         }
-
-        viewer.zoomTo()
-        viewer.render()
-        viewerRef.current = viewer
-
-        return () => { if (viewerRef.current) viewerRef.current.clear() }
-    }, [pdbqtData, receptorData, interactions, cavities, showHBonds, showHydrophobic, showCavities])
+    }, [pdbqtData, receptorData, interactions, cavities, showHBonds, showHydrophobic, showCavities, showLabels, currentStyle])
 
     useEffect(() => {
         const handleResize = () => { if (viewerRef.current) viewerRef.current.resize() }
@@ -125,14 +115,7 @@ export default function MoleculeViewer({
     }
     const handleStyleChange = (style) => {
         if (!viewerRef.current) return
-        const styles = {
-            stick: { stick: { radius: 0.15, colorscheme: 'Jmol' } },
-            sphere: { sphere: { scale: 0.4, colorscheme: 'Jmol' } },
-            cartoon: { cartoon: { color: 'spectrum' } },
-            both: { stick: { radius: 0.15, colorscheme: 'Jmol' }, sphere: { scale: 0.25, colorscheme: 'Jmol' } }
-        }
-        viewerRef.current.setStyle({}, styles[style] || styles.both)
-        viewerRef.current.render()
+        setCurrentStyle(style)
     }
 
     const hasInteractions = interactions && ((interactions.hydrogen_bonds?.length > 0) || (interactions.hydrophobic_contacts?.length > 0))
@@ -149,10 +132,39 @@ export default function MoleculeViewer({
                 </div>
             </div>
 
-            <div className="mb-3 flex gap-2">
-                {['stick', 'sphere', 'both', 'cartoon'].map(s => (
-                    <button key={s} onClick={() => handleStyleChange(s)} className="text-xs px-2 py-1 bg-blue-50 hover:bg-blue-100 text-blue-700 rounded capitalize">{s === 'both' ? 'Ball & Stick' : s}</button>
-                ))}
+            <div className="mb-3 flex items-center justify-between flex-wrap gap-2">
+                <div className="flex gap-2">
+                    {[
+                        { id: 'standard', label: '🌈 Standard' },
+                        { id: 'greenPink', label: '🌿 Publication' },
+                        { id: 'surface', label: '🧊 Surface' }
+                    ].map(s => (
+                        <button
+                            key={s.id}
+                            onClick={() => handleStyleChange(s.id)}
+                            className={`text-xs px-3 py-1.5 rounded font-medium transition-colors ${currentStyle === s.id
+                                ? 'bg-primary-100 text-primary-700 border border-primary-200'
+                                : 'bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100'}`}
+                        >
+                            {s.label}
+                        </button>
+                    ))}
+                </div>
+
+                {hasInteractions && (
+                    <div className="flex items-center gap-2">
+                        <label className="inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                checked={showLabels}
+                                onChange={(e) => setShowLabels(e.target.checked)}
+                                className="sr-only peer"
+                            />
+                            <div className="relative w-9 h-5 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                            <span className="ms-2 text-xs font-medium text-gray-700">Labels</span>
+                        </label>
+                    </div>
+                )}
             </div>
 
             {(hasInteractions || hasCavities) && (
