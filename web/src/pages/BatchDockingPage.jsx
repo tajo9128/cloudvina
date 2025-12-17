@@ -43,10 +43,7 @@ export default function BatchDockingPage() {
     const uploadFile = async (url, file) => {
         const res = await fetch(url, {
             method: 'PUT',
-            body: file,
-            headers: {
-                'Content-Type': file.type || 'application/octet-stream'
-            }
+            body: file
         })
         if (!res.ok) throw new Error(`Failed to upload ${file.name}`)
     }
