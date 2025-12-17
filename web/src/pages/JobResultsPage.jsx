@@ -129,10 +129,13 @@ export default function JobResultsPage() {
             if (data.status === 'SUCCEEDED' && data.download_urls?.results_json && !consensusResults) {
                 try {
                     const consRes = await fetch(data.download_urls.results_json)
+                    if (!consRes.ok) throw new Error(`Status ${consRes.status}`)
                     const consData = await consRes.json()
                     setConsensusResults(consData)
                 } catch (err) {
-                    console.error('Failed to fetch consensus results:', err)
+                    console.error('Failed to fetch consensus results (likely CORS):', err)
+                    // Set a flag to show a warning in the UI
+                    setConsensusResults({ error: "Failed to load results. Check S3 CORS configuration." })
                 }
             }
         } catch (err) {
@@ -359,57 +362,66 @@ export default function JobResultsPage() {
                             {/* Consensus Results Card (NEW) */}
                             {consensusResults && (
                                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6 p-6">
-                                    <div className="flex items-center justify-between mb-4">
-                                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                            <span className="text-xl">📊</span> Consensus Docking Report
-                                        </h3>
-                                        <div className="text-sm font-bold text-slate-500">
-                                            Average Affinity: <span className="text-green-600 text-lg">{consensusResults.average_affinity?.toFixed(2)} kcal/mol</span>
+                                    {consensusResults.error ? (
+                                        <div className="bg-amber-50 border-l-4 border-amber-500 p-4">
+                                            <p className="font-bold text-amber-700">Warning: Could not load detailed results.</p>
+                                            <p className="text-sm text-amber-600">The browser was blocked from reading the results file. This is usually due to missing CORS configuration on your S3 bucket.</p>
                                         </div>
-                                    </div>
-
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                        {/* Vina Result */}
-                                        {consensusResults.engines?.vina && (
-                                            <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 flex flex-col items-center">
-                                                <div className="text-2xl mb-1">🐢</div>
-                                                <div className="font-bold text-blue-900">AutoDock Vina</div>
-                                                <div className="text-2xl font-bold text-blue-700 mt-2">
-                                                    {consensusResults.engines.vina.best_affinity?.toFixed(1) || 'N/A'}
+                                    ) : (
+                                        <>
+                                            <div className="flex items-center justify-between mb-4">
+                                                <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                                    <span className="text-xl">📊</span> Consensus Docking Report
+                                                </h3>
+                                                <div className="text-sm font-bold text-slate-500">
+                                                    Average Affinity: <span className="text-green-600 text-lg">{consensusResults.average_affinity?.toFixed(2)} kcal/mol</span>
                                                 </div>
-                                                <div className="text-xs text-blue-500">kcal/mol</div>
                                             </div>
-                                        )}
 
-                                        {/* rDock Result */}
-                                        {consensusResults.engines?.rdock && (
-                                            <div className="p-4 bg-orange-50 rounded-xl border border-orange-100 flex flex-col items-center">
-                                                <div className="text-2xl mb-1">⚡</div>
-                                                <div className="font-bold text-orange-900">rDock</div>
-                                                <div className="text-2xl font-bold text-orange-700 mt-2">
-                                                    {consensusResults.engines.rdock.best_affinity?.toFixed(1) || 'N/A'}
-                                                </div>
-                                                <div className="text-xs text-orange-500">rDock Score</div>
-                                            </div>
-                                        )}
+                                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                                {/* Vina Result */}
+                                                {consensusResults.engines?.vina && (
+                                                    <div className="p-4 bg-blue-50 rounded-xl border border-blue-100 flex flex-col items-center">
+                                                        <div className="text-2xl mb-1">🐢</div>
+                                                        <div className="font-bold text-blue-900">AutoDock Vina</div>
+                                                        <div className="text-2xl font-bold text-blue-700 mt-2">
+                                                            {consensusResults.engines.vina.best_affinity?.toFixed(1) || 'N/A'}
+                                                        </div>
+                                                        <div className="text-xs text-blue-500">kcal/mol</div>
+                                                    </div>
+                                                )}
 
-                                        {/* Gnina Result */}
-                                        {consensusResults.engines?.gnina && (
-                                            <div className="p-4 bg-purple-50 rounded-xl border border-purple-100 flex flex-col items-center">
-                                                <div className="text-2xl mb-1">🧠</div>
-                                                <div className="font-bold text-purple-900">Gnina (AI)</div>
-                                                <div className="text-2xl font-bold text-purple-700 mt-2">
-                                                    {consensusResults.engines.gnina.best_affinity?.toFixed(1) || 'N/A'}
-                                                </div>
-                                                <div className="text-xs text-purple-500">kcal/mol</div>
-                                                {consensusResults.engines.gnina.cnn_score && (
-                                                    <div className="mt-1 px-2 py-0.5 bg-purple-200 text-purple-800 rounded text-xs font-bold">
-                                                        CNN: {consensusResults.engines.gnina.cnn_score}
+                                                {/* rDock Result */}
+                                                {consensusResults.engines?.rdock && (
+                                                    <div className="p-4 bg-orange-50 rounded-xl border border-orange-100 flex flex-col items-center">
+                                                        <div className="text-2xl mb-1">⚡</div>
+                                                        <div className="font-bold text-orange-900">rDock</div>
+                                                        <div className="text-2xl font-bold text-orange-700 mt-2">
+                                                            {consensusResults.engines.rdock.best_affinity?.toFixed(1) || 'N/A'}
+                                                        </div>
+                                                        <div className="text-xs text-orange-500">rDock Score</div>
+                                                    </div>
+                                                )}
+
+                                                {/* Gnina Result */}
+                                                {consensusResults.engines?.gnina && (
+                                                    <div className="p-4 bg-purple-50 rounded-xl border border-purple-100 flex flex-col items-center">
+                                                        <div className="text-2xl mb-1">🧠</div>
+                                                        <div className="font-bold text-purple-900">Gnina (AI)</div>
+                                                        <div className="text-2xl font-bold text-purple-700 mt-2">
+                                                            {consensusResults.engines.gnina.best_affinity?.toFixed(1) || 'N/A'}
+                                                        </div>
+                                                        <div className="text-xs text-purple-500">kcal/mol</div>
+                                                        {consensusResults.engines.gnina.cnn_score && (
+                                                            <div className="mt-1 px-2 py-0.5 bg-purple-200 text-purple-800 rounded text-xs font-bold">
+                                                                CNN: {consensusResults.engines.gnina.cnn_score}
+                                                            </div>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>
-                                        )}
-                                    </div>
+                                        </>
+                                    )}
                                 </div>
                             )}
 
