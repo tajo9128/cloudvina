@@ -1,9 +1,12 @@
 # Simplified Dockerfile for HuggingFace Spaces Free Tier
 FROM python:3.10-slim
 
-# Install system dependencies
+# Install system dependencies (including RDKit requirements)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
+    libxrender1 \
+    libxext6 \
+    libsm6 \
     && rm -rf /var/lib/apt/lists/*
 
 # Setup User (required for HF Spaces)
