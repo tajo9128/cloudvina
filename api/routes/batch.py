@@ -147,18 +147,46 @@ async def start_batch(
         # Iterate and start (Ideally asynchronous background task, but doing sync loop for MVP)
         for job in jobs:
             try:
-                # 1. Generate Config
-                # Note: Config generation uploads to S3 `jobs/{job_id}/config.txt`.
-                # We need to make sure generate_vina_config uses job_id and uploads correctly.
-                # It accepts job_id.
-                # It generates config based on grid_params.
-                generate_vina_config(job['id'], grid_params=grid_params)
+                # CRITICAL FIX: Copy files from batch folder to job folder
+                # Database has: jobs/{batch_id}/receptor and jobs/{batch_id}/ligands/file.pdbqt
+                # Container expects: jobs/{job_id}/receptor_input and jobs/{job_id}/ligand_input
+                
+                job_id = job['id']
+                
+                # Define job-specific S3 keys
+                job_receptor_key = f"jobs/{job_id}/receptor_input.pdbqt"
+                job_ligand_key = f"jobs/{job_id}/ligand_input.pdbqt"
+                
+                # Copy receptor from batch to job folder (if source uses batch_id path)
+                if 'batch' in job['receptor_s3_key'] or batch_id in job['receptor_s3_key']:
+                    s3_client.copy_object(
+                        Bucket=S3_BUCKET,
+                        CopySource={'Bucket': S3_BUCKET, 'Key': job['receptor_s3_key']},
+                        Key=job_receptor_key
+                    )
+                else:
+                    # Already in correct location (CSV batch case)
+                    job_receptor_key = job['receptor_s3_key']
+                
+                # Copy ligand from batch to job folder (if source uses batch_id path)
+                if 'batch' in job['ligand_s3_key'] or batch_id in job['ligand_s3_key']:
+                    s3_client.copy_object(
+                        Bucket=S3_BUCKET,
+                        CopySource={'Bucket': S3_BUCKET, 'Key': job['ligand_s3_key']},
+                        Key=job_ligand_key
+                    )
+                else:
+                    # Already in correct location (CSV batch case)
+                    job_ligand_key = job['ligand_s3_key']
+                
+                # 1. Generate Config (uses job_id, will upload to jobs/{job_id}/config.txt)
+                generate_vina_config(job_id, grid_params=grid_params)
 
-                # 2. Submit to AWS
+                # 2. Submit to AWS with corrected S3 keys
                 aws_job_id = submit_to_aws(
-                    job['id'],
-                    job['receptor_s3_key'],
-                    job['ligand_s3_key'],
+                    job_id,
+                    job_receptor_key,
+                    job_ligand_key,
                     engine=engine
                 )
 
@@ -166,7 +194,7 @@ async def start_batch(
                 auth_client.table('jobs').update({
                     'status': 'SUBMITTED',
                     'batch_job_id': aws_job_id
-                }).eq('id', job['id']).execute()
+                }).eq('id', job_id).execute()
 
                 started_count += 1
             except Exception as e:
