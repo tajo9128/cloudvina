@@ -152,6 +152,9 @@ async def start_batch(
                 # Container expects: jobs/{job_id}/receptor_input and jobs/{job_id}/ligand_input
                 
                 job_id = job['id']
+                print(f"DEBUG: Processing job {job_id}")
+                print(f"DEBUG: Original receptor key: {job['receptor_s3_key']}")
+                print(f"DEBUG: Original ligand key: {job['ligand_s3_key']}")
                 
                 # Define job-specific S3 keys
                 job_receptor_key = f"jobs/{job_id}/receptor_input.pdbqt"
@@ -159,36 +162,53 @@ async def start_batch(
                 
                 # Copy receptor from batch to job folder (if source uses batch_id path)
                 if 'batch' in job['receptor_s3_key'] or batch_id in job['receptor_s3_key']:
-                    s3_client.copy_object(
-                        Bucket=S3_BUCKET,
-                        CopySource={'Bucket': S3_BUCKET, 'Key': job['receptor_s3_key']},
-                        Key=job_receptor_key
-                    )
+                    try:
+                        print(f"DEBUG: Copying receptor from {job['receptor_s3_key']} to {job_receptor_key}")
+                        s3_client.copy_object(
+                            Bucket=S3_BUCKET,
+                            CopySource={'Bucket': S3_BUCKET, 'Key': job['receptor_s3_key']},
+                            Key=job_receptor_key
+                        )
+                        print(f"DEBUG: Receptor copy successful")
+                    except Exception as copy_err:
+                        print(f"ERROR: Failed to copy receptor: {copy_err}")
+                        raise
                 else:
                     # Already in correct location (CSV batch case)
+                    print(f"DEBUG: Receptor already in correct location")
                     job_receptor_key = job['receptor_s3_key']
                 
                 # Copy ligand from batch to job folder (if source uses batch_id path)
                 if 'batch' in job['ligand_s3_key'] or batch_id in job['ligand_s3_key']:
-                    s3_client.copy_object(
-                        Bucket=S3_BUCKET,
-                        CopySource={'Bucket': S3_BUCKET, 'Key': job['ligand_s3_key']},
-                        Key=job_ligand_key
-                    )
+                    try:
+                        print(f"DEBUG: Copying ligand from {job['ligand_s3_key']} to {job_ligand_key}")
+                        s3_client.copy_object(
+                            Bucket=S3_BUCKET,
+                            CopySource={'Bucket': S3_BUCKET, 'Key': job['ligand_s3_key']},
+                            Key=job_ligand_key
+                        )
+                        print(f"DEBUG: Ligand copy successful")
+                    except Exception as copy_err:
+                        print(f"ERROR: Failed to copy ligand: {copy_err}")
+                        raise
                 else:
                     # Already in correct location (CSV batch case)
+                    print(f"DEBUG: Ligand already in correct location")
                     job_ligand_key = job['ligand_s3_key']
                 
                 # 1. Generate Config (uses job_id, will upload to jobs/{job_id}/config.txt)
+                print(f"DEBUG: Generating config for job {job_id}")
                 generate_vina_config(job_id, grid_params=grid_params)
 
                 # 2. Submit to AWS with corrected S3 keys
+                print(f"DEBUG: Submitting to AWS Batch")
                 aws_job_id = submit_to_aws(
                     job_id,
                     job_receptor_key,
                     job_ligand_key,
                     engine=engine
                 )
+                print(f"DEBUG: AWS job ID: {aws_job_id}")
 
                 # 3. Update Status
                 auth_client.table('jobs').update({
@@ -198,7 +218,9 @@ async def start_batch(
 
                 started_count += 1
             except Exception as e:
-                print(f"Failed to start job {job['id']}: {e}")
+                print(f"ERROR: Failed to start job {job['id']}: {str(e)}")
+                import traceback
+                traceback.print_exc()
                 # Continue starting others? Yes.
 
         return {
