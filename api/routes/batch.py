@@ -278,6 +278,7 @@ async def submit_csv_batch(
                 pdb_string = receptor_content.decode('utf-8')
                 mol = Chem.MolFromPDBBlock(pdb_string)
                 if mol:
+                    mol = Chem.AddHs(mol, addCoords=True) # Add explicit Hs with coordinates
                     preparator = MoleculePreparation()
                     preparator.prepare(mol)
                     pdbqt_string = preparator.write_pdbqt_string()
