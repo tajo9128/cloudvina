@@ -123,7 +123,8 @@ export default function BatchDockingPage() {
                         grid_size_x: parseFloat(gridParams.size_x),
                         grid_size_y: parseFloat(gridParams.size_y),
                         grid_size_z: parseFloat(gridParams.size_z)
-                    }
+                    },
+                    engine: 'vina'  // Default engine for file-based batch
                 })
             })
 
