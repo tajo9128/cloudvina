@@ -422,3 +422,58 @@ async def submit_csv_batch(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"CSV batch submission failed: {str(e)}")
 
+
+@router.get("/{batch_id}", response_model=dict)
+async def get_batch_details(
+    batch_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Get details for a specific batch, including all its jobs.
+    """
+    try:
+        auth_client = get_authenticated_client(credentials.credentials)
+        
+        # 1. Fetch all jobs for this batch
+        jobs_res = auth_client.table('jobs').select('*').eq('batch_id', batch_id).eq('user_id', current_user.id).execute()
+        jobs = jobs_res.data
+        
+        if not jobs:
+             raise HTTPException(status_code=404, detail="Batch not found")
+
+        # 2. Calculate Stats
+        total_jobs = len(jobs)
+        completed_jobs = sum(1 for j in jobs if j['status'] == 'SUCCEEDED')
+        failed_jobs = sum(1 for j in jobs if j['status'] == 'FAILED')
+        pending_jobs = total_jobs - completed_jobs - failed_jobs
+        
+        # Best affinity logic
+        best_affinity = None
+        for job in jobs:
+            if job.get('binding_affinity') is not None:
+                try:
+                    val = float(job['binding_affinity'])
+                    if best_affinity is None or val < best_affinity:
+                        best_affinity = val
+                except:
+                    pass
+
+        return {
+            "batch_id": batch_id,
+            "created_at": jobs[0]['created_at'] if jobs else None,
+            "stats": {
+                "total": total_jobs,
+                "completed": completed_jobs,
+                "failed": failed_jobs,
+                "pending": pending_jobs,
+                "success_rate": (completed_jobs / total_jobs * 100) if total_jobs > 0 else 0,
+                "best_affinity": best_affinity
+            },
+            "jobs": jobs
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to fetch batch details: {str(e)}")

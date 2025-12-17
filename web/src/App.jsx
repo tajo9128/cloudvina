@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import NewJobPage from './pages/NewJobPage'
 import BatchDockingPage from './pages/BatchDockingPage'
+import BatchResultsPage from './pages/BatchResultsPage'
 import JobResultsPage from './pages/JobResultsPage'
 import ConverterPage from './pages/ConverterPage'
 import TargetPredictionPage from './pages/TargetPredictionPage'
@@ -107,6 +108,10 @@ function App() {
                         <Route
                             path="/dock/batch"
                             element={session ? <BatchDockingPage /> : <Navigate to="/login" />}
+                        />
+                        <Route
+                            path="/dock/batch/:batchId"
+                            element={session ? <BatchResultsPage /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/dock/:jobId"

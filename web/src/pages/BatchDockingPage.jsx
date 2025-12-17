@@ -16,9 +16,9 @@ export default function BatchDockingPage() {
     // NEW: Upload Mode Toggle (files vs csv)
     const [uploadMode, setUploadMode] = useState('files') // 'files' or 'csv'
     const [csvFile, setCsvFile] = useState(null)
-    const [engine, setEngine] = useState('vina')
+    const [engine, setEngine] = useState('consensus') // FIXED: Always consensus
 
-    // Grid Box State
+    // Grid Box State (FIXED)
     const [gridParams, setGridParams] = useState({
         center_x: 0,
         center_y: 0,
@@ -131,7 +131,7 @@ export default function BatchDockingPage() {
 
             setUploadProgress(100)
             alert(`Batch started successfully! ${totalLigands} jobs submitted.`)
-            navigate('/dashboard')
+            navigate(`/dock/batch/${batch_id}`)
 
         } catch (err) {
             console.error(err)
@@ -167,7 +167,7 @@ export default function BatchDockingPage() {
             formData.append('grid_size_x', parseFloat(gridParams.size_x))
             formData.append('grid_size_y', parseFloat(gridParams.size_y))
             formData.append('grid_size_z', parseFloat(gridParams.size_z))
-            formData.append('engine', engine)
+            formData.append('engine', 'consensus') // Forced
 
             setUploadProgress(20)
 
@@ -190,7 +190,8 @@ export default function BatchDockingPage() {
             setUploadProgress(100)
 
             alert(`Batch Processing Started!\n✅ ${result.jobs_created} jobs successfully running.\n⚠️ ${result.conversion_errors || 0} skipped (invalid SMILES).`)
-            navigate('/dashboard')
+            // Navigate to the new Batch Results Page
+            navigate(`/dock/batch/${result.batch_id}`)
 
         } catch (err) {
             console.error(err)
@@ -273,24 +274,18 @@ export default function BatchDockingPage() {
                             </div>
                         )}
 
-                        {/* Docking Engine (for CSV mode) */}
-                        {uploadMode === 'csv' && (
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Docking Engine</label>
-                                <select
-                                    value={engine}
-                                    onChange={(e) => setEngine(e.target.value)}
-                                    className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
-                                >
-                                    <option value="vina">AutoDock Vina (Fast)</option>
-                                    <option value="gnina">Gnina (AI-Powered)</option>
-                                    <option value="consensus">Consensus (Both)</option>
-                                </select>
+                        {/* Configuration Info (Read Only) */}
+                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200">
+                            <h3 className="font-bold text-slate-700 mb-2">Configuration (Fixed)</h3>
+                            <div className="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <span className="text-slate-500">Engine:</span> <span className="font-mono font-bold text-primary-600">Consensus (Vina + Gnina)</span>
+                                </div>
+                                <div>
+                                    <span className="text-slate-500">Grid Box:</span> <span className="font-mono text-slate-900">Center(0,0,0) Size(20,20,20)</span>
+                                </div>
                             </div>
-                        )}
-
-                        {/* Grid Box */}
-                        <GridBoxConfigurator onConfigChange={setGridParams} initialConfig={gridParams} />
+                        </div>
 
                         {/* Progress */}
                         {loading && (
