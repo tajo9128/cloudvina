@@ -149,7 +149,22 @@ export default function BatchDockingPage() {
 
             clearInterval(progressInterval)
 
-            if (!startRes.ok) throw new Error('Failed to start batch execution')
+            if (!startRes.ok) {
+                let errMsg = 'Failed to start batch execution'
+                try {
+                    const errText = await startRes.text()
+                    try {
+                        const errJson = JSON.parse(errText)
+                        errMsg = errJson.detail || errMsg
+                    } catch {
+                        // If not JSON (e.g. 500 HTML), show start of text
+                        errMsg = `Server Error: ${errText.substring(0, 200)}...`
+                    }
+                } catch (e) {
+                    console.error("Error parsing error response", e)
+                }
+                throw new Error(errMsg)
+            }
 
             setUploadProgress(100)
             setLoading(false)
@@ -167,8 +182,12 @@ export default function BatchDockingPage() {
     // NEW: CSV SMILES Submit Handler
     const handleCSVSubmit = async (e) => {
         e.preventDefault()
-        if (!receptorFile || !csvFile) {
-            setError('Please select a receptor and a CSV file with SMILES.')
+        if (!receptorFile) {
+            setError('❌ Missing Receptor file. Please upload a PDB/PDBQT file.')
+            return
+        }
+        if (!csvFile) {
+            setError('❌ Missing CSV file. Please upload the SMILES CSV.')
             return
         }
 
