@@ -36,20 +36,20 @@ class ReportGenerator:
         elements.append(Spacer(1, 20))
 
         # Table Data
-        # Columns: Rank, ID, Structure, Scores, ADMET
-        data = [['Rank', 'Compound ID', 'Structure', 'Scores', 'ADMET Verdict']]
+        # Columns: Rank, ID, Structure, Vina (kcal/mol), Gnina (Score), ADMET
+        data = [['Rank', 'ID', 'Structure', 'Vina\n(kcal/mol)', 'Gnina\n(Score)', 'ADMET']]
         
         for hit in hits:
             # 1. Structure Image
             img = self._mol_to_image(hit.get('compound_name', ''), hit.get('smiles', ''))
             
-            # 2. Scores Text
-            scores_text = (
-                f"Consensus: {hit.get('consensus_score', 0):.2f}\n"
-                f"Vina Affinity: {hit.get('vina_score', 'N/A')}\n"
-                f"Gnina Score: {hit.get('gnina_score', 'N/A')}\n"
-                f"Binding (ΔG): {hit.get('binding_energy', 'N/A')}"
-            )
+            # 2. Scores - Split for clarity per user request
+            vina_score = f"{hit.get('vina_score', 'N/A')}"
+            gnina_score = f"{hit.get('gnina_score', 'N/A')}"
+            
+            if 'consensus_score' in hit:
+                # Add tiny note?
+                pass
 
             # 3. ADMET Verdict
             admet = hit.get('admet', {})
@@ -57,20 +57,21 @@ class ReportGenerator:
             if admet:
                  verdict = f"{admet.get('verdict', 'Unknown')}\n"
                  if admet.get('bbb', {}).get('permeable'):
-                     verdict += " (Brain Permeant)"
+                     verdict += "(Brain)"
 
             row = [
                 str(hit.get('rank', '-')),
-                hit.get('id', 'Unknown')[:8], # Short ID
+                hit.get('id', 'Unknown')[:8], 
                 img if img else "No Structure",
-                scores_text,
+                vina_score,
+                gnina_score,
                 verdict
             ]
             data.append(row)
 
         # Create Table
-        # Widths: Rank, ID, Struct, Scores, ADMET
-        col_widths = [0.5*inch, 1*inch, 2*inch, 2*inch, 1.5*inch]
+        # Widths: Rank, ID, Struct, Vina, Gnina, ADMET
+        col_widths = [0.5*inch, 0.8*inch, 2*inch, 1*inch, 1*inch, 1.5*inch]
         t = Table(data, colWidths=col_widths)
         
         # Table Style
@@ -88,6 +89,37 @@ class ReportGenerator:
         elements.append(t)
         doc.build(elements)
         
+        buffer.seek(0)
+        return buffer
+
+    def generate_pymol_script(self, job_id, receptor_url, ligand_url) -> BytesIO:
+        """
+        Generates a .pml script to visualize results in PyMOL.
+        """
+        script = f"""
+        # BioDockify PyMOL Script for Job {job_id}
+        # Generated automatically
+
+        # 1. Load Files
+        load {receptor_url}, receptor
+        load {ligand_url}, ligand
+
+        # 2. visual settings
+        bg_color white
+        show cartoon, receptor
+        color gray80, receptor
+        show licorice, ligand
+        util.cba(154, "ligand")
+
+        # 3. Center view
+        zoom ligand
+        
+        # 4. Show interactions (simple polar guess)
+        dist polar_contacts, receptor, ligand, mode=2
+        """
+        
+        buffer = BytesIO()
+        buffer.write(script.encode('utf-8'))
         buffer.seek(0)
         return buffer
 
