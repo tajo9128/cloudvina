@@ -330,6 +330,7 @@ export default function BatchDockingPage() {
                                 >
                                     <option value="consensus">Consensus (Vina + Gnina)</option>
                                     <option value="vina">Vina (Classic)</option>
+                                    <option value="gnina">Gnina (Deep Learning)</option>
                                 </select>
                             </div>
 

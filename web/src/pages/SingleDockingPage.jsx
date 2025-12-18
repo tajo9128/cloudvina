@@ -276,6 +276,7 @@ export default function SingleDockingPage() {
                             >
                                 <option value="consensus">Consensus (Vina + Gnina) - Recommended</option>
                                 <option value="vina">Vina (Classic)</option>
+                                <option value="gnina">Gnina (Deep Learning)</option>
                             </select>
                             <p className="text-xs text-slate-500 mt-1">
                                 Consensus runs both engines and combines results for higher accuracy.
