@@ -372,12 +372,52 @@ async def start_job(
                 detail=f"Failed to generate config file: {str(e)}"
             )
         
+        # Prepare files for AWS Batch (Ensure PDBQT)
+        # ------------------------------------------
+        # If ligand is not PDBQT, convert it now to avoid container compatibility issues.
+        final_ligand_key = job['ligand_s3_key']
+        
+        if not final_ligand_key.lower().endswith('.pdbqt'):
+            print(f"DEBUG: Ligand {final_ligand_key} is not PDBQT. Converting...")
+            try:
+                import boto3
+                from services.smiles_converter import convert_to_pdbqt
+                
+                s3 = boto3.client('s3', region_name=AWS_REGION)
+                
+                # 1. Download original
+                obj = s3.get_object(Bucket=S3_BUCKET, Key=final_ligand_key)
+                content = obj['Body'].read().decode('utf-8')
+                
+                # 2. Convert
+                pdbqt_content, err = convert_to_pdbqt(content, job['ligand_filename'])
+                if err:
+                    raise Exception(f"Conversion failed: {err}")
+                
+                # 3. Upload new PDBQT
+                # Construct new key: jobs/{id}/ligand_input_converted.pdbqt
+                new_key = f"jobs/{job_id}/ligand_input_converted.pdbqt"
+                s3.put_object(
+                    Bucket=S3_BUCKET, 
+                    Key=new_key, 
+                    Body=pdbqt_content.encode('utf-8')
+                )
+                
+                print(f"DEBUG: Converted and uploaded to {new_key}")
+                final_ligand_key = new_key
+                
+            except Exception as e:
+                # If conversion fails, we log but might try to submit original (fallback) or fail hard?
+                # Failing hard is safer than crashing in container.
+                print(f"ERROR: Backend conversion failed: {e}")
+                raise HTTPException(status_code=400, detail=f"Ligand conversion failed: {str(e)}")
+
         # Submit to AWS Batch
         try:
             batch_job_id = submit_batch_job(
                 job_id,
                 job['receptor_s3_key'],
-                job['ligand_s3_key'],
+                final_ligand_key, # Use possibly converted key
                 engine=engine
             )
             

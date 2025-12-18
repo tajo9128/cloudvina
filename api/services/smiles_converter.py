@@ -116,3 +116,47 @@ def pdb_to_pdbqt(pdb_content: str, remove_water: bool = True, add_hydrogens: boo
         
     except Exception as e:
         return None, f"PDB Conversion error: {str(e)}"
+
+
+def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Generic converter that handles SMILES (if .smi), PDB, or SDF content.
+    Returns (pdbqt_content, error_message).
+    """
+    ext = filename.lower().split('.')[-1]
+    
+    try:
+        mol = None
+        
+        # 1. Parse based on extension
+        if ext in ['pdb', 'ent']:
+            mol = Chem.MolFromPDBBlock(content, removeHs=False)
+        elif ext in ['sdf', 'mol', 'sd']:
+            # RDKit MolFromMolBlock for SDF
+            mol = Chem.MolFromMolBlock(content, removeHs=False)
+            if not mol:
+                # Try sanitization off
+                mol = Chem.MolFromMolBlock(content, removeHs=False, sanitize=False)
+        elif ext in ['smi', 'smiles']:
+            mol = Chem.MolFromSmiles(content.strip())
+        
+        if not mol:
+             return None, f"Could not parse molecule format: {ext}"
+
+        # 2. Add Hydrogens (3D requires them, usually)
+        mol = Chem.AddHs(mol, addCoords=True)
+        
+        # 3. Generate 3D Coords if missing (SDF usually has them, but safety check)
+        # Check if we have conformers
+        if mol.GetNumConformers() == 0:
+            AllChem.EmbedMolecule(mol, randomSeed=42)
+
+        # 4. Meeko Preparation
+        preparator = MoleculePreparation()
+        preparator.prepare(mol)
+        pdbqt_string = preparator.write_pdbqt_string()
+        
+        return pdbqt_string, None
+
+    except Exception as e:
+        return None, f"Conversion failed: {str(e)}"
