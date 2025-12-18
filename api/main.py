@@ -354,9 +354,12 @@ async def start_job(
         
         job = job_response.data[0]
         
-        # Extract grid parameters - ALWAYS run consensus (all 3 engines)
+        # Extract grid parameters
         grid_params = request.get('grid_params', None)
-        engine = 'consensus'  # FORCED: Always run Vina + rDock + Gnina together
+        
+        # Engine Selection (Default to 'vina' for reliability, but allow override)
+        # Previous 'consensus' default caused missing Vina logs in some container versions
+        engine = request.get('engine', 'vina')
         
         # Generate config file
         try:
