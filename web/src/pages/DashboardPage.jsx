@@ -5,21 +5,21 @@ import JobFilters from '../components/JobFilters'
 import { API_URL } from '../config'
 
 export default function DashboardPage() {
-    const [jobs, setJobs] = useState([])
-    const [loading, setLoading] = useState(true)
-    const [filters, setFilters] = useState({
-        status: '',
-        search: '',
-        minAffinity: '',
-        maxAffinity: ''
-    })
+    const [user, setUser] = useState(null)
+    const [profile, setProfile] = useState(null)
 
     useEffect(() => {
         fetchJobs()
+        fetchUserProfile()
     }, [filters])
 
-    const handleFilterChange = (newFilters) => {
-        setFilters(prev => ({ ...prev, ...newFilters }))
+    const fetchUserProfile = async () => {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (user) {
+            setUser(user)
+            const { data } = await supabase.from('profiles').select('*').eq('id', user.id).single()
+            if (data) setProfile(data)
+        }
     }
 
     const fetchJobs = async () => {
@@ -71,6 +71,34 @@ export default function DashboardPage() {
             </div>
 
             <div className="container mx-auto px-4 py-8">
+
+                {/* User Welcome Card (Fix for "Plain User" issue) */}
+                {user && (
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 text-white flex items-center justify-center text-2xl font-bold shadow-md">
+                                {user.email[0].toUpperCase()}
+                            </div>
+                            <div>
+                                <h2 className="text-xl font-bold text-slate-900">
+                                    Welcome back, {profile?.designation ? `${profile.designation} ` : ''}
+                                    <span className="text-primary-600">{user.email.split('@')[0]}</span>!
+                                </h2>
+                                <p className="text-slate-500 text-sm">
+                                    {profile?.organization ? `${profile.organization} • ` : ''}
+                                    Ready for your next breakthrough?
+                                </p>
+                            </div>
+                        </div>
+                        <div className="hidden md:block text-right">
+                            <div className="text-sm text-slate-400 uppercase tracking-wider font-bold mb-1">Current Plan</div>
+                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
+                                Free Tier Active
+                            </div>
+                        </div>
+                    </div>
+                )}
+
                 {/* Job Filters */}
                 <div className="mb-8">
                     <JobFilters onFilterChange={handleFilterChange} />
@@ -79,7 +107,7 @@ export default function DashboardPage() {
                 {loading ? (
                     <div className="text-center py-20">
                         <div className="inline-block p-4 rounded-full bg-primary-50 text-primary-600 mb-4">
-                            <svg className="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24">
+                            <svg className="w-8 h-8 animate-spin" fill="none" viewBox="0 24 24">
                                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
