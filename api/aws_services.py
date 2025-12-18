@@ -8,7 +8,7 @@ from typing import Tuple
 
 # AWS Configuration
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-S3_BUCKET = os.getenv("S3_BUCKET", "BioDockify-jobs-use1-1763775915")
+S3_BUCKET = os.getenv("S3_BUCKET", "cloudvina-jobs-use1-1763775915")
 BATCH_JOB_QUEUE = os.getenv("BATCH_JOB_QUEUE", "cloudvina-fargate-queue")
 BATCH_JOB_DEFINITION = os.getenv("BATCH_JOB_DEFINITION", "biodockify-all-fixes")  # FIXED: Correct job definition name
 
