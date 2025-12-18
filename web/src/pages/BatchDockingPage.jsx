@@ -321,18 +321,8 @@ export default function BatchDockingPage() {
                             <h3 className="font-bold text-slate-700">Configuration</h3>
 
                             {/* Engine Selection */}
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Docking Engine</label>
-                                <select
-                                    value={engine}
-                                    onChange={(e) => setEngine(e.target.value)}
-                                    className="block w-full text-sm rounded-lg border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
-                                >
-                                    <option value="consensus">Consensus (Vina + Gnina)</option>
-                                    <option value="vina">Vina (Classic)</option>
-                                    <option value="gnina">Gnina (Deep Learning)</option>
-                                </select>
-                            </div>
+                            {/* Engine Selection: Consensus Only (Hidden) */}
+                            {/* <div>...Selector Removed...</div> */}
 
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
