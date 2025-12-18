@@ -210,46 +210,48 @@ async def start_batch(
 
 
                 # --- LIGAND PREPARATION ---
-                if job['ligand_filename'].lower().endswith('.pdb'):
-                     # Convert PDB -> PDBQT
-                     print(f"DEBUG: Converting ligand {job['ligand_filename']} to PDBQT")
+                # --- LIGAND PREPARATION ---
+                lig_file_ext = job['ligand_filename'].lower().split('.')[-1]
+                
+                # If it's already a .pdbqt file, we can just copy it (assuming it's valid)
+                # But if it's ANY other format (sdf, mol, pdb, smi), we must convert it.
+                if job['ligand_filename'].lower().endswith('.pdbqt'):
                      try:
-                         # Download PDB content
-                         pdb_obj = s3_client.get_object(Bucket=S3_BUCKET, Key=job['ligand_s3_key'])
-                         pdb_content = pdb_obj['Body'].read().decode('utf-8')
-                         
-                         # Convert
-                         pdbqt_content, err = pdb_to_pdbqt(pdb_content, add_hydrogens=True)
-                         if err or not pdbqt_content:
-                             raise Exception(f"Ligand conversion failed: {err}")
-                             
-                         # Upload PDBQT
-                         s3_client.put_object(
-                             Bucket=S3_BUCKET,
-                             Key=job_ligand_key,
-                             Body=pdbqt_content.encode('utf-8')
-                         )
-                         print(f"DEBUG: Ligand conversion & upload successful")
-                     except Exception as conv_err:
-                         print(f"ERROR: Ligand preparation failed: {conv_err}")
-                         raise
-
-                elif 'batch' in job['ligand_s3_key'] or batch_id in job['ligand_s3_key']:
-                    try:
-                        print(f"DEBUG: Copying ligand from {job['ligand_s3_key']} to {job_ligand_key}")
+                        print(f"DEBUG: Ligand is already PDBQT. Copying...")
                         s3_client.copy_object(
                             Bucket=S3_BUCKET,
                             CopySource={'Bucket': S3_BUCKET, 'Key': job['ligand_s3_key']},
                             Key=job_ligand_key
                         )
-                        print(f"DEBUG: Ligand copy successful")
-                    except Exception as copy_err:
+                     except Exception as copy_err:
                         print(f"ERROR: Failed to copy ligand: {copy_err}")
                         raise
                 else:
-                    # Already in correct location (CSV batch case)
-                    print(f"DEBUG: Ligand already in correct location")
-                    job_ligand_key = job['ligand_s3_key']
+                     # Use Universal Converter for SDF, PDB, MOL, SMI, etc.
+                     print(f"DEBUG: Converting ligand {job['ligand_filename']} (Format: {lig_file_ext}) to PDBQT")
+                     try:
+                         # 1. Download Content
+                         from services.smiles_converter import convert_to_pdbqt
+                         
+                         obj = s3_client.get_object(Bucket=S3_BUCKET, Key=job['ligand_s3_key'])
+                         content = obj['Body'].read().decode('utf-8')
+                         
+                         # 2. Convert
+                         pdbqt_content, err = convert_to_pdbqt(content, job['ligand_filename'])
+                         if err:
+                             raise Exception(f"Conversion failed: {err}")
+                             
+                         # 3. Upload PDBQT
+                         s3_client.put_object(
+                             Bucket=S3_BUCKET,
+                             Key=job_ligand_key,
+                             Body=pdbqt_content.encode('utf-8')
+                         )
+                         print(f"DEBUG: Converted {lig_file_ext} to PDBQT successfully")
+                         
+                     except Exception as conv_err:
+                         print(f"ERROR: Ligand preparation failed: {conv_err}")
+                         raise
                 
                 # 1. Generate Config (uses job_id, will upload to jobs/{job_id}/config.txt)
                 print(f"DEBUG: Generating config for job {job_id}")
