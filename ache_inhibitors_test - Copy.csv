@@ -1,0 +1,11 @@
+smiles,name
+CC1=C(C=C(C=C1)NC(=O)CN2CCC(CC2)CC3=C(C4=CC=CC=C4C(=C3)O)O)C,Donepezil
+CCN(CC)CCCC(C)NC1=C2C=CC(=CC2=NC3=C1C=CC(=C3)Cl)OC,Tacrine
+CN(C)C(=O)OC1=CC=CC(=C1)[N+](C)(C)C,Neostigmine
+CCOC(=O)N1CCC2=C(C1)C=C(C=C2)NC(=O)OC3=CC=CC(=C3)N(C)C,Rivastigmine
+CC1=CC2=C(C=C1)N=C(C3=CC=CC=C32)N,Tacrine_Analogue
+CN1CCC2=CC(=C(C=C2C1CC3=CC=CC=C3)O)O,Galantamine
+CN(C)C(=O)OC1=CC=CC2=C1N(C)C3=C2C=C(C=C3)C,Physostigmine
+CCCCCCCCN1C2=CC=CC=C2C3=C1C=C(C=C3)O,Huprine_X
+COc1cc2c(cc1OC)C(=O)C(CC3CCN(CC3)Cc4ccccc4)C2,Donepezil_Analogue_1
+CN1CCC23CCCCC2C1CC(C3)O,Huperzine_A

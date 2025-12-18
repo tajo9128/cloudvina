@@ -1,0 +1,11 @@
+smiles,name
+CC(C)CC(NC(CCc1ccccc1)C(=O)O)C(=O)N1CCCC1C(=O)O,Enalapril
+CCOC(=O)C(CCc1ccccc1)NC(C)C(=O)N1CCCC1C(=O)O,Enalaprilat
+CC(C)CC(NC(C)C(=O)N1C(CCC1)C(=O)O)C(=O)O,Lisinopril
+CCOC(=O)C(CCc1ccccc1)NC(C)C(=O)N1Cc2ccccc2CC1C(=O)O,Benazepril
+CC(C)CC(NC(C)C(=O)N1CCCC1C(=O)O)C(=O)O,Ramipril
+CCOC(=O)C(CCc1ccccc1)NC(C)C(=O)N1C(CC1)C(=O)O,Perindopril
+CC(C)CC(NC(CC(C)C)C(=O)N1CCCC1C(=O)O)C(=O)O,Quinapril
+CCOC(=O)C(CCc1ccccc1)NC(C)C(=O)N1C2CCC1CC(C2)C(=O)O,Trandolapril
+CC(C)CC(NC(C)C(=O)N1C(CCC1C)C(=O)O)C(=O)O,Fosinopril
+CC(Cc1ccc(cc1)OCC(=O)O)NC(C)C(=O)N1CCCC1C(=O)O,Cilazapril

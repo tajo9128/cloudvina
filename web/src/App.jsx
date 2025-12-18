@@ -101,13 +101,17 @@ function App() {
                             path="/dashboard"
                             element={session ? <DashboardPage /> : <Navigate to="/login" />}
                         />
+                        import UnifiedDockingPage from './pages/UnifiedDockingPage'
+                        // ... (keep Layout import)
+
+                        // ... inside Routes ...
                         <Route
                             path="/dock/new"
-                            element={<Navigate to="/dock/batch" replace />}
+                            element={session ? <UnifiedDockingPage /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/dock/batch"
-                            element={session ? <BatchDockingPage /> : <Navigate to="/login" />}
+                            element={session ? <UnifiedDockingPage /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/dock/batch/:batchId"
