@@ -45,51 +45,45 @@ export default function MoleculeViewer({
 
         // Apply style based on state
         viewer.removeAllSurfaces()
+
+        // RECEPTOR (Protein) Style
+        // Select logic: Not hetatms (usually protein) AND not water
+        const proteinSel = { hetflag: false, invert: true } // Logic vary, let's stick to simple
+
+        // LIGAND Style
+        // Select logic: Hetatms (usually ligand in PDBQT)
+        const ligandSel = { hetflag: true }
+
         switch (currentStyle) {
-            case 'greenPink': // Publication
-                viewer.setStyle({ hetflag: false }, {
-                    cartoon: { color: '#22c55e', opacity: 1.0 }
-                })
-                viewer.setStyle({ hetflag: true }, {
-                    stick: { color: '#db2777', radius: 0.25 }
-                })
+            case 'greenPink': // PyMOL-like Publication Style
+                viewer.setStyle({}, { cartoon: { color: '#84cc16' } }) // Lime Green Protein
+                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'magentaCarbon', radius: 0.25 } }) // Magenta Ligand
                 break
-            case 'surface': // Focused Surface
-                // Protein as faint cartoon
-                viewer.setStyle({ hetflag: false }, {
-                    cartoon: { color: 'spectrum', opacity: 0.4 }
-                })
-                // Ligand as pink stick
-                viewer.setStyle({ hetflag: true }, {
-                    stick: { color: '#db2777', radius: 0.25 }
-                })
-                // Add surface ONLY for binding pocket (residues within 6A of ligand)
-                const ligandSel = { hetflag: true }
-                // Select atoms within 6A of ligand AND are protein (hetflag: false)
-                const pocketSel = {
-                    and: [
-                        { hetflag: false },
-                        { within: { distance: 6, sel: ligandSel } }
-                    ]
-                }
-                viewer.addSurface($3Dmol.SurfaceType.VDW, {
+
+            case 'surface': // Surface View
+                viewer.setStyle({}, { cartoon: { color: 'spectrum', opacity: 0.5 } })
+                viewer.addSurface($3Dmol.SurfaceType.MS, {
                     opacity: 0.85,
-                    color: 'white',
-                }, pocketSel, pocketSel)
+                    color: 'white'
+                }, { hetflag: false }) // Surface on protein only
+                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'redCarbon', radius: 0.3 } })
                 break
+
             case 'standard':
             default:
-                // Standard: Cartoon protein, Green stick ligand
+                // PyMOL-like Standard: Spectrum Cartoon + Element Stick Ligand
                 viewer.setStyle({ hetflag: false }, {
-                    cartoon: { color: 'spectrum', opacity: 0.8 }, // Kept 'spectrum' from robust fix
-                    stick: { colorscheme: 'chainHetatm', radius: 0.15, hidden: true }
+                    cartoon: { color: 'spectrum' }
                 })
                 viewer.setStyle({ hetflag: true }, {
                     stick: { colorscheme: 'greenCarbon', radius: 0.25 },
-                    sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
+                    sphere: { scale: 0.3, hidden: true }
                 })
                 break
         }
+
+        viewer.render()
+        viewer.zoomTo()
     }, [pdbqtData, receptorData, interactions, cavities, showHBonds, showHydrophobic, showCavities, showLabels, currentStyle])
 
     useEffect(() => {
