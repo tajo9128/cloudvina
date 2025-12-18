@@ -7,6 +7,14 @@ import { API_URL } from '../config'
 export default function DashboardPage() {
     const [user, setUser] = useState(null)
     const [profile, setProfile] = useState(null)
+    const [jobs, setJobs] = useState([])
+    const [loading, setLoading] = useState(true)
+    const [filters, setFilters] = useState({
+        status: '',
+        search: '',
+        minAffinity: '',
+        maxAffinity: ''
+    })
 
     useEffect(() => {
         fetchJobs()
