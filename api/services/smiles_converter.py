@@ -137,9 +137,11 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
             if not mol:
                 # Try sanitization off
                 mol = Chem.MolFromMolBlock(content, removeHs=False, sanitize=False)
-        elif ext in ['smi', 'smiles']:
-            mol = Chem.MolFromSmiles(content.strip())
-        
+        elif ext in ['mol2']:
+             mol = Chem.MolFromMol2Block(content, removeHs=False)
+             if not mol:
+                 mol = Chem.MolFromMol2Block(content, removeHs=False, sanitize=False)
+
         if not mol:
              return None, f"Could not parse molecule format: {ext}"
 
@@ -160,3 +162,45 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
 
     except Exception as e:
         return None, f"Conversion failed: {str(e)}"
+
+
+def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Convert Receptor files (PDB, MOL2, CIF, PDBQT) to PDBQT.
+    Receptors MUST have 3D coordinates. We do not generate them.
+    """
+    ext = filename.lower().split('.')[-1]
+    
+    try:
+        mol = None
+        
+        if ext in ['pdb', 'ent']:
+            mol = Chem.MolFromPDBBlock(content, removeHs=False)
+        elif ext in ['mol2']:
+            mol = Chem.MolFromMol2Block(content, removeHs=False)
+        elif ext in ['cif', 'mmcif']:
+            # Try parsing MMCIF
+            mol = Chem.MolFromMMCIFBlock(content)
+        elif ext in ['pdbqt']:
+            # Trust input if it's already PDBQT
+            return content, None
+            
+        if not mol:
+             return None, f"Could not parse receptor format: {ext}"
+
+        # Check for 3D coordinates
+        if mol.GetNumConformers() == 0:
+            return None, "Receptor file missing 3D coordinates"
+
+        # Add Hydrogens (Critical for binding pockets)
+        mol = Chem.AddHs(mol, addCoords=True)
+        
+        # Prepare using Meeko (works for proteins too)
+        preparator = MoleculePreparation()
+        preparator.prepare(mol)
+        pdbqt_string = preparator.write_pdbqt_string()
+        
+        return pdbqt_string, None
+        
+    except Exception as e:
+        return None, f"Receptor conversion failed: {str(e)}"

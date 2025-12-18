@@ -166,16 +166,24 @@ async def start_batch(
                 
                 # --- RECEPTOR PREPARATION ---
                 # Check if we need to convert or copy
-                if job['receptor_filename'].lower().endswith('.pdb'):
-                     # Convert PDB -> PDBQT
-                     print(f"DEBUG: Converting receptor {job['receptor_filename']} to PDBQT")
+                # If it's already a .pdbqt in correct location, good.
+                # If not, use universal receptor converter.
+                
+                # We check the source Extension.
+                rec_ext = job['receptor_filename'].lower().split('.')[-1]
+                
+                if rec_ext != 'pdbqt':
+                     # Convert PDB/MOL2/CIF -> PDBQT
+                     print(f"DEBUG: Converting receptor {job['receptor_filename']} (Format: {rec_ext}) to PDBQT")
                      try:
-                         # Download PDB content
+                         from services.smiles_converter import convert_receptor_to_pdbqt
+                         
+                         # Download content
                          pdb_obj = s3_client.get_object(Bucket=S3_BUCKET, Key=job['receptor_s3_key'])
-                         pdb_content = pdb_obj['Body'].read().decode('utf-8')
+                         rec_content = pdb_obj['Body'].read().decode('utf-8')
                          
                          # Convert
-                         pdbqt_content, err = pdb_to_pdbqt(pdb_content, add_hydrogens=True)
+                         pdbqt_content, err = convert_receptor_to_pdbqt(rec_content, job['receptor_filename'])
                          if err or not pdbqt_content:
                              raise Exception(f"Receptor conversion failed: {err}")
                              
