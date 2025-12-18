@@ -315,7 +315,16 @@ export default function BatchDockingPage() {
                         <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
                             <h3 className="font-bold text-slate-700">Configuration</h3>
 
-                            {/* Engine Selection: Hardcoded to Consensus (Hidden) */}
+                            {/* Engine Mode Display */}
+                            <div className="bg-indigo-50 border border-indigo-100 rounded-lg p-4 flex items-center gap-4">
+                                <div className="p-3 bg-indigo-100 rounded-full text-2xl">🧠</div>
+                                <div>
+                                    <div className="font-bold text-indigo-900">Consensus Docking Active</div>
+                                    <div className="text-xs text-indigo-700">
+                                        Powered by <span className="font-bold">AutoDock Vina</span> (Physics) + <span className="font-bold">Gnina</span> (Deep Learning)
+                                    </div>
+                                </div>
+                            </div>
 
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>
