@@ -28,7 +28,7 @@ export default function MolecularDockingPage() {
                             Perform high-accuracy interactions analysis without expensive hardware.
                         </p>
                         <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                            <Link to="/dock/new" className="px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-600/25 transition-all hover:-translate-y-1 flex items-center gap-2">
+                            <Link to="/dock/batch" className="px-8 py-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl font-bold text-lg shadow-lg shadow-primary-600/25 transition-all hover:-translate-y-1 flex items-center gap-2">
                                 Start Docking Now <ArrowRight size={20} />
                             </Link>
                             <Link to="/pricing" className="px-8 py-4 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 rounded-xl font-bold text-lg transition-all hover:-translate-y-1">

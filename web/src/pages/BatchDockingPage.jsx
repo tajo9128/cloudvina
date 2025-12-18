@@ -317,7 +317,7 @@ export default function BatchDockingPage() {
                                         <label className="cursor-pointer block">
                                             <div className="text-4xl mb-2">📂</div>
                                             <span className="block text-sm font-bold text-slate-700 mb-1">Click to Select Ligand Files</span>
-                                            <span className="block text-xs text-slate-500 mb-4">Up to 100 SDF, MOL2, or PDBQT files</span>
+                                            <span className="block text-xs text-slate-500 mb-4">AVG/SDF/MOL2/PDBQT (Auto-converted to PDBQT)</span>
                                             <input
                                                 type="file"
                                                 multiple
