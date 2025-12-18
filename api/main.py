@@ -565,6 +565,17 @@ async def get_job_status(
             # Update DB with latest status and error message
             auth_client.table('jobs').update(update_payload).eq('id', job_id).execute()
             
+            # REFUND LOGIC: If job failed, refund the credit
+            if batch_status['status'] == 'FAILED':
+                 # Use background task or await? This function is async.
+                 # Need to import RateLimiter
+                 from services.rate_limiter import RateLimiter
+                 try:
+                     print(f"DEBUG: Job {job_id} failed. Refunding credit...")
+                     await RateLimiter.refund_usage(auth_client, current_user.id)
+                 except Exception as refund_err:
+                     print(f"Error processing refund: {refund_err}")
+            
             job['status'] = batch_status['status']
         
         # Generate download URLs if succeeded

@@ -204,3 +204,33 @@ class RateLimiter:
         except Exception as e:
             # Log error but don't fail the job submission
             print(f"Error incrementing usage: {str(e)}")
+
+    @staticmethod
+    async def refund_usage(supabase: Client, user_id: str):
+        """Decrement daily job usage for user (Refund for failed job)"""
+        try:
+            today = date.today().isoformat()
+            
+            # Try to get existing record
+            existing = supabase.table('daily_job_usage')\
+                .select('job_count')\
+                .eq('user_id', user_id)\
+                .eq('job_date', today)\
+                .execute()
+            
+            if existing.data and len(existing.data) > 0:
+                current_count = existing.data[0].get('job_count', 0)
+                if current_count > 0:
+                    supabase.table('daily_job_usage')\
+                        .update({'job_count': current_count - 1})\
+                        .eq('user_id', user_id)\
+                        .eq('job_date', today)\
+                        .execute()
+                    print(f"DEBUG: Refunded 1 credit to user {user_id}")
+                else:
+                    print(f"DEBUG: User {user_id} has 0 usage, cannot refund.")
+            else:
+                 print(f"DEBUG: No usage record found for user {user_id} today, cannot refund.")
+                
+        except Exception as e:
+            print(f"Error refunding usage: {str(e)}")

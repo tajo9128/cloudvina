@@ -192,24 +192,54 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
         if mol.GetNumConformers() == 0:
             return None, "Receptor file missing 3D coordinates"
 
-        # Add Hydrogens (Critical for binding pockets)
+        # 1. Remove Waters (HOH) - Common cause of fragmentation
+        try:
+             # pattern for water
+             water = Chem.MolFromSmarts('[OH2]')
+             if water:
+                 mol = Chem.DeleteSubstructs(mol, water)
+                 Chem.SanitizeMol(mol)
+        except Exception:
+             pass # Continue if water removal fails
+        
+        # 2. Add Hydrogens (Critical for binding pockets)
+        # Note: AddHs might add H to salts/ions making them weird, but needed for protein.
         mol = Chem.AddHs(mol, addCoords=True)
         
-        # Prepare using Meeko (works for proteins too)
-        preparator = MoleculePreparation()
-        preparator.prepare(mol)
-        pdbqt_string = preparator.write_pdbqt_string()
+        # 3. Handle Fragmentation (Chains, Ions, etc.)
+        # Meeko fails if multiple disconnected fragments exist.
+        # Strategy: Get fragments, keep large ones (protein chains), process individually, then merge PDBQT.
         
-        # CRITICAL: Receptors for Vina must be RIGID (No ROOT/BRANCH/TORSDOF).
-        # Meeko creates flexible PDBQTs. We must flatten it.
-        rigid_lines = []
-        for line in pdbqt_string.splitlines():
-            if line.startswith(('ROOT', 'ENDROOT', 'BRANCH', 'ENDBRANCH', 'TORSDOF')):
+        frags = Chem.GetMolFrags(mol, asMols=True, sanitizeFrags=False)
+        total_pdbqt_lines = []
+        
+        print(f"DEBUG: Receptor decomposed into {len(frags)} fragments.")
+        
+        for frag in frags:
+            # Filter out tiny fragments (e.g. single ions like Na+, Cl- or remaining waters)
+            if frag.GetNumAtoms() < 4: 
                 continue
-            rigid_lines.append(line)
+                
+            try:
+                # Prepare fragment
+                preparator = MoleculePreparation()
+                preparator.prepare(frag)
+                frag_pdbqt = preparator.write_pdbqt_string()
+                
+                # Flatten (Rigidify)
+                for line in frag_pdbqt.splitlines():
+                    if line.startswith(('ROOT', 'ENDROOT', 'BRANCH', 'ENDBRANCH', 'TORSDOF', 'REMARK')):
+                        continue
+                    total_pdbqt_lines.append(line)
+                    
+            except Exception as e:
+                print(f"Warning: Failed to convert a fragment: {e}")
+                continue
         
-        rigid_pdbqt = "\n".join(rigid_lines)
-        
+        if not total_pdbqt_lines:
+             return None, "Receptor conversion produced no valid PDBQT lines (maybe all fragments were too small?)"
+             
+        rigid_pdbqt = "\n".join(total_pdbqt_lines)
         return rigid_pdbqt, None
         
     except Exception as e:
