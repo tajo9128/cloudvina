@@ -97,6 +97,84 @@ export default function MoleculeViewer({
                 break;
         }
 
+        // Helper to find atoms and draw interactions
+        const drawInteractions = () => {
+            if (showHBonds && interactions?.hydrogen_bonds) {
+                interactions.hydrogen_bonds.forEach(bond => {
+                    // Try to parse residue info like "ASP 128" or "A:128"
+                    let resNum = null;
+                    let resName = null;
+
+                    const resStr = bond.receptor_residue || bond.residue || "";
+                    const match = resStr.match(/(\d+)/);
+                    if (match) resNum = parseInt(match[1]);
+
+                    if (resStr.includes(" ")) resName = resStr.split(" ")[0];
+
+                    // Select Protein Atom
+                    // We try restrictive first (resi + atom), if fails, relax (just resi)
+                    let pSel = { resi: resNum, atom: bond.protein_atom };
+                    if (resName) pSel.resn = resName;
+
+                    let pAtoms = viewer.selectedAtoms(pSel);
+                    if (pAtoms.length === 0 && resNum) {
+                        // Fallback: try just residue number and atom name
+                        pAtoms = viewer.selectedAtoms({ resi: resNum, atom: bond.protein_atom });
+                    }
+
+                    // Select Ligand Atom
+                    const lAtoms = viewer.selectedAtoms({ hetflag: true, atom: bond.ligand_atom });
+
+                    if (pAtoms.length > 0 && lAtoms.length > 0) {
+                        const pAtom = pAtoms[0];
+                        const lAtom = lAtoms[0];
+
+                        // Draw Cylinder
+                        viewer.addCylinder({
+                            start: { x: pAtom.x, y: pAtom.y, z: pAtom.z },
+                            end: { x: lAtom.x, y: lAtom.y, z: lAtom.z },
+                            radius: 0.15,
+                            color: 'yellow',
+                            dashed: true
+                        });
+
+                        // Highlight Protein Residue
+                        viewer.addStyle({ resi: resNum }, { stick: { colorscheme: 'chainHetatm', radius: 0.2 } });
+                    }
+                });
+            }
+
+            if (showHydrophobic && interactions?.hydrophobic_contacts) {
+                interactions.hydrophobic_contacts.forEach(contact => {
+                    if (!contact.protein_atom || !contact.ligand_atom) return;
+
+                    const resStr = contact.residue || "";
+                    const match = resStr.match(/(\d+)/);
+                    const resNum = match ? parseInt(match[1]) : null;
+
+                    // Find atoms (Protein)
+                    const pAtoms = viewer.selectedAtoms({ resi: resNum, atom: contact.protein_atom });
+                    // Find atoms (Ligand)
+                    const lAtoms = viewer.selectedAtoms({ hetflag: true, atom: contact.ligand_atom });
+
+                    if (pAtoms.length > 0 && lAtoms.length > 0) {
+                        viewer.addCylinder({
+                            start: { x: pAtoms[0].x, y: pAtoms[0].y, z: pAtoms[0].z },
+                            end: { x: lAtoms[0].x, y: lAtoms[0].y, z: lAtoms[0].z },
+                            radius: 0.1,
+                            color: 'gray',
+                            dashed: true,
+                            opacity: 0.6
+                        });
+                        viewer.addStyle({ resi: resNum }, { stick: { radius: 0.15, color: 'gray' } });
+                    }
+                });
+            }
+        }
+
+        // Apply Interaction Visualization
+        if (interactions) drawInteractions();
+
         // --- CAVITY RENDERING ---
         if (showCavities && cavities) {
             cavities.forEach(pocket => {
@@ -123,11 +201,36 @@ export default function MoleculeViewer({
                     backgroundOpacity: 0.7
                 });
             });
-        }
+            // Show Binding Affinity Label (Great for Snapshots)
+            if (bindingAffinity) {
+                // Position top-left of the scene roughly? Or just center top.
+                // 3Dmol labels are attached to coordinates. We can attach to protein center or specific point.
+                // A safer bet for "Snapshot Overlay" is a fixed screen element, BUT user wants it IN the snapshot.
+                // Viewer.addLabel adds a label in 3D space. 
 
-        viewer.render()
-        viewer.zoomTo()
-    }, [pdbqtData, receptorData, interactions, cavities, showHBonds, showHydrophobic, showCavities, showLabels, currentStyle])
+                // Let's find the center of the ligand to place the label near it
+                const lAtoms = viewer.selectedAtoms({ hetflag: true });
+                if (lAtoms.length > 0) {
+                    let x = 0, y = 0, z = 0;
+                    lAtoms.forEach(a => { x += a.x; y += a.y; z += a.z; });
+                    x /= lAtoms.length; y /= lAtoms.length; z /= lAtoms.length;
+
+                    // Offset slightly up
+                    viewer.addLabel(`Affinity: ${bindingAffinity} kcal/mol`, {
+                        position: { x, y: y + 5, z }, // 5A above ligand
+                        backgroundColor: 'black',
+                        fontColor: 'white',
+                        fontSize: 16,
+                        showBackground: true,
+                        backgroundOpacity: 0.8,
+                        useScreen: true, // Use screen coordinates (overlay style) for readability
+                    });
+                }
+            }
+
+            viewer.render()
+            viewer.zoomTo()
+        }, [pdbqtData, receptorData, interactions, cavities, showHBonds, showHydrophobic, showCavities, showLabels, currentStyle, bindingAffinity])
 
     useEffect(() => {
         const handleResize = () => { if (viewerRef.current) viewerRef.current.resize() }

@@ -43,10 +43,22 @@ class ReportGenerator:
             # 1. Structure Image
             img = self._mol_to_image(hit.get('compound_name', ''), hit.get('smiles', ''))
             
-            # 2. Scores - Split for clarity per user request
-            vina_score = f"{hit.get('vina_score', 'N/A')}"
-            gnina_score = f"{hit.get('gnina_score', 'N/A')}"
+            # 2. Scores - Handle Flat or Nested (Consensus) structure
+            # Flat: hit['vina_score'], hit['gnina_score']
+            # Nested: hit['engines']['vina']['best_affinity']
             
+            vina_score = hit.get('vina_score')
+            if vina_score is None and 'engines' in hit and 'vina' in hit['engines']:
+                 vina_score = hit['engines']['vina'].get('best_affinity')
+            
+            gnina_score = hit.get('gnina_score')
+            if gnina_score is None and 'engines' in hit and 'gnina' in hit['engines']:
+                 gnina_score = hit['engines']['gnina'].get('best_affinity')
+            
+            # Format
+            vina_text = f"{vina_score:.2f}" if isinstance(vina_score, (int, float)) else (str(vina_score) if vina_score else "N/A")
+            gnina_text = f"{gnina_score:.2f}" if isinstance(gnina_score, (int, float)) else (str(gnina_score) if gnina_score else "N/A")
+
             if 'consensus_score' in hit:
                 # Add tiny note?
                 pass
@@ -63,8 +75,8 @@ class ReportGenerator:
                 str(hit.get('rank', '-')),
                 hit.get('id', 'Unknown')[:8], 
                 img if img else "No Structure",
-                vina_score,
-                gnina_score,
+                vina_text,
+                gnina_text,
                 verdict
             ]
             data.append(row)

@@ -29,12 +29,27 @@ async def submit_md_job(job: MDJobRequest, current_user: dict = Depends(get_curr
     # Prepare config dict
     config_dict = job.config.model_dump()
     
+    # Validation/Conversion: Frontend sends PDBQT, Worker expects PDB
+    # We attempt to convert here to avoid crashing the remote worker
+    from services.smiles_converter import pdbqt_to_pdb
+    
+    pdb_content = job.pdb_content
+    # Check if content looks like PDBQT (has ROOT/BRANCH)
+    if "ROOT" in pdb_content or "TORSDOF" in pdb_content or "pdbqt" in pdb_content.lower():
+         converted, err = pdbqt_to_pdb(pdb_content)
+         if converted:
+             pdb_content = converted
+             # print(f"DEBUG: Converted PDBQT to PDB for job {job_id}")
+         else:
+             print(f"WARNING: PDBQT conversion failed for MD job {job_id}: {err}")
+             # We send original content as fallback, hoping worker handles it or fails gracefully
+    
     # Send task to Celery "run_openmm_simulation"
     # This matches the name defined in workers/openmm_worker.py
     try:
         task = celery_app.send_task(
             "run_openmm_simulation",
-            args=[job_id, job.pdb_content, config_dict],
+            args=[job_id, pdb_content, config_dict],
             task_id=job_id,
             queue="worker" # Send to 'worker' queue
         )

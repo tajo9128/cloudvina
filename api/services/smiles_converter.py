@@ -250,3 +250,38 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
         
     except Exception as e:
         return None, f"Receptor conversion failed: {str(e)}"
+
+
+def pdbqt_to_pdb(pdbqt_content: str) -> Tuple[Optional[str], Optional[str]]:
+    """
+    Convert PDBQT content to PDB format using RDKit.
+    Useful for MD preparation where OpenMM expects PDB.
+    """
+    try:
+        # PDBQT is close to PDB, but has extra keywords and columns.
+        # RDKit often parses it fine if we ignore sanitization initially or treat as PDB.
+        # But ROOT/BRANCH lines need stripping for RDKit to be happy? 
+        # Actually RDKit ignores unknown lines usually.
+        
+        mol = Chem.MolFromPDBBlock(pdbqt_content, removeHs=False, sanitize=False)
+        if not mol:
+            # Fallback: simple text cleanup
+            # Strip ROOT, ENDROOT, BRANCH, ENDBRANCH, TORSDOF
+            lines = [l for l in pdbqt_content.splitlines() if not l.startswith(('ROOT', 'ENDROOT', 'BRANCH', 'ENDBRANCH', 'TORSDOF'))]
+            cleaned_block = "\n".join(lines)
+            mol = Chem.MolFromPDBBlock(cleaned_block, removeHs=False, sanitize=False)
+            
+        if not mol:
+             return None, "Could not parse PDBQT content"
+
+        try:
+             Chem.SanitizeMol(mol)
+        except:
+             pass 
+             
+        # Write PDB
+        pdb_block = Chem.MolToPDBBlock(mol)
+        return pdb_block, None
+        
+    except Exception as e:
+        return None, f"PDBQT->PDB conversion failed: {str(e)}"

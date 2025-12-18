@@ -746,6 +746,7 @@ export default function JobResultsPage() {
                                                     title=""
                                                     interactions={interactions}
                                                     cavities={detectedPockets}
+                                                    bindingAffinity={analysis?.best_affinity || job.binding_affinity}
                                                 />
                                             ) : (
                                                 <div className="flex items-center justify-center h-full text-slate-400">

@@ -578,6 +578,50 @@ async def get_job_status(
             
             job['status'] = batch_status['status']
         
+        # --- LAZY REPAIR: Fetch missing results from S3 if Job Succeeded but DB has no score ---
+        # This fixes the "0.0 Affinity" bug if the container failed to update Supabase
+        is_missing_score = job.get('binding_affinity') is None or float(job.get('binding_affinity') or 0) == 0.0
+        
+        if job['status'] == 'SUCCEEDED' and is_missing_score:
+            try:
+                import boto3
+                import json
+                s3 = boto3.client('s3', region_name=AWS_REGION)
+                
+                # Check for "results.json" which contains parsed scores
+                results_key = f"jobs/{job_id}/results.json"
+                try:
+                    obj = s3.get_object(Bucket=S3_BUCKET, Key=results_key)
+                    results_data = json.loads(obj['Body'].read().decode('utf-8'))
+                    
+                    # Update DB
+                    update_payload = {}
+                    if 'best_affinity' in results_data:
+                         update_payload['binding_affinity'] = results_data['best_affinity']
+                         job['binding_affinity'] = results_data['best_affinity'] # Update local object
+                         
+                    if 'vina_score' in results_data:
+                         # Ensure docking_results structure
+                         current_results = job.get('docking_results') or {}
+                         if isinstance(current_results, str): current_results = json.loads(current_results)
+                         
+                         current_results.update(results_data)
+                         update_payload['docking_results'] = current_results
+                         job['docking_results'] = current_results # Update local object
+                    
+                    if update_payload:
+                        auth_client.table('jobs').update(update_payload).eq('id', job_id).execute()
+                        # print(f"DEBUG: Lazy repaired job {job_id} from S3 results.json")
+                        
+                except Exception as s3_err:
+                     # If results.json missing, try log.txt parsing as last resort?
+                     # For now, just log error.
+                     print(f"Lazy repair failed for {job_id}: {s3_err}")
+                     
+            except Exception as e:
+                print(f"Error in lazy repair block: {e}") 
+
+        
         # Generate download URLs if succeeded
         download_urls = {}
         if job['status'] == 'SUCCEEDED':

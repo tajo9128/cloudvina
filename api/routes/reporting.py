@@ -5,6 +5,17 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 from services.report_generator import ReportGenerator
 import logging
+import boto3
+import os
+from auth import get_current_user
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer, HTTPBearer
+from fastapi import Security
+
+# AWS Config
+AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
+S3_BUCKET = os.getenv("S3_BUCKET", "BioDockify-jobs-use1-1763775915")
+s3_client = boto3.client('s3', region_name=AWS_REGION)
+security = HTTPBearer()
 
 router = APIRouter(prefix="/ranking", tags=["ranking"])
 logger = logging.getLogger(__name__)
@@ -33,24 +44,44 @@ async def generate_pdf_report(request: ReportRequest):
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/jobs/{job_id}/export/pymol")
-async def generate_pymol_export(job_id: str):
+async def generate_pymol_export(
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
     """
     Generate a PyMOL script for a specific job.
     """
     try:
         from services.report_generator import ReportGenerator
-        from auth import get_service_client # Or passed in context
+        from auth import get_authenticated_client
         
-        # Ideally fetch job to get URLs. For speed in this request scope, 
-        # we'll assume we can pass generic URLs or fetch them.
-        # Simulating fetch for now or passing dummy until integrated with DB lookup in router
+        auth_client = get_authenticated_client(credentials.credentials)
         
-        # NOTE: In a real app, I'd fetch the S3 URLs from the DB here.
-        # For this quick fix, I will use placeholders that the user can replace or 
-        # assume standarized naming if S3 keys are predictable.
+        # 1. Fetch Job
+        job_res = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).single().execute()
+        job = job_res.data
         
-        receptor_url = "receptor.pdbqt" # Placeholder or fetch from DB
-        ligand_url = "ligand_out.pdbqt"
+        if not job:
+            raise HTTPException(status_code=404, detail="Job not found")
+
+        # 2. Generate Presigned URLs (Fresh ones)
+        # We need read access to the receptor and ligand files
+        try:
+            receptor_url = s3_client.generate_presigned_url(
+                'get_object',
+                Params={'Bucket': S3_BUCKET, 'Key': job['receptor_s3_key']},
+                ExpiresIn=3600
+            )
+            
+            ligand_url = s3_client.generate_presigned_url(
+                 'get_object',
+                Params={'Bucket': S3_BUCKET, 'Key': job['ligand_s3_key']},
+                ExpiresIn=3600
+            )
+        except Exception as s3_err:
+             logger.error(f"S3 URL generation failed: {s3_err}")
+             raise HTTPException(status_code=500, detail="Failed to generate file URLs")
 
         generator = ReportGenerator()
         buffer = generator.generate_pymol_script(job_id, receptor_url, ligand_url)
@@ -60,6 +91,8 @@ async def generate_pymol_export(job_id: str):
             media_type="text/plain",
             headers={"Content-Disposition": f"attachment; filename=visualization_{job_id}.pml"}
         )
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error(f"PyMOL generation failed: {e}")
         raise HTTPException(status_code=500, detail=str(e))
