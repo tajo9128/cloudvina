@@ -29,6 +29,7 @@ import MolecularDockingPage from './pages/MolecularDockingPage'
 import ProfilePage from './pages/ProfilePage'
 import BillingPage from './pages/BillingPage'
 import SupportPage from './pages/SupportPage'
+import UnifiedDockingPage from './pages/UnifiedDockingPage'
 import Layout from './components/Layout'
 import AdminLayout from './components/AdminLayout'
 import AdminRoute from './components/AdminRoute'
@@ -101,10 +102,6 @@ function App() {
                             path="/dashboard"
                             element={session ? <DashboardPage /> : <Navigate to="/login" />}
                         />
-                        import UnifiedDockingPage from './pages/UnifiedDockingPage'
-                        // ... (keep Layout import)
-
-                        // ... inside Routes ...
                         <Route
                             path="/dock/new"
                             element={session ? <UnifiedDockingPage /> : <Navigate to="/login" />}
