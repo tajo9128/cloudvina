@@ -54,32 +54,75 @@ export default function MoleculeViewer({
         // Select logic: Hetatms (usually ligand in PDBQT)
         const ligandSel = { hetflag: true }
 
+        // ... existing styles ...
         switch (currentStyle) {
-            case 'greenPink': // PyMOL-like Publication Style
-                viewer.setStyle({}, { cartoon: { color: '#84cc16' } }) // Lime Green Protein
-                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'magentaCarbon', radius: 0.25 } }) // Magenta Ligand
-                break
+            case 'greenPink': // PyMOL-like Publication Style (Green Protein, Magenta Ligand)
+                viewer.setStyle({}, { cartoon: { color: '#84cc16' } })
+                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'magentaCarbon', radius: 0.25 } })
+
+                // Show Interacting Residues as Sticks if interactions exist
+                if (interactions) {
+                    const residuesToShow = new Set();
+                    // Collect residue numbers
+                    [...(interactions.hydrogen_bonds || []), ...(interactions.hydrophobic_contacts || [])].forEach(i => {
+                        const resInfo = i.receptor_residue || i.residue;
+                        if (resInfo) {
+                            // resInfo format often "TYR123" or "A:123" or similar. Need to parse.
+                            // Assuming format "RESNUM" or "CHAIN:RESNUM" or number.
+                            // The backend normally returns string "TYR123". Regex to get number.
+                            const match = resInfo.match(/(\d+)/);
+                            if (match) residuesToShow.add(parseInt(match[1]));
+                        }
+                    });
+
+                    residuesToShow.forEach(resi => {
+                        viewer.addStyle({ resi: resi }, { stick: { colorscheme: 'greenCarbon', radius: 0.2 } });
+                    });
+                }
+                break;
 
             case 'surface': // Surface View
                 viewer.setStyle({}, { cartoon: { color: 'spectrum', opacity: 0.5 } })
                 viewer.addSurface($3Dmol.SurfaceType.MS, {
                     opacity: 0.85,
                     color: 'white'
-                }, { hetflag: false }) // Surface on protein only
+                }, { hetflag: false })
                 viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'redCarbon', radius: 0.3 } })
-                break
+                break;
 
             case 'standard':
             default:
-                // PyMOL-like Standard: Spectrum Cartoon + Element Stick Ligand
-                viewer.setStyle({ hetflag: false }, {
-                    cartoon: { color: 'spectrum' }
-                })
-                viewer.setStyle({ hetflag: true }, {
-                    stick: { colorscheme: 'greenCarbon', radius: 0.25 },
-                    sphere: { scale: 0.3, hidden: true }
-                })
-                break
+                viewer.setStyle({ hetflag: false }, { cartoon: { color: 'spectrum' } })
+                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'greenCarbon', radius: 0.25 } })
+                break;
+        }
+
+        // --- CAVITY RENDERING ---
+        if (showCavities && cavities) {
+            cavities.forEach(pocket => {
+                // Calculate approximate radius from volume (V = 4/3 * pi * r^3)
+                // r = cube_root(V * 3 / (4 * pi))
+                const radius = Math.pow((pocket.volume * 3) / (4 * Math.PI), 1 / 3); // Cube root
+
+                // Add Cloud/Sphere represention
+                viewer.addSphere({
+                    center: { x: pocket.center_x, y: pocket.center_y, z: pocket.center_z },
+                    radius: radius,
+                    color: 'cyan',
+                    alpha: 0.4,
+                    wireframe: true
+                });
+
+                // Add visible label for the pocket
+                viewer.addLabel(`Pocket ${pocket.pocket_id}`, {
+                    position: { x: pocket.center_x, y: pocket.center_y, z: pocket.center_z },
+                    backgroundColor: 'black',
+                    fontColor: 'white',
+                    fontSize: 12,
+                    showBackground: true,
+                    backgroundOpacity: 0.7
+                });
+            });
         }
 
         viewer.render()

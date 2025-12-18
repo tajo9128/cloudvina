@@ -391,17 +391,7 @@ export default function JobResultsPage() {
                                                     </div>
                                                 )}
 
-                                                {/* rDock Result */}
-                                                {consensusResults.engines?.rdock && (
-                                                    <div className="p-4 bg-orange-50 rounded-xl border border-orange-100 flex flex-col items-center">
-                                                        <div className="text-2xl mb-1">⚡</div>
-                                                        <div className="font-bold text-orange-900">rDock</div>
-                                                        <div className="text-2xl font-bold text-orange-700 mt-2">
-                                                            {consensusResults.engines.rdock.best_affinity?.toFixed(1) || 'N/A'}
-                                                        </div>
-                                                        <div className="text-xs text-orange-500">rDock Score</div>
-                                                    </div>
-                                                )}
+
 
                                                 {/* Gnina Result */}
                                                 {consensusResults.engines?.gnina && (

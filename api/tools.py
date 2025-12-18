@@ -148,7 +148,32 @@ async def convert_to_pdbqt(file: UploadFile = File(...)):
         )
 
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Conversion failed: {str(e)}"
-        )
+@router.post("/fix-cors")
+async def fix_s3_cors():
+    """
+    Forcefully apply CORS configuration to the S3 bucket using backend credentials.
+    This resolves browser blocking issues for results visualization.
+    """
+    try:
+        import boto3
+        from aws_services import S3_BUCKET, AWS_REGION
+        
+        print(f"Applying CORS to bucket: {S3_BUCKET} in {AWS_REGION}")
+        s3 = boto3.client('s3', region_name=AWS_REGION)
+        
+        cors_configuration = {
+            'CORSRules': [{
+                'AllowedHeaders': ['*'],
+                'AllowedMethods': ['GET', 'PUT', 'POST', 'DELETE', 'HEAD'],
+                'AllowedOrigins': ['*'],
+                'ExposeHeaders': ['ETag', 'x-amz-server-side-encryption', 'x-amz-request-id', 'x-amz-id-2'],
+                'MaxAgeSeconds': 3000
+            }]
+        }
+
+        s3.put_bucket_cors(Bucket=S3_BUCKET, CORSConfiguration=cors_configuration)
+        return {"status": "success", "message": f"CORS rules applied to {S3_BUCKET}"}
+        
+    except Exception as e:
+        print(f"CORS Fix Failed: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to apply CORS: {str(e)}")

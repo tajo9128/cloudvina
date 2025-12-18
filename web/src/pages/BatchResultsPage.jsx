@@ -1,24 +1,21 @@
-import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
-import { supabase } from '../supabaseClient'
-import { API_URL } from '../config'
+import MoleculeViewer from '../components/MoleculeViewer'
 
 export default function BatchResultsPage() {
-    const { jobId: batchId } = useParams() // Note: In App.jsx we might map it to :batchId, but let's check.
-    // Actually standard is :batchId usually. Let's assume standard routing first.
-    // Wait, the route in App.jsx hasn't been added yet. I will name the param "batchId".
-
-    // Oh wait, I need to fetch the param correctly.
-    // I'll assume the route I add in App.jsx is /dock/batch/:batchId
+    const { jobId: batchId } = useParams()
+    // ... imports and params ... Note: I need to preserve existing code references
 
     const [batchData, setBatchData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [sortConfig, setSortConfig] = useState({ key: 'binding_affinity', direction: 'ascending' })
 
-    const routingParams = useParams()
-    const finalBatchId = routingParams.batchId || routingParams.jobId // Fallback if accidentally routed as jobId
+    // State for First Job Visualization
+    const [firstJobPdbqt, setFirstJobPdbqt] = useState(null)
+    const [firstJobReceptor, setFirstJobReceptor] = useState(null)
+    const [firstJobId, setFirstJobId] = useState(null)
 
+    const routingParams = useParams()
+    const finalBatchId = routingParams.batchId || routingParams.jobId
 
     useEffect(() => {
         if (finalBatchId) {
@@ -41,11 +38,55 @@ export default function BatchResultsPage() {
 
             const data = await response.json()
             setBatchData(data)
+
+            // Logic to fetch 1st Job Data for 3D Viewer
+            if (data.jobs && data.jobs.length > 0) {
+                // Determine "First" job (e.g. best affinity or just first in list)
+                // User said "if usr dock 10 only 1st must be shown in 3dmol" -> Literal first or best?
+                // Usually "1st" implies the best rank or just the first item. 
+                // Let's pick the one with the Best Affinity to show the *best result*.
+                // Or just the first one user uploaded? 
+                // Usage of "1st" in docking usually implies "Rank 1".
+                // I will sort by affinity and pick the top one.
+
+                const validJobs = data.jobs.filter(j => j.status === 'SUCCEEDED' && j.binding_affinity !== null)
+                if (validJobs.length > 0) {
+                    const bestJob = validJobs.sort((a, b) => a.binding_affinity - b.binding_affinity)[0]
+                    setFirstJobId(bestJob.id)
+                    fetchJobStructure(bestJob.id, session.access_token)
+                }
+            }
+
         } catch (err) {
             console.error(err)
             setError(err.message)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchJobStructure = async (jobId, token) => {
+        try {
+            const res = await fetch(`${API_URL}/jobs/${jobId}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            })
+            if (!res.ok) return
+            const jobData = await res.json()
+
+            // Output URL
+            if (jobData.download_urls?.output) {
+                const pdbqtRes = await fetch(jobData.download_urls.output)
+                const text = await pdbqtRes.text()
+                setFirstJobPdbqt(text)
+            }
+            // Receptor URL
+            if (jobData.download_urls?.receptor) {
+                const recRes = await fetch(jobData.download_urls.receptor)
+                const text = await recRes.text()
+                setFirstJobReceptor(text)
+            }
+        } catch (e) {
+            console.error("Failed to load 3D structure for batch top hit", e)
         }
     }
 
@@ -176,6 +217,34 @@ export default function BatchResultsPage() {
                         </div>
                     </div>
                 </div>
+            </div>
+
+            {/* 3D Visualization of Top Hit */}
+            <div className="container mx-auto px-4 mt-8">
+                {firstJobPdbqt ? (
+                    <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden mb-8">
+                        <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
+                            <h3 className="font-bold text-slate-900 flex items-center gap-2">
+                                <span className="text-xl">🌟</span> Top Rank Visualization (Best Affinity)
+                            </h3>
+                            <Link to={`/dock/${firstJobId}`} className="text-sm font-medium text-primary-600 hover:text-primary-800">
+                                View Full Details &rarr;
+                            </Link>
+                        </div>
+                        <div className="h-[500px] w-full relative">
+                            <MoleculeViewer
+                                pdbqtData={firstJobPdbqt}
+                                receptorData={firstJobReceptor}
+                                width="100%"
+                                height="100%"
+                                title="Use Mouse to Rotate/Zoom"
+                            />
+                        </div>
+                    </div>
+                ) : (
+                    /* Optional placeholder or just hidden until loaded */
+                    loading ? null : null
+                )}
             </div>
 
             {/* Results Table */}

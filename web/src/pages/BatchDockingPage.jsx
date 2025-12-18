@@ -31,8 +31,8 @@ export default function BatchDockingPage() {
     const handleLigandChange = (e) => {
         if (e.target.files) {
             const files = Array.from(e.target.files)
-            if (files.length > 10) { // SIMPLIFIED: Limit to 10
-                setError("Maximum 10 files allowed per batch (Simplified Mode).")
+            if (files.length > 100) {
+                setError("Maximum 100 files allowed per job.")
                 return
             }
             setLigandFiles(files)
@@ -112,10 +112,10 @@ export default function BatchDockingPage() {
             // Note: The backend now performs conversion/preparation synchronously during this call
             const steps = [
                 'Validating files...',
-                'Converting Receptor to PDBQT (Protein Prep)...',
-                'Converting Ligands to PDBQT (Ligand Prep)...',
-                'Generating Vina Configs...',
-                'Submitting to AWS Batch...'
+                'STEP 1: Rigorous Receptor Prep (Waters Removed, Polar H Added)...',
+                'STEP 2: Advanced Ligand Optimization (MMFF94 / ETKDG)...',
+                'STEP 3: Configuring Consensus Engine (AutoDock Vina + Gnina AI)...',
+                'STEP 4: Dispatching High-Performance Workload...'
             ]
 
             // Simulate steps for UI feedback (since backend does it all in one call)
@@ -247,14 +247,9 @@ export default function BatchDockingPage() {
         <div className="min-h-screen bg-slate-50 pt-24 pb-12">
             <main className="container mx-auto px-4">
                 <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-                    <div className="mb-8 flex justify-between items-center">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-900 mb-2">Batch Docking</h1>
-                            <p className="text-slate-500">Dock multiple ligands against a single target.</p>
-                        </div>
-                        <Link to="/dock/new" className="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center">
-                            <span className="mr-2">🔬</span> Single Mode
-                        </Link>
+                    <div className="mb-8 text-center">
+                        <h1 className="text-3xl font-bold text-slate-900 mb-2">Molecular Docking</h1>
+                        <p className="text-slate-500">Run docking for 1 to 100 ligands instantly.</p>
                     </div>
 
                     <form onSubmit={uploadMode === 'csv' ? handleCSVSubmit : handleSubmit} className="space-y-8">
@@ -290,7 +285,7 @@ export default function BatchDockingPage() {
                         {/* Conditional: Ligand Files or CSV */}
                         {uploadMode === 'files' ? (
                             <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Ligands (Select Multiple, Max 10)</label>
+                                <label className="block text-sm font-bold text-slate-700 mb-2">Ligands (Select 1-100 files)</label>
                                 <input
                                     type="file"
                                     multiple
@@ -320,9 +315,7 @@ export default function BatchDockingPage() {
                         <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
                             <h3 className="font-bold text-slate-700">Configuration</h3>
 
-                            {/* Engine Selection */}
-                            {/* Engine Selection: Consensus Only (Hidden) */}
-                            {/* <div>...Selector Removed...</div> */}
+                            {/* Engine Selection: Hardcoded to Consensus (Hidden) */}
 
                             <div className="grid grid-cols-2 gap-4 text-sm">
                                 <div>

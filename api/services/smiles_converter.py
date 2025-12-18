@@ -41,13 +41,13 @@ def smiles_to_pdbqt(smiles: str, name: str = "ligand") -> Tuple[Optional[str], O
             if result != 0:
                 return None, f"Failed to generate 3D coordinates for: {smiles[:50]}..."
         
-        # Optimize geometry using MMFF
+    # Optimize geometry using MMFF
         try:
-            AllChem.MMFFOptimizeMolecule(mol, maxIters=200)
+            AllChem.MMFFOptimizeMolecule(mol, maxIters=500)
         except Exception:
             # If MMFF fails, try UFF
             try:
-                AllChem.UFFOptimizeMolecule(mol, maxIters=200)
+                AllChem.UFFOptimizeMolecule(mol, maxIters=500)
             except Exception:
                 logger.warning(f"Geometry optimization failed for {name}, using embedded coords")
         
@@ -97,18 +97,8 @@ def pdb_to_pdbqt(pdb_content: str, remove_water: bool = True, add_hydrogens: boo
         if add_hydrogens:
             mol = Chem.AddHs(mol, addCoords=True)
         
-        # Note: RDKit RemoveHs removes ALL Hs, but we want to remove implicit only or handle specific cases? 
-        # Actually RDKit by default reads usually without Hs unless specified. 
-        # AddHs(addCoords=True) is good.
-
         # 3. Convert with Meeko
         preparator = MoleculePreparation()
-        
-        # If it's a receptor, we might want specific settings, but Meeko handles generic molecules well.
-        # For receptor docking, usually we need to preserve specific structure. 
-        # Meeko is primarily for Ligands.
-        # However, for simple PDBQT conversion of protein with explicit Hs, it works reasonable well for Vina/Gnina.
-        
         preparator.prepare(mol)
         pdbqt_string = preparator.write_pdbqt_string()
         
@@ -151,7 +141,10 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
         # 3. Generate 3D Coords if missing (SDF usually has them, but safety check)
         # Check if we have conformers
         if mol.GetNumConformers() == 0:
-            AllChem.EmbedMolecule(mol, randomSeed=42)
+            # Use ETKDGv3 for state-of-the-art embedding
+            params = AllChem.ETKDGv3()
+            params.randomSeed = 42
+            AllChem.EmbedMolecule(mol, params)
 
         # 4. Meeko Preparation
         preparator = MoleculePreparation()
@@ -168,6 +161,7 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
     """
     Convert Receptor files (PDB, MOL2, CIF, PDBQT) to PDBQT.
     Receptors MUST have 3D coordinates. We do not generate them.
+    Includes Rigorous Preparation: Water Removal, Ion Preservation, Fragmentation handling.
     """
     ext = filename.lower().split('.')[-1]
     
@@ -182,8 +176,13 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
             # Try parsing MMCIF
             mol = Chem.MolFromMMCIFBlock(content)
         elif ext in ['pdbqt']:
-            # Trust input if it's already PDBQT
-            return content, None
+            # Force processing: Try to parse PDBQT as PDB to clean waters/ions
+            # RDKit can often read PDBQT atom blocks if treated as PDB
+            mol = Chem.MolFromPDBBlock(content, removeHs=False)
+            if not mol:
+                 # Fallback: If strict parsing fails, trust raw content but warn
+                 print(f"Warning: Could not parse PDBQT structure for {filename}. Skipping water removal.")
+                 return content, None
             
         if not mol:
              return None, f"Could not parse receptor format: {ext}"
@@ -216,28 +215,35 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
         print(f"DEBUG: Receptor decomposed into {len(frags)} fragments.")
         
         for frag in frags:
-            # Filter out tiny fragments (e.g. single ions like Na+, Cl- or remaining waters)
-            if frag.GetNumAtoms() < 4: 
-                continue
-                
+            # Filter: We want to keep Proteins AND Ions, but maybe not isolated weird small things that break Meeko.
+            # But "Correct" preparation should keep cofactors.
+            # We trust Meeko to handle small fragments if passed individually.
+            
             try:
                 # Prepare fragment
                 preparator = MoleculePreparation()
                 preparator.prepare(frag)
                 frag_pdbqt = preparator.write_pdbqt_string()
                 
-                # Flatten (Rigidify)
+                # Flatten (Rigidify) - Strip ROOT/BRANCH/TORSDOF
+                # This effectively treats every fragment as a rigid body in the same frame.
                 for line in frag_pdbqt.splitlines():
                     if line.startswith(('ROOT', 'ENDROOT', 'BRANCH', 'ENDBRANCH', 'TORSDOF', 'REMARK')):
-                        continue
+                         continue
                     total_pdbqt_lines.append(line)
                     
             except Exception as e:
-                print(f"Warning: Failed to convert a fragment: {e}")
+                # Fallback for single atoms (Ions) that Meeko might choke on
+                if frag.GetNumAtoms() == 1:
+                     # It's an ion. We can try to manually format it if Meeko failed?
+                     # Ideally we just log warning. Most ions pass Meeko fine.
+                     print(f"Warning: Failed to convert ion/fragment: {e}")
+                else:
+                     print(f"Warning: Failed to convert a fragment: {e}")
                 continue
         
         if not total_pdbqt_lines:
-             return None, "Receptor conversion produced no valid PDBQT lines (maybe all fragments were too small?)"
+             return None, "Receptor conversion produced no valid PDBQT lines"
              
         rigid_pdbqt = "\n".join(total_pdbqt_lines)
         return rigid_pdbqt, None
