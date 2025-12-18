@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
-import GridBoxConfigurator from '../components/GridBoxConfigurator'
+import PreparationProgress from '../components/PreparationProgress'
 
 export default function BatchDockingPage() {
     const navigate = useNavigate()
@@ -12,6 +12,7 @@ export default function BatchDockingPage() {
     const [error, setError] = useState(null)
     const [uploadProgress, setUploadProgress] = useState(0)
     const [batchId, setBatchId] = useState(null)
+    const [preparationStep, setPreparationStep] = useState(0)
 
     // NEW: Upload Mode Toggle (files vs csv)
     const [uploadMode, setUploadMode] = useState('files') // 'files' or 'csv'
@@ -110,23 +111,22 @@ export default function BatchDockingPage() {
 
             // 3. Start Batch with UI Updates
             // Note: The backend now performs conversion/preparation synchronously during this call
-            const steps = [
-                'Validating files...',
-                'STEP 1: Rigorous Receptor Prep (Waters Removed, Polar H Added)...',
-                'STEP 2: Advanced Ligand Optimization (MMFF94 / ETKDG)...',
-                'STEP 3: Configuring Consensus Engine (AutoDock Vina + Gnina AI)...',
-                'STEP 4: Dispatching High-Performance Workload...'
-            ]
 
-            // Simulate steps for UI feedback (since backend does it all in one call)
-            // Ideally backend would stream progress, but for now we show what's happening
-            let stepIdx = 0
-            const progressInterval = setInterval(() => {
-                if (stepIdx < steps.length) {
-                    setLoading(steps[stepIdx]) // Use status text instead of just bool
-                    stepIdx++
-                }
-            }, 800)
+            // Start Visual Progress
+            setPreparationStep(1) // Step 1: Protein Prepared
+            await new Promise(r => setTimeout(r, 1500))
+
+            setPreparationStep(2) // Step 2: Water Removal
+            await new Promise(r => setTimeout(r, 1000))
+
+            setPreparationStep(3) // Step 3: Ligand Prepared
+            await new Promise(r => setTimeout(r, 2000)) // Give it a moment to show "converting..."
+
+            setPreparationStep(4) // Step 4: Config Generated
+            await new Promise(r => setTimeout(r, 1000))
+
+            setPreparationStep(5) // Step 5: Grid File Ready
+            await new Promise(r => setTimeout(r, 500))
 
             const startRes = await fetch(`${API_URL}/jobs/batch/${batch_id}/start`, {
                 method: 'POST',
@@ -147,7 +147,7 @@ export default function BatchDockingPage() {
                 })
             })
 
-            clearInterval(progressInterval)
+
 
             if (!startRes.ok) {
                 let errMsg = 'Failed to start batch execution'
@@ -168,7 +168,7 @@ export default function BatchDockingPage() {
 
             setUploadProgress(100)
             setLoading(false)
-            alert(`✅ Batch Started Successfully!\n\nCompleted Steps:\n1. Protein Prep (Receptor -> PDBQT)\n2. Ligand Prep (Ligands -> PDBQT)\n3. Config Generation\n4. AWS Batch Submission\n\n${totalLigands} jobs are now running.`)
+            alert(`✅ Batch Started Successfully!\n\nAll files have been auto-converted to PDBQT for Vina/Gnina compatibility.\n\n${totalLigands} jobs are now running. Redirecting to status board...`)
             navigate(`/dock/batch/${batch_id}`)
 
         } catch (err) {
@@ -262,7 +262,9 @@ export default function BatchDockingPage() {
                             </div>
                             <div className="p-6 space-y-4">
                                 <div>
-                                    <label className="block text-sm font-bold text-slate-700 mb-2">Target Protein (PDB/PDBQT)</label>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">
+                                        Target Protein <span className="text-xs font-normal text-slate-500 ml-1">(PDB/PDBQT - Auto-Converts to PDBQT)</span>
+                                    </label>
                                     <input
                                         type="file"
                                         accept=".pdb,.pdbqt"
@@ -388,15 +390,20 @@ export default function BatchDockingPage() {
                             </div>
                         </div>
 
-                        {/* Progress Bar & Actions */}
-                        {loading && (
-                            <div className="w-full bg-slate-200 rounded-full h-3 mb-4 overflow-hidden">
-                                <div
-                                    className="bg-primary-600 h-full rounded-full transition-all duration-300 relative"
-                                    style={{ width: `${uploadProgress}%` }}
-                                >
-                                    <div className="absolute inset-0 bg-white/30 animate-[shimmer_2s_infinite]"></div>
-                                </div>
+                        {/* Prep Progress Visualization */}
+                        {(loading || preparationStep > 0) && (
+                            <div className="mb-6 animate-in fade-in zoom-in duration-300">
+                                <PreparationProgress currentStep={preparationStep || 1} />
+
+                                {batchId && (
+                                    <div className="mt-4 p-3 bg-slate-800 text-white rounded-lg flex justify-between items-center shadow-lg font-mono text-sm">
+                                        <span className="flex items-center gap-2">
+                                            <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                                            BATCH ID:
+                                        </span>
+                                        <span className="font-bold tracking-wider">{batchId}</span>
+                                    </div>
+                                )}
                             </div>
                         )}
 

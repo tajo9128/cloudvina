@@ -60,6 +60,10 @@ export default function DashboardPage() {
         }
     }
 
+    const handleFilterChange = (newFilters) => {
+        setFilters(prev => ({ ...prev, ...newFilters }))
+    }
+
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* Header Section */}
@@ -70,9 +74,9 @@ export default function DashboardPage() {
                             <h1 className="text-3xl font-bold text-slate-900 mb-2">Dashboard</h1>
                             <p className="text-slate-500">Manage and monitor your molecular docking simulations</p>
                         </div>
-                        <Link to="/dock/new" className="btn-primary">
+                        <Link to="/dock/batch" className="btn-primary">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-                            New Job
+                            New Batch Job
                         </Link>
                     </div>
                 </div>
@@ -127,8 +131,8 @@ export default function DashboardPage() {
                         <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">🧪</div>
                         <h3 className="text-xl font-bold text-slate-900 mb-2">No jobs found</h3>
                         <p className="text-slate-500 mb-8 max-w-md mx-auto">You haven't run any docking simulations yet. Start your first job to see results here.</p>
-                        <Link to="/dock/new" className="btn-primary inline-flex">
-                            Create First Job
+                        <Link to="/dock/batch" className="btn-primary inline-flex">
+                            Create First Batch Job
                         </Link>
                     </div>
                 ) : (

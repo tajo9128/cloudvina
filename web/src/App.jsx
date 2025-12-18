@@ -25,11 +25,9 @@ import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
 import PricingPage from './pages/PricingPage'
 import RefundsPage from './pages/RefundsPage'
-import MolecularDockingPage from './pages/MolecularDockingPage'
 import ProfilePage from './pages/ProfilePage'
 import BillingPage from './pages/BillingPage'
 import SupportPage from './pages/SupportPage'
-import UnifiedDockingPage from './pages/UnifiedDockingPage'
 import Layout from './components/Layout'
 import AdminLayout from './components/AdminLayout'
 import AdminRoute from './components/AdminRoute'
@@ -104,11 +102,11 @@ function App() {
                         />
                         <Route
                             path="/dock/new"
-                            element={session ? <UnifiedDockingPage /> : <Navigate to="/login" />}
+                            element={<Navigate to="/dock/batch" replace />}
                         />
                         <Route
                             path="/dock/batch"
-                            element={session ? <UnifiedDockingPage /> : <Navigate to="/login" />}
+                            element={session ? <BatchDockingPage /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/dock/batch/:batchId"
