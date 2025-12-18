@@ -43,20 +43,30 @@ export default function PreparationProgress({ currentStep }) {
             </h3>
 
             {/* Progress Bar */}
+            {/* 5 Separate Progress Bars */}
             <div className="mb-8">
                 <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium text-slate-700">
-                        Step {currentStep} of 5
+                        Processing Step {currentStep} / 5
                     </span>
-                    <span className="text-sm font-medium text-primary-600">
-                        {Math.round((currentStep / 5) * 100)}%
+                    <span className="text-sm font-medium text-primary-600 animate-pulse">
+                        {currentStep === 1 && "Analyzing PDB..."}
+                        {currentStep === 2 && "Stripping Waters..."}
+                        {currentStep === 3 && "Optimizing Ligands..."}
+                        {currentStep === 4 && "Generating Config..."}
+                        {currentStep === 5 && "Finalizing Batch..."}
                     </span>
                 </div>
-                <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
-                    <div
-                        className="bg-primary-600 h-2 rounded-full transition-all duration-500 ease-out"
-                        style={{ width: `${(currentStep / 5) * 100}%` }}
-                    ></div>
+                <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((step) => (
+                        <div
+                            key={step}
+                            className={`h-2 flex-1 rounded-full transition-all duration-500 ${currentStep >= step
+                                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 shadow-sm'
+                                    : 'bg-slate-200'
+                                } ${currentStep === step ? 'animate-pulse' : ''}`}
+                        ></div>
+                    ))}
                 </div>
             </div>
 
