@@ -7,7 +7,7 @@ import DockingResultsTable from '../components/DockingResultsTable'
 import InteractionTable from '../components/InteractionTable'
 import DrugPropertiesPanel from '../components/DrugPropertiesPanel'
 import { API_URL } from '../config'
-import AIExplainer from '../components/AIExplainer'
+// import AIExplainer from '../components/AIExplainer' // Disabled per user request
 import MoleculeViewer from '../components/MoleculeViewer'
 
 export default function JobResultsPage() {
@@ -513,12 +513,12 @@ export default function JobResultsPage() {
                                 <DrugPropertiesPanel jobId={jobId} />
                             )}
 
-                            {/* AI Explainer */}
-                            {job.status === 'SUCCEEDED' && (
+                            {/* AI Explainer - Disabled */}
+                            {/* {job.status === 'SUCCEEDED' && (
                                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                                     <AIExplainer jobId={jobId} />
                                 </div>
-                            )}
+                            )} */}
 
                             {/* Downloads Section */}
                             {job.status === 'SUCCEEDED' && job.download_urls && (
