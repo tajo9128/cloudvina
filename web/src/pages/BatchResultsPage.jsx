@@ -158,14 +158,45 @@ export default function BatchResultsPage() {
         return `${mins}m ${secs}s`
     }
 
+    // SKELETON LOADING STATE (Fixes "Extra Page" feeling)
     if (loading) return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="text-center">
-                <div className="inline-block p-4 rounded-full bg-primary-50 text-primary-600 mb-4">
-                    <svg className="w-8 h-8 animate-spin" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+        <div className="min-h-screen bg-slate-50 pt-24 pb-12">
+            <main className="container mx-auto px-4">
+                <div className="max-w-7xl mx-auto">
+                    {/* Skeleton Header */}
+                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6 animate-pulse">
+                        <div className="bg-slate-50 px-8 py-6 flex flex-col md:flex-row justify-between gap-4 border-b border-slate-200">
+                            <div className="space-y-3">
+                                <div className="h-8 w-64 bg-slate-200 rounded"></div>
+                                <div className="h-4 w-40 bg-slate-200 rounded"></div>
+                            </div>
+                            <div className="h-8 w-32 bg-slate-200 rounded"></div>
+                        </div>
+                        <div className="px-8 py-8 bg-slate-50/50">
+                            <div className="h-4 w-full bg-slate-200 rounded mb-2"></div>
+                            <div className="h-2 w-full bg-slate-200 rounded"></div>
+                        </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        <div className="space-y-6">
+                            {/* Skeleton Summary */}
+                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-pulse">
+                                <div className="h-6 w-32 bg-slate-200 rounded mb-4"></div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="h-24 bg-slate-100 rounded-xl"></div>
+                                    <div className="h-24 bg-slate-100 rounded-xl"></div>
+                                    <div className="col-span-2 h-24 bg-slate-100 rounded-xl"></div>
+                                </div>
+                            </div>
+                        </div>
+                        {/* Skeleton Viewer */}
+                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 h-[600px] animate-pulse bg-slate-100 flex items-center justify-center">
+                            <div className="text-slate-300 font-bold text-xl">Loading Viewer...</div>
+                        </div>
+                    </div>
                 </div>
-                <div className="text-slate-500">Loading Batch Analysis...</div>
-            </div>
+            </main>
         </div>
     )
 
