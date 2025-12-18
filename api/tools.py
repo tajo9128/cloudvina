@@ -148,6 +148,9 @@ async def convert_to_pdbqt(file: UploadFile = File(...)):
         )
 
     except Exception as e:
+        print(f"Error converting molecule: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Conversion failed: {str(e)}")
+
 @router.post("/fix-cors")
 async def fix_s3_cors():
     """
