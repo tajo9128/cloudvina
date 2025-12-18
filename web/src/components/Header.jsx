@@ -118,7 +118,7 @@ export default function Header() {
                     {user ? (
                         <div className="relative group">
                             <button className="flex items-center gap-2 font-bold text-slate-900 hover:text-primary-600 transition-colors">
-                                <span>Hi, {user.email?.split('@')[0]}</span>
+                                <span>Hi, {user.email ? user.email.split('@')[0] : 'User'}</span>
                                 <ChevronDown size={16} />
                             </button>
 
