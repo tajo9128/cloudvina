@@ -31,8 +31,8 @@ export default function BatchDockingPage() {
     const handleLigandChange = (e) => {
         if (e.target.files) {
             const files = Array.from(e.target.files)
-            if (files.length > 10) { // SIMPLIFIED: Limit to 10
-                setError("Maximum 10 files allowed per batch (Simplified Mode).")
+            if (files.length > 100) {
+                setError("Maximum 100 files allowed per job.")
                 return
             }
             setLigandFiles(files)
@@ -112,10 +112,10 @@ export default function BatchDockingPage() {
             // Note: The backend now performs conversion/preparation synchronously during this call
             const steps = [
                 'Validating files...',
-                'Converting Receptor to PDBQT (Protein Prep)...',
-                'Converting Ligands to PDBQT (Ligand Prep)...',
-                'Generating Vina Configs...',
-                'Submitting to AWS Batch...'
+                'STEP 1: Rigorous Receptor Prep (Waters Removed, Polar H Added)...',
+                'STEP 2: Advanced Ligand Optimization (MMFF94 / ETKDG)...',
+                'STEP 3: Configuring Consensus Engine (AutoDock Vina + Gnina AI)...',
+                'STEP 4: Dispatching High-Performance Workload...'
             ]
 
             // Simulate steps for UI feedback (since backend does it all in one call)
@@ -247,108 +247,172 @@ export default function BatchDockingPage() {
         <div className="min-h-screen bg-slate-50 pt-24 pb-12">
             <main className="container mx-auto px-4">
                 <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 p-8">
-                    <div className="mb-8 flex justify-between items-center">
-                        <div>
-                            <h1 className="text-3xl font-bold text-slate-900 mb-2">Batch Docking</h1>
-                            <p className="text-slate-500">Dock multiple ligands against a single target.</p>
-                        </div>
-                        <Link to="/dock/new" className="px-5 py-2.5 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center">
-                            <span className="mr-2">🔬</span> Single Mode
-                        </Link>
+                    <div className="mb-8 text-center">
+                        <h1 className="text-3xl font-bold text-slate-900 mb-2">Molecular Docking</h1>
+                        <p className="text-slate-500">Run docking for 1 to 100 ligands instantly.</p>
                     </div>
 
-                    <form onSubmit={uploadMode === 'csv' ? handleCSVSubmit : handleSubmit} className="space-y-8">
-                        {/* Upload Mode Toggle */}
-                        <div className="flex gap-2 p-1 bg-slate-100 rounded-xl">
-                            <button
-                                type="button"
-                                onClick={() => setUploadMode('files')}
-                                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${uploadMode === 'files' ? 'bg-white shadow-sm text-primary-700' : 'text-slate-600 hover:text-slate-800'}`}
-                            >
-                                📁 Ligand Files
-                            </button>
-                            <button
-                                type="button"
-                                onClick={() => setUploadMode('csv')}
-                                className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${uploadMode === 'csv' ? 'bg-white shadow-sm text-primary-700' : 'text-slate-600 hover:text-slate-800'}`}
-                            >
-                                📋 CSV (SMILES)
-                            </button>
-                        </div>
+                    <form onSubmit={uploadMode === 'csv' ? handleCSVSubmit : handleSubmit} className="space-y-6">
 
-                        {/* Receptor */}
-                        <div>
-                            <label className="block text-sm font-bold text-slate-700 mb-2">Receptor (PDB/PDBQT)</label>
-                            <input
-                                type="file"
-                                accept=".pdb,.pdbqt"
-                                onChange={(e) => setReceptorFile(e.target.files[0])}
-                                className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary-50 file:text-primary-700 hover:file:bg-primary-100"
-                            />
-                        </div>
-
-                        {/* Conditional: Ligand Files or CSV */}
-                        {uploadMode === 'files' ? (
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">Ligands (Select Multiple, Max 10)</label>
-                                <input
-                                    type="file"
-                                    multiple
-                                    accept=".pdbqt,.sdf,.mol2"
-                                    onChange={handleLigandChange}
-                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-secondary-50 file:text-secondary-700 hover:file:bg-secondary-100"
-                                />
-                                <p className="text-xs text-slate-400 mt-1">{ligandFiles.length} files selected</p>
+                        {/* SECTION 1: Receptor & Preparation */}
+                        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold">1</div>
+                                <h3 className="font-bold text-slate-700">Receptor & Preparation</h3>
                             </div>
-                        ) : (
-                            <div>
-                                <label className="block text-sm font-bold text-slate-700 mb-2">CSV File with SMILES (Max 50 rows)</label>
-                                <input
-                                    type="file"
-                                    accept=".csv"
-                                    onChange={(e) => setCsvFile(e.target.files[0])}
-                                    className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                                />
-                                <p className="text-xs text-slate-400 mt-1">
-                                    CSV must have a <code className="bg-slate-100 px-1 rounded">smiles</code> column. Optional: <code className="bg-slate-100 px-1 rounded">name</code> column.
-                                </p>
-                                {csvFile && <p className="text-xs text-green-600 mt-1">✓ {csvFile.name} selected</p>}
-                            </div>
-                        )}
-
-                        {/* Configuration */}
-                        <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-4">
-                            <h3 className="font-bold text-slate-700">Configuration</h3>
-
-                            {/* Engine Selection */}
-                            {/* Engine Selection: Consensus Only (Hidden) */}
-                            {/* <div>...Selector Removed...</div> */}
-
-                            <div className="grid grid-cols-2 gap-4 text-sm">
+                            <div className="p-6 space-y-4">
                                 <div>
-                                    <span className="text-slate-500">Grid Box:</span> <span className="font-mono text-slate-900">Center({gridParams.center_x},{gridParams.center_y},{gridParams.center_z})</span>
+                                    <label className="block text-sm font-bold text-slate-700 mb-2">Target Protein (PDB/PDBQT)</label>
+                                    <input
+                                        type="file"
+                                        accept=".pdb,.pdbqt"
+                                        onChange={(e) => setReceptorFile(e.target.files[0])}
+                                        className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer"
+                                    />
                                 </div>
-                                <div>
-                                    <span className="text-slate-500">Size:</span> <span className="font-mono text-slate-900">({gridParams.size_x},{gridParams.size_y},{gridParams.size_z})</span>
+                                <div className="flex items-center gap-2 pt-2">
+                                    <input type="checkbox" checked={true} readOnly className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
+                                    <label className="text-sm text-slate-600">
+                                        <span className="font-semibold text-slate-700">Auto-Remove Waters</span> (Recommended)
+                                    </label>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <input type="checkbox" checked={true} readOnly className="w-4 h-4 text-blue-600 rounded border-slate-300 focus:ring-blue-500" />
+                                    <label className="text-sm text-slate-600">
+                                        <span className="font-semibold text-slate-700">Add Polar Hydrogens</span>
+                                    </label>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Progress */}
+                        {/* SECTION 2: Ligands */}
+                        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">2</div>
+                                <h3 className="font-bold text-slate-700">Ligand Library</h3>
+                            </div>
+                            <div className="p-6 space-y-4">
+                                {/* Upload Mode Toggle */}
+                                <div className="flex gap-2 p-1 bg-slate-100 rounded-xl mb-4">
+                                    <button
+                                        type="button"
+                                        onClick={() => setUploadMode('files')}
+                                        className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${uploadMode === 'files' ? 'bg-white shadow-sm text-emerald-700' : 'text-slate-600 hover:text-slate-800'}`}
+                                    >
+                                        📁 Files (.pdbqt, .sdf, .mol2)
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setUploadMode('csv')}
+                                        className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${uploadMode === 'csv' ? 'bg-white shadow-sm text-emerald-700' : 'text-slate-600 hover:text-slate-800'}`}
+                                    >
+                                        📋 Paste SMILES (CSV)
+                                    </button>
+                                </div>
+
+                                {uploadMode === 'files' ? (
+                                    <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-xl p-8 text-center hover:bg-slate-100 transition-colors">
+                                        <label className="cursor-pointer block">
+                                            <div className="text-4xl mb-2">📂</div>
+                                            <span className="block text-sm font-bold text-slate-700 mb-1">Click to Select Ligand Files</span>
+                                            <span className="block text-xs text-slate-500 mb-4">Up to 100 SDF, MOL2, or PDBQT files</span>
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept=".pdbqt,.sdf,.mol2"
+                                                onChange={handleLigandChange}
+                                                className="hidden"
+                                            />
+                                            {ligandFiles.length > 0 ? (
+                                                <div className="inline-block px-4 py-2 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold">
+                                                    {ligandFiles.length} files attached
+                                                </div>
+                                            ) : (
+                                                <span className="px-4 py-2 bg-white border border-slate-300 rounded-lg text-sm text-slate-600 shadow-sm">
+                                                    Browse Files...
+                                                </span>
+                                            )}
+                                        </label>
+                                    </div>
+                                ) : (
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-2">Upload CSV File</label>
+                                        <input
+                                            type="file"
+                                            accept=".csv"
+                                            onChange={(e) => setCsvFile(e.target.files[0])}
+                                            className="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100 cursor-pointer"
+                                        />
+                                        <p className="text-xs text-slate-400 mt-2">
+                                            Required Column: <code className="bg-slate-100 px-1 rounded">smiles</code>
+                                        </p>
+                                        {csvFile && <p className="text-sm text-emerald-600 font-bold mt-2">✓ {csvFile.name}</p>}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* SECTION 3: Configuration */}
+                        <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm">
+                            <div className="bg-slate-50 px-6 py-4 border-b border-slate-200 flex items-center gap-3">
+                                <div className="w-8 h-8 rounded-full bg-purple-100 text-purple-600 flex items-center justify-center font-bold">3</div>
+                                <h3 className="font-bold text-slate-700">Engine & Grid Configuration</h3>
+                            </div>
+                            <div className="p-6 space-y-6">
+                                {/* Engine Card */}
+                                <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-100 rounded-xl p-4 flex items-center gap-4">
+                                    <div className="p-3 bg-white rounded-full text-2xl shadow-sm">🧠</div>
+                                    <div>
+                                        <div className="font-bold text-indigo-900">Consensus Mode Active</div>
+                                        <div className="text-xs text-indigo-700 mt-1">
+                                            Running <span className="font-bold">AutoDock Vina</span> and <span className="font-bold">Gnina (Deep Learning)</span> in parallel.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Grid Params (Read Only) */}
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                        <div className="text-xs text-slate-500 uppercase font-bold mb-1">Grid Center</div>
+                                        <div className="font-mono text-slate-700">
+                                            {gridParams.center_x}, {gridParams.center_y}, {gridParams.center_z}
+                                        </div>
+                                    </div>
+                                    <div className="bg-slate-50 p-3 rounded-lg border border-slate-200">
+                                        <div className="text-xs text-slate-500 uppercase font-bold mb-1">Grid Size (Å)</div>
+                                        <div className="font-mono text-slate-700">
+                                            {gridParams.size_x} x {gridParams.size_y} x {gridParams.size_z}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Progress Bar & Actions */}
                         {loading && (
-                            <div className="w-full bg-slate-200 rounded-full h-2.5 mb-4">
-                                <div className="bg-primary-600 h-2.5 rounded-full" style={{ width: `${uploadProgress}%` }}></div>
+                            <div className="w-full bg-slate-200 rounded-full h-3 mb-4 overflow-hidden">
+                                <div
+                                    className="bg-primary-600 h-full rounded-full transition-all duration-300 relative"
+                                    style={{ width: `${uploadProgress}%` }}
+                                >
+                                    <div className="absolute inset-0 bg-white/30 animate-[shimmer_2s_infinite]"></div>
+                                </div>
                             </div>
                         )}
 
-                        {error && <div className="text-red-600 text-sm bg-red-50 p-3 rounded-lg">{error}</div>}
+                        {error && (
+                            <div className="flex items-center gap-3 text-red-600 text-sm bg-red-50 p-4 rounded-xl border border-red-100">
+                                <span className="text-xl">⚠️</span>
+                                {error}
+                            </div>
+                        )}
 
                         <button
                             type="submit"
                             disabled={loading}
-                            className={`w-full py-4 rounded-xl font-bold text-white shadow-lg ${loading ? 'bg-primary-400 cursor-wait' : 'bg-primary-600 hover:bg-primary-700'}`}
+                            className={`w-full py-4 rounded-xl font-bold text-lg text-white shadow-lg transition-all transform active:scale-[0.99] ${loading ? 'bg-slate-400 cursor-not-allowed' : 'bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 shadow-primary-500/30'}`}
                         >
-                            {loading ? (typeof loading === 'string' ? loading : 'Processing Batch...') : uploadMode === 'csv' ? '🧪 Dock SMILES Compounds' : '🚀 Launch Batch Docking'}
+                            {loading ? (typeof loading === 'string' ? loading : 'Processing Batch...') : '🚀 Launch Docking Batch'}
                         </button>
                     </form>
                 </div>

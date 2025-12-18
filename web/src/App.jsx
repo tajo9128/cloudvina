@@ -103,7 +103,7 @@ function App() {
                         />
                         <Route
                             path="/dock/new"
-                            element={session ? <NewJobPage /> : <Navigate to="/login" />}
+                            element={<Navigate to="/dock/batch" replace />}
                         />
                         <Route
                             path="/dock/batch"

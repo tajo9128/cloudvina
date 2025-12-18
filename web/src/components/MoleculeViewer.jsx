@@ -45,51 +45,88 @@ export default function MoleculeViewer({
 
         // Apply style based on state
         viewer.removeAllSurfaces()
+
+        // RECEPTOR (Protein) Style
+        // Select logic: Not hetatms (usually protein) AND not water
+        const proteinSel = { hetflag: false, invert: true } // Logic vary, let's stick to simple
+
+        // LIGAND Style
+        // Select logic: Hetatms (usually ligand in PDBQT)
+        const ligandSel = { hetflag: true }
+
+        // ... existing styles ...
         switch (currentStyle) {
-            case 'greenPink': // Publication
-                viewer.setStyle({ hetflag: false }, {
-                    cartoon: { color: '#22c55e', opacity: 1.0 }
-                })
-                viewer.setStyle({ hetflag: true }, {
-                    stick: { color: '#db2777', radius: 0.25 }
-                })
-                break
-            case 'surface': // Focused Surface
-                // Protein as faint cartoon
-                viewer.setStyle({ hetflag: false }, {
-                    cartoon: { color: 'spectrum', opacity: 0.4 }
-                })
-                // Ligand as pink stick
-                viewer.setStyle({ hetflag: true }, {
-                    stick: { color: '#db2777', radius: 0.25 }
-                })
-                // Add surface ONLY for binding pocket (residues within 6A of ligand)
-                const ligandSel = { hetflag: true }
-                // Select atoms within 6A of ligand AND are protein (hetflag: false)
-                const pocketSel = {
-                    and: [
-                        { hetflag: false },
-                        { within: { distance: 6, sel: ligandSel } }
-                    ]
+            case 'greenPink': // PyMOL-like Publication Style (Green Protein, Magenta Ligand)
+                viewer.setStyle({}, { cartoon: { color: '#84cc16' } })
+                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'magentaCarbon', radius: 0.25 } })
+
+                // Show Interacting Residues as Sticks if interactions exist
+                if (interactions) {
+                    const residuesToShow = new Set();
+                    // Collect residue numbers
+                    [...(interactions.hydrogen_bonds || []), ...(interactions.hydrophobic_contacts || [])].forEach(i => {
+                        const resInfo = i.receptor_residue || i.residue;
+                        if (resInfo) {
+                            // resInfo format often "TYR123" or "A:123" or similar. Need to parse.
+                            // Assuming format "RESNUM" or "CHAIN:RESNUM" or number.
+                            // The backend normally returns string "TYR123". Regex to get number.
+                            const match = resInfo.match(/(\d+)/);
+                            if (match) residuesToShow.add(parseInt(match[1]));
+                        }
+                    });
+
+                    residuesToShow.forEach(resi => {
+                        viewer.addStyle({ resi: resi }, { stick: { colorscheme: 'greenCarbon', radius: 0.2 } });
+                    });
                 }
-                viewer.addSurface($3Dmol.SurfaceType.VDW, {
+                break;
+
+            case 'surface': // Surface View
+                viewer.setStyle({}, { cartoon: { color: 'spectrum', opacity: 0.5 } })
+                viewer.addSurface($3Dmol.SurfaceType.MS, {
                     opacity: 0.85,
-                    color: 'white',
-                }, pocketSel, pocketSel)
-                break
+                    color: 'white'
+                }, { hetflag: false })
+                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'redCarbon', radius: 0.3 } })
+                break;
+
             case 'standard':
             default:
-                // Standard: Cartoon protein, Green stick ligand
-                viewer.setStyle({ hetflag: false }, {
-                    cartoon: { color: 'spectrum', opacity: 0.8 }, // Kept 'spectrum' from robust fix
-                    stick: { colorscheme: 'chainHetatm', radius: 0.15, hidden: true }
-                })
-                viewer.setStyle({ hetflag: true }, {
-                    stick: { colorscheme: 'greenCarbon', radius: 0.25 },
-                    sphere: { colorscheme: 'greenCarbon', scale: 0.3 }
-                })
-                break
+                viewer.setStyle({ hetflag: false }, { cartoon: { color: 'spectrum' } })
+                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'greenCarbon', radius: 0.25 } })
+                break;
         }
+
+        // --- CAVITY RENDERING ---
+        if (showCavities && cavities) {
+            cavities.forEach(pocket => {
+                // Calculate approximate radius from volume (V = 4/3 * pi * r^3)
+                // r = cube_root(V * 3 / (4 * pi))
+                const radius = Math.pow((pocket.volume * 3) / (4 * Math.PI), 1 / 3); // Cube root
+
+                // Add Cloud/Sphere represention
+                viewer.addSphere({
+                    center: { x: pocket.center_x, y: pocket.center_y, z: pocket.center_z },
+                    radius: radius,
+                    color: 'cyan',
+                    alpha: 0.4,
+                    wireframe: true
+                });
+
+                // Add visible label for the pocket
+                viewer.addLabel(`Pocket ${pocket.pocket_id}`, {
+                    position: { x: pocket.center_x, y: pocket.center_y, z: pocket.center_z },
+                    backgroundColor: 'black',
+                    fontColor: 'white',
+                    fontSize: 12,
+                    showBackground: true,
+                    backgroundOpacity: 0.7
+                });
+            });
+        }
+
+        viewer.render()
+        viewer.zoomTo()
     }, [pdbqtData, receptorData, interactions, cavities, showHBonds, showHydrophobic, showCavities, showLabels, currentStyle])
 
     useEffect(() => {

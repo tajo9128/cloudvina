@@ -7,7 +7,7 @@ import DockingResultsTable from '../components/DockingResultsTable'
 import InteractionTable from '../components/InteractionTable'
 import DrugPropertiesPanel from '../components/DrugPropertiesPanel'
 import { API_URL } from '../config'
-import AIExplainer from '../components/AIExplainer'
+// import AIExplainer from '../components/AIExplainer' // Disabled per user request
 import MoleculeViewer from '../components/MoleculeViewer'
 
 export default function JobResultsPage() {
@@ -391,17 +391,7 @@ export default function JobResultsPage() {
                                                     </div>
                                                 )}
 
-                                                {/* rDock Result */}
-                                                {consensusResults.engines?.rdock && (
-                                                    <div className="p-4 bg-orange-50 rounded-xl border border-orange-100 flex flex-col items-center">
-                                                        <div className="text-2xl mb-1">⚡</div>
-                                                        <div className="font-bold text-orange-900">rDock</div>
-                                                        <div className="text-2xl font-bold text-orange-700 mt-2">
-                                                            {consensusResults.engines.rdock.best_affinity?.toFixed(1) || 'N/A'}
-                                                        </div>
-                                                        <div className="text-xs text-orange-500">rDock Score</div>
-                                                    </div>
-                                                )}
+
 
                                                 {/* Gnina Result */}
                                                 {consensusResults.engines?.gnina && (
@@ -523,12 +513,12 @@ export default function JobResultsPage() {
                                 <DrugPropertiesPanel jobId={jobId} />
                             )}
 
-                            {/* AI Explainer */}
-                            {job.status === 'SUCCEEDED' && (
+                            {/* AI Explainer - Disabled */}
+                            {/* {job.status === 'SUCCEEDED' && (
                                 <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
                                     <AIExplainer jobId={jobId} />
                                 </div>
-                            )}
+                            )} */}
 
                             {/* Downloads Section */}
                             {job.status === 'SUCCEEDED' && job.download_urls && (

@@ -155,15 +155,18 @@ export default function SingleDockingPage() {
             // 2.5 Show preparation progress
             setError(null)
             setPreparationStep(1) // Protein preparation
-            await new Promise(r => setTimeout(r, 1500))
-
-            setPreparationStep(2) // Ligand preparation
-            await new Promise(r => setTimeout(r, 1500))
-
-            setPreparationStep(3) // Config generation
             await new Promise(r => setTimeout(r, 1000))
 
-            setPreparationStep(4) // Grid file ready
+            setPreparationStep(2) // Water Removal
+            await new Promise(r => setTimeout(r, 1000))
+
+            setPreparationStep(3) // Ligand preparation
+            await new Promise(r => setTimeout(r, 1500))
+
+            setPreparationStep(4) // Config generation
+            await new Promise(r => setTimeout(r, 1000))
+
+            setPreparationStep(5) // Grid file ready
             await new Promise(r => setTimeout(r, 1000))
 
             // 3. Start Job with Grid Params

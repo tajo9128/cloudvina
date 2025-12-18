@@ -46,7 +46,8 @@ class ReportGenerator:
             # 2. Scores Text
             scores_text = (
                 f"Consensus: {hit.get('consensus_score', 0):.2f}\n"
-                f"Docking: {hit.get('docking_score', 'N/A')}\n"
+                f"Vina Affinity: {hit.get('vina_score', 'N/A')}\n"
+                f"Gnina Score: {hit.get('gnina_score', 'N/A')}\n"
                 f"Binding (ΔG): {hit.get('binding_energy', 'N/A')}"
             )
 

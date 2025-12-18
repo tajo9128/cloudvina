@@ -52,6 +52,7 @@ export default function Header() {
         { name: 'Pricing', path: '/pricing' },
         { name: 'Tools', path: '/tools/converter' },
         { name: 'Blog', path: '/blog' },
+        { name: 'Contact', path: '/contact' },
         { name: 'Dashboard', path: '/dashboard' },
     ]
 
@@ -153,7 +154,7 @@ export default function Header() {
                     ) : (
                         <Link to="/login" className="font-bold text-slate-900 hover:text-primary-600 transition-colors">Log In</Link>
                     )}
-                    <Link to="/dock/new" className="hidden sm:block px-6 py-2.5 bg-primary-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:-translate-y-0.5 transition-all">
+                    <Link to="/dock/batch" className="hidden sm:block px-6 py-2.5 bg-primary-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:-translate-y-0.5 transition-all">
                         Start Docking
                     </Link>
                 </div>

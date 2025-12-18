@@ -51,8 +51,18 @@ export default function ContactPage() {
                                         <div>
                                             <p className="font-bold text-slate-900">Location</p>
                                             <p className="text-slate-600">
-                                                Bala Nagar, Hyderabad, Telangana, India
+                                                7-887/C, Subhah Nagar, Jeedimetla,
+                                                <br />Bala Nagar, Hyderabad, 500055
                                             </p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start">
+                                        <div className="w-10 h-10 rounded-lg bg-primary-50 text-primary-600 flex items-center justify-center text-xl mr-4 flex-shrink-0">📱</div>
+                                        <div>
+                                            <p className="font-bold text-slate-900">Phone</p>
+                                            <a href="tel:+919700987475" className="text-primary-600 hover:text-primary-700 font-medium transition-colors">
+                                                +91 9700987475
+                                            </a>
                                         </div>
                                     </div>
                                 </div>
