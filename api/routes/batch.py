@@ -24,6 +24,7 @@ class BatchSubmitRequest(BaseModel):
 
 class BatchStartRequest(BaseModel):
     grid_params: dict
+    engine: Optional[str] = "vina"
 
 def generate_batch_urls(batch_id: str, receptor_filename: str, ligand_filenames: List[str]):
     try:
