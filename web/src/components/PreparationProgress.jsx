@@ -3,23 +3,29 @@ export default function PreparationProgress({ currentStep }) {
         {
             id: 1,
             name: 'Protein Prepared',
-            description: 'Cleaning, adding hydrogens',
+            description: 'Parsing structure, identifying chains',
             icon: '🧬'
         },
         {
             id: 2,
+            name: 'Water Removal',
+            description: 'Stripping HOH/Water molecules',
+            icon: '💧'
+        },
+        {
+            id: 3,
             name: 'Ligand Prepared',
             description: '3D coordinates, charges',
             icon: '💊'
         },
         {
-            id: 3,
+            id: 4,
             name: 'Config Generated',
             description: 'Grid parameters set',
             icon: '⚙️'
         },
         {
-            id: 4,
+            id: 5,
             name: 'Grid File Ready',
             description: 'Binding site configured',
             icon: '📐'
@@ -40,16 +46,16 @@ export default function PreparationProgress({ currentStep }) {
             <div className="mb-8">
                 <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium text-slate-700">
-                        Step {currentStep} of 4
+                        Step {currentStep} of 5
                     </span>
                     <span className="text-sm font-medium text-primary-600">
-                        {Math.round((currentStep / 4) * 100)}%
+                        {Math.round((currentStep / 5) * 100)}%
                     </span>
                 </div>
                 <div className="w-full bg-slate-200 rounded-full h-2 overflow-hidden">
                     <div
                         className="bg-primary-600 h-2 rounded-full transition-all duration-500 ease-out"
-                        style={{ width: `${(currentStep / 4) * 100}%` }}
+                        style={{ width: `${(currentStep / 5) * 100}%` }}
                     ></div>
                 </div>
             </div>
@@ -65,17 +71,17 @@ export default function PreparationProgress({ currentStep }) {
                         <div
                             key={step.id}
                             className={`flex items-start gap-4 p-4 rounded-lg border-2 transition-all ${isActive
-                                    ? 'border-primary-500 bg-primary-50'
-                                    : isCompleted
-                                        ? 'border-green-500 bg-green-50'
-                                        : 'border-slate-200 bg-slate-50 opacity-60'
+                                ? 'border-primary-500 bg-primary-50'
+                                : isCompleted
+                                    ? 'border-green-500 bg-green-50'
+                                    : 'border-slate-200 bg-slate-50 opacity-60'
                                 }`}
                         >
                             <div className={`flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center font-bold text-lg ${isActive
-                                    ? 'bg-primary-500 text-white animate-pulse'
-                                    : isCompleted
-                                        ? 'bg-green-500 text-white'
-                                        : 'bg-slate-300 text-slate-600'
+                                ? 'bg-primary-500 text-white animate-pulse'
+                                : isCompleted
+                                    ? 'bg-green-500 text-white'
+                                    : 'bg-slate-300 text-slate-600'
                                 }`}>
                                 {isCompleted ? (
                                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -118,7 +124,7 @@ export default function PreparationProgress({ currentStep }) {
             </div>
 
             {/* Current Action */}
-            {currentStep <= 4 && (
+            {currentStep <= 5 && (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-start gap-3">
                         <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -126,10 +132,11 @@ export default function PreparationProgress({ currentStep }) {
                         </svg>
                         <div className="text-sm text-blue-900">
                             <strong>What's happening:</strong> {
-                                currentStep === 1 ? "Removing water molecules, adding polar hydrogens, and assigning charges to the protein structure." :
-                                    currentStep === 2 ? "Generating 3D coordinates, energy minimization, and converting ligand to docking-ready format." :
-                                        currentStep === 3 ? "Creating AutoDock Vina configuration file with your grid box parameters." :
-                                            "Setting up the binding site grid and validating all files are ready for docking."
+                                currentStep === 1 ? "Parsing protein structure, identifying chains, and validating format." :
+                                    currentStep === 2 ? "Detected water molecules (HOH). Stripping them to clear binding site." :
+                                        currentStep === 3 ? "Generating 3D coordinates, energy minimization, and converting ligand." :
+                                            currentStep === 4 ? "Creating AutoDock Vina configuration file with your grid box parameters." :
+                                                "Finalizing setup and launching docker container."
                             }
                         </div>
                     </div>
