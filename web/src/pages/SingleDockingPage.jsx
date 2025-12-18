@@ -11,6 +11,7 @@ export default function SingleDockingPage() {
     const [receptorFile, setReceptorFile] = useState(null)
     const [ligandFile, setLigandFile] = useState(null)
     const [error, setError] = useState(null)
+    const [engine, setEngine] = useState('consensus') // Default: Consensus
     const [preparationStep, setPreparationStep] = useState(0) // 0=not started, 1-4=prep steps
 
     // Grid Box State
@@ -129,7 +130,8 @@ export default function SingleDockingPage() {
                 },
                 body: JSON.stringify({
                     receptor_filename: receptorFile.name,
-                    ligand_filename: ligandFile.name
+                    ligand_filename: ligandFile.name,
+                    engine: engine // Pass selected engine
                 })
             })
 
@@ -263,6 +265,23 @@ export default function SingleDockingPage() {
                     </div>
 
                     <form onSubmit={handleSubmit} className="space-y-8">
+                        {/* Engine Selection (New) */}
+                        <div>
+                            <label className="block text-sm font-bold text-slate-700 mb-2">Docking Engine</label>
+                            <select
+                                value={engine}
+                                onChange={(e) => setEngine(e.target.value)}
+                                className="block w-full text-sm rounded-lg border-slate-300 shadow-sm focus:border-primary-500 focus:ring-primary-500"
+                                disabled={!!submittedJob}
+                            >
+                                <option value="consensus">Consensus (Vina + Gnina) - Recommended</option>
+                                <option value="vina">Vina (Classic)</option>
+                            </select>
+                            <p className="text-xs text-slate-500 mt-1">
+                                Consensus runs both engines and combines results for higher accuracy.
+                            </p>
+                        </div>
+
                         {/* Receptor Upload */}
                         <div>
                             <label className="block text-sm font-bold text-slate-700 mb-2">
