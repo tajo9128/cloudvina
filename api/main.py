@@ -374,6 +374,45 @@ async def start_job(
         
         # Prepare files for AWS Batch (Ensure PDBQT)
         # ------------------------------------------
+        # 1. Receptor Preparation (PDB/MOL2/CIF -> Rigid PDBQT)
+        job_receptor_key = job['receptor_s3_key']
+        rec_ext = job['receptor_filename'].lower().split('.')[-1]
+        
+        if rec_ext != 'pdbqt':
+             print(f"DEBUG: Converting receptor {job['receptor_filename']} (Format: {rec_ext}) to PDBQT")
+             try:
+                 import boto3
+                 from services.smiles_converter import convert_receptor_to_pdbqt
+                 
+                 s3 = boto3.client('s3', region_name=AWS_REGION)
+                 
+                 # Download content
+                 pdb_obj = s3.get_object(Bucket=S3_BUCKET, Key=job['receptor_s3_key'])
+                 rec_content = pdb_obj['Body'].read().decode('utf-8')
+                 
+                 # Convert
+                 pdbqt_content, err = convert_receptor_to_pdbqt(rec_content, job['receptor_filename'])
+                 if err or not pdbqt_content:
+                     raise Exception(f"Receptor conversion failed: {err}")
+                 
+                 # Upload PDBQT
+                 # We overwrite the original 'receptor_s3_key' in the JOB record effectively? 
+                 # Or better, create a new key. Let's create a new key to avoid overwriting input.
+                 new_rec_key = f"jobs/{job_id}/receptor_input_converted.pdbqt"
+                 
+                 s3.put_object(
+                     Bucket=S3_BUCKET,
+                     Key=new_rec_key,
+                     Body=pdbqt_content.encode('utf-8')
+                 )
+                 print(f"DEBUG: Receptor conversion & upload successful: {new_rec_key}")
+                 job_receptor_key = new_rec_key
+                 
+             except Exception as conv_err:
+                 print(f"ERROR: Receptor preparation failed: {conv_err}")
+                 raise HTTPException(status_code=400, detail=f"Receptor conversion failed: {str(conv_err)}")
+        
+        # 2. Ligand Preparation (SDF/MOL/PDB/SMI -> Flexible PDBQT)
         # If ligand is not PDBQT, convert it now to avoid container compatibility issues.
         final_ligand_key = job['ligand_s3_key']
         
