@@ -200,7 +200,17 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
         preparator.prepare(mol)
         pdbqt_string = preparator.write_pdbqt_string()
         
-        return pdbqt_string, None
+        # CRITICAL: Receptors for Vina must be RIGID (No ROOT/BRANCH/TORSDOF).
+        # Meeko creates flexible PDBQTs. We must flatten it.
+        rigid_lines = []
+        for line in pdbqt_string.splitlines():
+            if line.startswith(('ROOT', 'ENDROOT', 'BRANCH', 'ENDBRANCH', 'TORSDOF')):
+                continue
+            rigid_lines.append(line)
+        
+        rigid_pdbqt = "\n".join(rigid_lines)
+        
+        return rigid_pdbqt, None
         
     except Exception as e:
         return None, f"Receptor conversion failed: {str(e)}"
