@@ -115,6 +115,23 @@ export default function MoleculeViewer({
     }
     const handleStyleChange = (style) => {
         if (!viewerRef.current) return
+        const viewer = viewerRef.current
+        viewer.setStyle({}, {}) // clear
+
+        if (style === 'stick') {
+            viewer.setStyle({ not: { hetflag: true } }, { stick: { radius: 0.15, colorscheme: 'chainHetatm' } })
+            viewer.setStyle({ hetflag: true }, { stick: { radius: 0.25, colorscheme: 'greenCarbon' } })
+        } else if (style === 'sphere') {
+            viewer.setStyle({ hetflag: true }, { sphere: { scale: 0.4, colorscheme: 'greenCarbon' } })
+        } else if (style === 'cartoon') {
+            viewer.setStyle({ not: { hetflag: true } }, { cartoon: { color: 'spectrum', opacity: 0.8 } })
+        } else {
+            // Default: both style (cartoon protein + stick ligand)
+            viewer.setStyle({ not: { hetflag: true } }, { cartoon: { color: 'spectrum', opacity: 0.8 } })
+            viewer.setStyle({ hetflag: true }, { stick: { radius: 0.25, colorscheme: 'greenCarbon' } })
+        }
+
+        viewer.render()
         setCurrentStyle(style)
     }
 
