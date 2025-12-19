@@ -201,36 +201,38 @@ export default function MoleculeViewer({
                     backgroundOpacity: 0.7
                 });
             });
-            // Show Binding Affinity Label (Great for Snapshots)
-            if (bindingAffinity) {
-                // Position top-left of the scene roughly? Or just center top.
-                // 3Dmol labels are attached to coordinates. We can attach to protein center or specific point.
-                // A safer bet for "Snapshot Overlay" is a fixed screen element, BUT user wants it IN the snapshot.
-                // Viewer.addLabel adds a label in 3D space. 
+        }
 
-                // Let's find the center of the ligand to place the label near it
-                const lAtoms = viewer.selectedAtoms({ hetflag: true });
-                if (lAtoms.length > 0) {
-                    let x = 0, y = 0, z = 0;
-                    lAtoms.forEach(a => { x += a.x; y += a.y; z += a.z; });
-                    x /= lAtoms.length; y /= lAtoms.length; z /= lAtoms.length;
+        // Show Binding Affinity Label (Great for Snapshots)
+        if (bindingAffinity) {
+            // Position top-left of the scene roughly? Or just center top.
+            // 3Dmol labels are attached to coordinates. We can attach to protein center or specific point.
+            // A safer bet for "Snapshot Overlay" is a fixed screen element, BUT user wants it IN the snapshot.
+            // Viewer.addLabel adds a label in 3D space. 
 
-                    // Offset slightly up
-                    viewer.addLabel(`Affinity: ${bindingAffinity} kcal/mol`, {
-                        position: { x, y: y + 5, z }, // 5A above ligand
-                        backgroundColor: 'black',
-                        fontColor: 'white',
-                        fontSize: 16,
-                        showBackground: true,
-                        backgroundOpacity: 0.8,
-                        useScreen: true, // Use screen coordinates (overlay style) for readability
-                    });
-                }
+            // Let's find the center of the ligand to place the label near it
+            const lAtoms = viewer.selectedAtoms({ hetflag: true });
+            if (lAtoms.length > 0) {
+                let x = 0, y = 0, z = 0;
+                lAtoms.forEach(a => { x += a.x; y += a.y; z += a.z; });
+                x /= lAtoms.length; y /= lAtoms.length; z /= lAtoms.length;
+
+                // Offset slightly up
+                viewer.addLabel(`Affinity: ${bindingAffinity} kcal/mol`, {
+                    position: { x, y: y + 5, z }, // 5A above ligand
+                    backgroundColor: 'black',
+                    fontColor: 'white',
+                    fontSize: 16,
+                    showBackground: true,
+                    backgroundOpacity: 0.8,
+                    useScreen: true, // Use screen coordinates (overlay style) for readability
+                });
             }
+        }
 
-            viewer.render()
-            viewer.zoomTo()
-        }, [pdbqtData, receptorData, interactions, cavities, showHBonds, showHydrophobic, showCavities, showLabels, currentStyle, bindingAffinity])
+        viewer.render()
+        viewer.zoomTo()
+    }, [pdbqtData, receptorData, interactions, cavities, showHBonds, showHydrophobic, showCavities, showLabels, currentStyle, bindingAffinity])
 
     useEffect(() => {
         const handleResize = () => { if (viewerRef.current) viewerRef.current.resize() }
