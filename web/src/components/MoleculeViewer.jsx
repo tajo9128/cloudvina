@@ -8,7 +8,8 @@ export default function MoleculeViewer({
     height = "100%",
     title = "3D Structure",
     interactions = null,
-    cavities = null
+    cavities = null,
+    bindingAffinity = null
 }) {
     const viewerRef = useRef(null)
     const containerRef = useRef(null)
