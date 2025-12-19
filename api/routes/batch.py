@@ -552,7 +552,17 @@ async def get_batch_details(
         if not jobs:
              raise HTTPException(status_code=404, detail="Batch not found")
 
-        # 2. Calculate Stats
+        # 2. Calculate Stats & Enrich with ML Scoring
+        from services.ml_scorer import MLScorer
+        scorer = MLScorer(profile='balanced')
+        
+        # Rank and Explain
+        ranked_jobs = scorer.rank_hits(jobs)
+        
+        # Inject textual explanation
+        for job in ranked_jobs:
+            job['ai_explanation'] = scorer.explain_ranking(job)
+
         total_jobs = len(jobs)
         completed_jobs = sum(1 for j in jobs if j['status'] == 'SUCCEEDED')
         failed_jobs = sum(1 for j in jobs if j['status'] == 'FAILED')
@@ -580,10 +590,67 @@ async def get_batch_details(
                 "success_rate": (completed_jobs / total_jobs * 100) if total_jobs > 0 else 0,
                 "best_affinity": best_affinity
             },
-            "jobs": jobs
+            "jobs": ranked_jobs  # Return the enriched, ranked jobs
         }
+
 
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch batch details: {str(e)}")
+
+
+@router.get("/{batch_id}/report-pdf")
+async def get_batch_report_pdf(
+    batch_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Generate and download a PDF SAR Report for the batch.
+    """
+    from fastapi.responses import StreamingResponse
+    from services.reporting import generate_batch_pdf
+    
+    try:
+        auth_client = get_authenticated_client(credentials.credentials)
+        
+        # 1. Fetch jobs
+        jobs_res = auth_client.table('jobs').select('*').eq('batch_id', batch_id).eq('user_id', current_user.id).execute()
+        jobs = jobs_res.data
+        
+        if not jobs:
+             raise HTTPException(status_code=404, detail="Batch not found or empty")
+
+        # 2. Fetch Batch Metadata (created_at)
+        # Since we don't have a separate 'batches' table in this simple schema (batch_id is just a key in jobs),
+        # we infer metadata from the first job.
+        batch_meta = {
+            'created_at': jobs[0]['created_at'],
+            'id': batch_id
+        }
+        
+        # 3. Generate PDF
+        pdf_buffer = generate_batch_pdf(batch_id, jobs, batch_meta)
+        
+        if not pdf_buffer:
+             raise HTTPException(status_code=500, detail="PDF generation returned empty buffer")
+        
+        # 4. Return Stream
+        filename = f"BioDockify_Report_{batch_id[:8]}.pdf"
+        
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename={filename}"
+            }
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to generate PDF report: {str(e)}")
+

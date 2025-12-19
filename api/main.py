@@ -27,7 +27,10 @@ from routes.admin import router as admin_router
 from routes.evolution import router as evolution_router
 from routes.batch import router as batch_router  # ADD BATCH ROUTES
 from services.cavity_detector import CavityDetector
+from services.cavity_detector import CavityDetector
 from services.drug_properties import DrugPropertiesCalculator
+from services.smiles_converter import pdbqt_to_pdb
+from rdkit import Chem
 
 # NEW: Import SQLAdmin setup
 # from admin_sqladmin import setup_admin
@@ -750,6 +753,75 @@ async def detect_cavities(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to detect cavities: {str(e)}"
         )
+
+
+@app.get("/jobs/{job_id}/admet")
+async def get_job_admet(
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Calculate ADMET properties for a specific job's ligand.
+    Fetches PDBQT from S3 -> Converts to SMILES -> Calculates Properties.
+    """
+    try:
+        from auth import get_authenticated_client
+        import boto3
+        
+        auth_client = get_authenticated_client(credentials.credentials)
+
+        # Get job
+        job_response = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).execute()
+        if not job_response.data:
+            raise HTTPException(status_code=404, detail="Job not found")
+        
+        job = job_response.data[0]
+        ligand_key = job.get('ligand_s3_key')
+        
+        if not ligand_key:
+            raise HTTPException(status_code=400, detail="No ligand file found")
+            
+        # Download PDBQT
+        s3 = boto3.client('s3', region_name=AWS_REGION)
+        try:
+            obj = s3.get_object(Bucket=S3_BUCKET, Key=ligand_key)
+            pdbqt_content = obj['Body'].read().decode('utf-8')
+        except Exception as e:
+            raise HTTPException(status_code=404, detail=f"Ligand file missing from storage: {e}")
+            
+        # Convert to SMILES
+        # 1. PDBQT -> PDB
+        pdb_content, err = pdbqt_to_pdb(pdbqt_content)
+        if err or not pdb_content:
+             # Try fallback: if the original upload was a CSV, we might have SMILES in the original request? 
+             # But we don't store it. We strictly rely on the file.
+             # One Edge Case: If originally uploaded as SDF, maybe we should have stored SMILES?
+             # For now, rely on structural conversion.
+             raise HTTPException(status_code=400, detail=f"Could not parse ligand structure: {err}")
+             
+        # 2. PDB -> SMILES
+        mol = Chem.MolFromPDBBlock(pdb_content)
+        if not mol:
+            raise HTTPException(status_code=400, detail="Failed to interpret molecule structure")
+            
+        smiles = Chem.MolToSmiles(mol)
+        
+        # Calculate Properties
+        calculator = DrugPropertiesCalculator()
+        properties = calculator.calculate_all(smiles)
+        
+        if "error" in properties:
+             raise HTTPException(status_code=400, detail=properties['error'])
+             
+        return properties
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"ADMET Calculation Error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to calculate ADMET: {str(e)}")
+
 
 
 @app.post("/molecules/drug-properties")

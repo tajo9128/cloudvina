@@ -30,4 +30,5 @@ redis>=5.0.1
 mdanalysis>=2.7.0
 # plip>=2.3.0  # Removed: requires openbabel C++ headers (breaks Render build)
 huggingface-hub>=0.23.0
+shap>=0.44.0
 

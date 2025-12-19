@@ -212,3 +212,72 @@ async def start_md_simulation(
         
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# --- MM-PBSA Binding Free Energy Endpoint ---
+
+class MMPBSARequest(BaseModel):
+    complex_pdb: str  # PDB content of complex
+    receptor_pdb: str  # PDB content of receptor alone
+    ligand_pdb: str  # PDB content of ligand alone
+    mode: str = "fast"  # "fast" or "full"
+
+
+@router.post("/calculate-mmpbsa")
+async def calculate_mmpbsa(
+    request: MMPBSARequest,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Calculate MM-PBSA/MM-GBSA binding free energy.
+    
+    Returns:
+    - Energy decomposition (VdW, Electrostatic, Solvation, Entropy)
+    - Total ΔG binding
+    - Confidence level
+    """
+    try:
+        from services.mmpbsa_calculator import MMPBSACalculator
+        
+        calculator = MMPBSACalculator(mode=request.mode)
+        
+        if request.mode == "fast":
+            result = calculator.calculate_fast(
+                request.complex_pdb,
+                request.receptor_pdb,
+                request.ligand_pdb
+            )
+        else:
+            return {"error": "Full mode requires trajectory upload. Use /calculate-mmpbsa-trajectory"}
+        
+        if "error" in result:
+            raise HTTPException(status_code=400, detail=result["error"])
+        
+        # Save to database for history
+        auth_client = get_authenticated_client(credentials.credentials)
+        
+        db_record = {
+            'id': str(uuid.uuid4()),
+            'user_id': current_user.id,
+            'molecule_name': 'MMPBSA_Analysis',
+            'rmsd': 0.0,
+            'rmsf': 0.0,
+            'md_score': result.get('delta_g', 0),
+            'bucket_used': 'mmpbsa_fast',
+            'status': 'SUCCESS',
+            'created_at': datetime.utcnow().isoformat()
+        }
+        
+        auth_client.table('md_stability_jobs').insert(db_record).execute()
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"MM-PBSA calculation failed: {str(e)}"
+        )
+

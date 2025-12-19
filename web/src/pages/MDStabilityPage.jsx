@@ -161,6 +161,12 @@ export default function MDStabilityPage() {
                 >
                     🧪 Full Simulation (Upload PDB)
                 </button>
+                <button
+                    onClick={() => setActiveTab('mmpbsa')}
+                    className={`py-2 px-4 font-medium ${activeTab === 'mmpbsa' ? 'border-b-2 border-emerald-600 text-emerald-600' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                    🔬 Binding Energy (MM-PBSA) <span className="ml-1 text-xs bg-emerald-100 text-emerald-700 px-1.5 rounded">NEW</span>
+                </button>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
