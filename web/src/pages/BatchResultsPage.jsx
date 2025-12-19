@@ -3,62 +3,42 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import MoleculeViewer from '../components/MoleculeViewer'
+import { ChevronLeft, Download, Eye, Maximize2, RefreshCw, BarChart2, Star, Zap, Activity } from 'lucide-react'
 
 export default function BatchResultsPage() {
-    const { batchId } = useParams() // Note: Route might use :jobId or :batchId, handling both below
-
+    const { batchId } = useParams()
     const [batchData, setBatchData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [sortConfig, setSortConfig] = useState({ key: 'binding_affinity', direction: 'ascending' })
 
-    // State for First Job Visualization
+    // Viewer State
     const [firstJobPdbqt, setFirstJobPdbqt] = useState(null)
     const [firstJobReceptor, setFirstJobReceptor] = useState(null)
     const [firstJobId, setFirstJobId] = useState(null)
-    const [elapsedTime, setElapsedTime] = useState(0)
+    const [firstJobName, setFirstJobName] = useState('')
 
-    const ESTIMATED_DURATION = 600 // 10 mins estimate for batches
-
+    // Auto-Refresh
     useEffect(() => {
-        if (batchId) {
-            fetchBatchDetails(batchId)
-        }
+        if (batchId) fetchBatchDetails(batchId)
     }, [batchId])
 
     useEffect(() => {
-        let timer
-        if (batchData && ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(batchData.status)) {
-            const startTime = batchData.created_at ? new Date(batchData.created_at).getTime() : Date.now()
-            timer = setInterval(() => {
-                const now = Date.now()
-                const seconds = Math.floor((now - startTime) / 1000)
-                setElapsedTime(seconds)
-            }, 1000)
-        }
-        return () => clearInterval(timer)
-    }, [batchData])
-
-    // Poll for updates if running
-    useEffect(() => {
         const interval = setInterval(() => {
             if (batchData && ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(batchData.status)) {
-                fetchBatchDetails(batchId)
+                fetchBatchDetails(batchId, true)
             }
         }, 5000)
         return () => clearInterval(interval)
     }, [batchId, batchData?.status])
 
-
-    const fetchBatchDetails = async (id) => {
+    const fetchBatchDetails = async (id, background = false) => {
         try {
             const { data: { session } } = await supabase.auth.getSession()
             if (!session) return
 
             const response = await fetch(`${API_URL}/jobs/batch/${id}`, {
-                headers: {
-                    'Authorization': `Bearer ${session.access_token}`
-                }
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
             })
 
             if (!response.ok) throw new Error('Failed to fetch batch details')
@@ -66,53 +46,55 @@ export default function BatchResultsPage() {
             const data = await response.json()
             setBatchData(data)
 
-            // Logic to fetch Best Job Data for 3D Viewer
-            if (data.jobs && data.jobs.length > 0) {
+            // Auto-select best hit if not selected yet
+            if (data.jobs && data.jobs.length > 0 && !firstJobId) {
                 const validJobs = data.jobs.filter(j => j.status === 'SUCCEEDED' && j.binding_affinity !== null)
                 if (validJobs.length > 0) {
-                    // Sort by affinity (negative is better)
                     const bestJob = validJobs.sort((a, b) => a.binding_affinity - b.binding_affinity)[0]
-
-                    // Only fetch if different
-                    if (bestJob.id !== firstJobId) {
-                        setFirstJobId(bestJob.id)
-                        fetchJobStructure(bestJob.id, session.access_token)
-                    }
+                    setFirstJobId(bestJob.id)
+                    setFirstJobName(bestJob.ligand_filename)
+                    fetchJobStructure(bestJob.id, session.access_token)
                 }
             }
 
         } catch (err) {
             console.error(err)
-            setError(err.message)
+            if (!background) setError(err.message)
         } finally {
-            setLoading(false)
+            if (!background) setLoading(false)
         }
     }
 
     const fetchJobStructure = async (jobId, token) => {
         try {
+            setFirstJobPdbqt(null) // Reset to show loading
             const res = await fetch(`${API_URL}/jobs/${jobId}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             })
             if (!res.ok) return
             const jobData = await res.json()
 
-            // Output URL
+            // Fetch Files
             if (jobData.download_urls?.output_vina || jobData.download_urls?.output) {
                 const url = jobData.download_urls.output_vina || jobData.download_urls.output
                 const pdbqtRes = await fetch(url)
-                const text = await pdbqtRes.text()
-                setFirstJobPdbqt(text)
+                setFirstJobPdbqt(await pdbqtRes.text())
             }
-            // Receptor URL
             if (jobData.download_urls?.receptor) {
                 const recRes = await fetch(jobData.download_urls.receptor)
-                const text = await recRes.text()
-                setFirstJobReceptor(text)
+                setFirstJobReceptor(await recRes.text())
             }
         } catch (e) {
-            console.error("Failed to load 3D structure for batch top hit", e)
+            console.error("Failed to load 3D structure", e)
         }
+    }
+
+    const handleJobSelect = async (job) => {
+        if (job.status !== 'SUCCEEDED') return
+        setFirstJobId(job.id)
+        setFirstJobName(job.ligand_filename)
+        const { data: { session } } = await supabase.auth.getSession()
+        if (session) fetchJobStructure(job.id, session.access_token)
     }
 
     const handleSort = (key) => {
@@ -123,15 +105,28 @@ export default function BatchResultsPage() {
         setSortConfig({ key, direction })
     }
 
+    // Sort Logic
     const sortedJobs = batchData?.jobs ? [...batchData.jobs].sort((a, b) => {
-        if (a[sortConfig.key] < b[sortConfig.key]) {
-            return sortConfig.direction === 'ascending' ? -1 : 1
-        }
-        if (a[sortConfig.key] > b[sortConfig.key]) {
-            return sortConfig.direction === 'ascending' ? 1 : -1
-        }
+        // Handle nulls
+        const valA = a[sortConfig.key]
+        const valB = b[sortConfig.key]
+
+        // Always put nulls last
+        if (valA === null) return 1
+        if (valB === null) return -1
+
+        if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1
+        if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1
         return 0
     }) : []
+
+    // Heatmap Helper
+    const getAffinityColor = (score) => {
+        if (!score) return 'text-slate-400'
+        if (score < -9.0) return 'text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100'
+        if (score < -7.0) return 'text-blue-600 font-medium'
+        return 'text-slate-600'
+    }
 
     const downloadCSV = () => {
         if (!batchData?.jobs) return
@@ -152,232 +147,141 @@ export default function BatchResultsPage() {
         window.URL.revokeObjectURL(url)
     }
 
-    const formatTime = (seconds) => {
-        const mins = Math.floor(seconds / 60)
-        const secs = seconds % 60
-        return `${mins}m ${secs}s`
-    }
-
-    // SKELETON LOADING STATE (Fixes "Extra Page" feeling)
     if (loading) return (
-        <div className="min-h-screen bg-slate-50 pt-24 pb-12">
-            <main className="container mx-auto px-4">
-                <div className="max-w-7xl mx-auto">
-                    {/* Skeleton Header */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6 animate-pulse">
-                        <div className="bg-slate-50 px-8 py-6 flex flex-col md:flex-row justify-between gap-4 border-b border-slate-200">
-                            <div className="space-y-3">
-                                <div className="h-8 w-64 bg-slate-200 rounded"></div>
-                                <div className="h-4 w-40 bg-slate-200 rounded"></div>
-                            </div>
-                            <div className="h-8 w-32 bg-slate-200 rounded"></div>
-                        </div>
-                        <div className="px-8 py-8 bg-slate-50/50">
-                            <div className="h-4 w-full bg-slate-200 rounded mb-2"></div>
-                            <div className="h-2 w-full bg-slate-200 rounded"></div>
-                        </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <div className="space-y-6">
-                            {/* Skeleton Summary */}
-                            <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 animate-pulse">
-                                <div className="h-6 w-32 bg-slate-200 rounded mb-4"></div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="h-24 bg-slate-100 rounded-xl"></div>
-                                    <div className="h-24 bg-slate-100 rounded-xl"></div>
-                                    <div className="col-span-2 h-24 bg-slate-100 rounded-xl"></div>
-                                </div>
-                            </div>
-                        </div>
-                        {/* Skeleton Viewer */}
-                        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 h-[600px] animate-pulse bg-slate-100 flex items-center justify-center">
-                            <div className="text-slate-300 font-bold text-xl">Loading Viewer...</div>
-                        </div>
-                    </div>
-                </div>
-            </main>
+        <div className="min-h-screen flex items-center justify-center bg-slate-50">
+            <div className="flex flex-col items-center gap-4">
+                <RefreshCw className="w-8 h-8 text-indigo-600 animate-spin" />
+                <p className="text-slate-500 font-medium">Retrieving results...</p>
+            </div>
         </div>
     )
 
     if (error || !batchData) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="text-center max-w-md">
+            <div className="text-center max-w-md p-8 bg-white rounded-2xl shadow-xl">
                 <div className="text-4xl mb-4">⚠️</div>
                 <h2 className="text-xl font-bold text-slate-900">Batch Not Found</h2>
-                <p className="text-slate-500 mt-2">{error || "The requested batch job does not exist."}</p>
-                <Link to="/dashboard" className="btn-secondary mt-4 inline-flex">Return to Dashboard</Link>
+                <Link to="/dashboard" className="btn-secondary mt-6 inline-flex">Return to Dashboard</Link>
             </div>
         </div>
     )
 
-    const progressPercentage = Math.min((elapsedTime / ESTIMATED_DURATION) * 100, 99)
-    const remainingSeconds = Math.max(ESTIMATED_DURATION - elapsedTime, 0)
-
     return (
-        <div className="min-h-screen bg-slate-50 pt-24 pb-12">
-            <main className="container mx-auto px-4">
-                <div className="max-w-7xl mx-auto">
-                    {/* Header Card (Unified Style) */}
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6">
-                        <div className="bg-slate-50 px-8 py-6 flex flex-col md:flex-row justify-between items-start md:items-center border-b border-slate-200 gap-4">
-                            <div>
-                                <div className="flex items-center gap-3 mb-1">
-                                    <h1 className="text-2xl font-bold text-slate-900">Batch Results</h1>
-                                    <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-600 font-mono">
-                                        {batchData.batch_id.slice(0, 8)}
-                                    </span>
-                                </div>
-                                <p className="text-slate-500 text-sm">Started {new Date(batchData.created_at).toLocaleString()}</p>
-                            </div>
-                            <div className="flex items-center gap-4">
-                                <button onClick={downloadCSV} className="text-primary-600 hover:text-primary-700 font-medium text-sm flex items-center gap-1">
-                                    <span>⬇️</span> Export CSV
-                                </button>
-                                <Link to="/dashboard" className="text-slate-500 hover:text-primary-600 font-medium text-sm">
-                                    &larr; Back to Dashboard
-                                </Link>
+        <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
+
+            {/* 1. Header Bar */}
+            <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 flex-shrink-0 z-30">
+                <div className="flex items-center gap-4">
+                    <Link to="/dashboard" className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+                        <ChevronLeft className="w-5 h-5" />
+                    </Link>
+                    <div>
+                        <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                            Batch Analysis <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 font-mono">{batchId.slice(0, 8)}</span>
+                        </h1>
+                        <div className="text-xs text-slate-500 flex items-center gap-2">
+                            {['RUNNING', 'SUBMITTED'].includes(batchData.status) ? (
+                                <span className="flex items-center gap-1 text-blue-600 font-bold"><RefreshCw className="w-3 h-3 animate-spin" /> Processing ({batchData.stats.completed}/{batchData.stats.total})</span>
+                            ) : (
+                                <span className="text-emerald-600 font-bold flex items-center gap-1"><Star className="w-3 h-3 fill-current" /> Complete</span>
+                            )}
+                            <span className="text-slate-300">|</span>
+                            <span>{batchData.stats.total} Ligands</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-3">
+                    <button onClick={downloadCSV} className="btn-secondary btn-sm flex items-center gap-2">
+                        <Download className="w-4 h-4" /> Export CSV
+                    </button>
+                    {/* Placeholder for PDF Report */}
+                    <button disabled className="btn-secondary btn-sm flex items-center gap-2 opacity-50 cursor-not-allowed">
+                        <BarChart2 className="w-4 h-4" /> PDF Report
+                    </button>
+                </div>
+            </div>
+
+            {/* 2. Main Workbench Area */}
+            <div className="flex-1 flex overflow-hidden">
+
+                {/* LEFT: Data Table with Heatmap */}
+                <div className="w-1/3 min-w-[400px] border-r border-slate-200 bg-white flex flex-col">
+                    <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                        <h3 className="font-bold text-slate-700 text-sm uppercase tracking-wider">Results Table</h3>
+                        <div className="text-xs text-slate-500">Sorted by Affinity</div>
+                    </div>
+                    <div className="flex-1 overflow-auto">
+                        <table className="w-full text-sm text-left">
+                            <thead className="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 z-10 shadow-sm">
+                                <tr>
+                                    <th onClick={() => handleSort('ligand_filename')} className="px-4 py-3 cursor-pointer hover:bg-slate-100">Ligand</th>
+                                    <th onClick={() => handleSort('binding_affinity')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right">Affinity (kcal/mol)</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-slate-100">
+                                {sortedJobs.map((job) => (
+                                    <tr
+                                        key={job.id}
+                                        onClick={() => handleJobSelect(job)}
+                                        className={`cursor-pointer transition-colors hover:bg-indigo-50 ${firstJobId === job.id ? 'bg-indigo-50 border-l-4 border-indigo-500' : ''}`}
+                                    >
+                                        <td className="px-4 py-3 font-medium text-slate-900 truncate max-w-[150px]">
+                                            {job.ligand_filename.replace('.pdbqt', '')}
+                                            {job.status !== 'SUCCEEDED' && <span className="ml-2 text-[10px] bg-slate-100 px-1 rounded text-slate-500">{job.status}</span>}
+                                        </td>
+                                        <td className="px-4 py-3 text-right font-mono">
+                                            <span className={getAffinityColor(job.binding_affinity)}>
+                                                {job.binding_affinity ? job.binding_affinity.toFixed(1) : '-'}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                {/* RIGHT: 3D Visualization */}
+                <div className="flex-1 bg-slate-100 relative flex flex-col">
+                    {/* Toolbar */}
+                    <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-start pointer-events-none">
+                        <div className="bg-white/90 backdrop-blur shadow-lg rounded-xl p-4 border border-slate-200 pointer-events-auto">
+                            <h2 className="font-bold text-slate-900 mb-1">{firstJobName ? firstJobName.replace('.pdbqt', '') : 'Select a Ligand'}</h2>
+                            <div className="text-xs text-slate-500 flex items-center gap-2">
+                                <Activity className="w-3 h-3 text-indigo-500" /> Visualization
                             </div>
                         </div>
+                        <div className="flex gap-2 pointer-events-auto">
+                            <button className="p-2 bg-white shadow rounded-lg hover:bg-slate-50 text-slate-600" title="Reset View">
+                                <Maximize2 className="w-5 h-5" />
+                            </button>
+                            <button className="p-2 bg-white shadow rounded-lg hover:bg-slate-50 text-slate-600" title="Style Toggle">
+                                <Eye className="w-5 h-5" />
+                            </button>
+                        </div>
+                    </div>
 
-                        {/* Progress Section */}
-                        {['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(batchData.status) && (
-                            <div className="px-8 py-8 bg-primary-50/30 border-b border-slate-200">
-                                <div className="flex justify-between text-sm font-bold text-slate-700 mb-3">
-                                    <span className="flex items-center gap-2">
-                                        <span className="relative flex h-3 w-3">
-                                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
-                                            <span className="relative inline-flex rounded-full h-3 w-3 bg-primary-500"></span>
-                                        </span>
-                                        Batch Processing ({batchData.stats.completed}/{batchData.stats.total} Completed)
-                                    </span>
-                                    <span className="font-mono text-slate-500">Running...</span>
-                                </div>
-                                <div className="w-full bg-slate-200 rounded-full h-3 border border-slate-300/50 overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full transition-all duration-500 bg-gradient-to-r from-primary-500 to-secondary-500"
-                                        style={{ width: `${(batchData.stats.completed / batchData.stats.total) * 100}%` }}
-                                    >
-                                        <div className="w-full h-full animate-pulse bg-white/30"></div>
-                                    </div>
-                                </div>
+                    {/* Viewer Container */}
+                    <div className="flex-1 w-full h-full relative">
+                        {firstJobPdbqt ? (
+                            <MoleculeViewer
+                                pdbqtData={firstJobPdbqt}
+                                receptorData={firstJobReceptor}
+                                width="100%" // Fill parent flex
+                                height="100%" // Fill parent flex
+                                title="" // Hide default title
+                            />
+                        ) : (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
+                                <Zap className="w-16 h-16 mb-4 opacity-50" />
+                                <p className="text-lg font-medium">Select a ligand from the table to visualize</p>
                             </div>
                         )}
                     </div>
-
-                    {/* Split Layout: Left Data, Right Visualizer */}
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-
-                        {/* LEFT COLUMN: Details & Table */}
-                        <div className="space-y-6">
-
-                            {/* Summary Card */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6">
-                                <h2 className="text-lg font-bold text-slate-900 mb-4">Batch Summary</h2>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                        <div className="text-sm text-slate-500 mb-1">Total Ligands</div>
-                                        <div className="text-2xl font-bold text-slate-900">{batchData.stats.total}</div>
-                                    </div>
-                                    <div className="p-4 bg-green-50 rounded-xl border border-green-100">
-                                        <div className="text-sm text-green-600 mb-1">Success Rate</div>
-                                        <div className="text-2xl font-bold text-green-700">{batchData.stats.success_rate.toFixed(0)}%</div>
-                                    </div>
-                                    <div className="col-span-2 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100">
-                                        <div className="flex items-center justify-between">
-                                            <div>
-                                                <div className="text-sm text-blue-600 font-bold uppercase mb-1">Top Hit Affinity</div>
-                                                <div className="text-3xl font-bold text-blue-800">
-                                                    {batchData.stats.best_affinity ? batchData.stats.best_affinity.toFixed(2) : '-'} <span className="text-sm font-normal text-blue-600">kcal/mol</span>
-                                                </div>
-                                            </div>
-                                            <div className="text-4xl">🏆</div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Detailed Results Table */}
-                            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                                <div className="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                                    <h3 className="font-bold text-slate-700">Ligand Rankings</h3>
-                                    <span className="text-xs text-slate-500">{sortedJobs.length} results</span>
-                                </div>
-                                <div className="overflow-x-auto max-h-[600px]">
-                                    <table className="min-w-full divide-y divide-slate-200">
-                                        <thead className="bg-slate-50 sticky top-0 z-10 shadow-sm">
-                                            <tr>
-                                                <th onClick={() => handleSort('ligand_filename')} className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100">
-                                                    Ligand {sortConfig.key === 'ligand_filename' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                                                </th>
-                                                <th onClick={() => handleSort('binding_affinity')} className="px-6 py-3 text-left text-xs font-bold text-slate-500 uppercase tracking-wider cursor-pointer hover:bg-slate-100">
-                                                    Affinity {sortConfig.key === 'binding_affinity' && (sortConfig.direction === 'ascending' ? '↑' : '↓')}
-                                                </th>
-                                                <th className="px-6 py-3 text-right"></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody className="bg-white divide-y divide-slate-200">
-                                            {sortedJobs.map((job) => (
-                                                <tr key={job.id} className="hover:bg-slate-50 transition-colors">
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                                                        {job.ligand_filename.replace('.pdbqt', '')}
-                                                        {job.id === firstJobId && <span className="ml-2 text-xs bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Viewing</span>}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-700 font-bold">
-                                                        {job.binding_affinity ? job.binding_affinity.toFixed(1) : '-'}
-                                                    </td>
-                                                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm">
-                                                        <Link to={`/dock/${job.id}`} className="text-primary-600 hover:text-primary-800 font-medium">
-                                                            View &rarr;
-                                                        </Link>
-                                                    </td>
-                                                </tr>
-                                            ))}
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-
-                        </div>
-
-                        {/* RIGHT COLUMN: Sticky 3D Viewer */}
-                        <div className="relative">
-                            <div className="sticky top-24">
-                                <div className="bg-white rounded-2xl shadow-lg border border-slate-200 overflow-hidden">
-                                    <div className="p-4 bg-slate-50 border-b border-slate-200 flex justify-between items-center">
-                                        <h3 className="font-bold text-slate-900 flex items-center gap-2">
-                                            <span className="text-xl">🌟</span> Top Rank Visualization
-                                        </h3>
-                                        {firstJobId && (
-                                            <Link to={`/dock/${firstJobId}`} className="text-xs bg-white border border-slate-300 px-2 py-1 rounded hover:bg-slate-50">
-                                                Full Analysis
-                                            </Link>
-                                        )}
-                                    </div>
-                                    <div className="h-[600px] w-full relative bg-slate-900">
-                                        {firstJobPdbqt ? (
-                                            <MoleculeViewer
-                                                pdbqtData={firstJobPdbqt}
-                                                receptorData={firstJobReceptor}
-                                                width="100%"
-                                                height="100%"
-                                                title="Best Binder"
-                                            />
-                                        ) : (
-                                            <div className="flex flex-col items-center justify-center h-full text-slate-400 p-8 text-center">
-                                                <div className="text-4xl mb-4">🧬</div>
-                                                <p>Select a job or wait for results to view structure.</p>
-                                                {loading && <p className="text-sm mt-2 animate-pulse">Loading data...</p>}
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
                 </div>
-            </main>
+
+            </div>
         </div>
     )
 }

@@ -3,12 +3,14 @@ import { supabase } from '../supabaseClient'
 import { Link } from 'react-router-dom'
 import JobFilters from '../components/JobFilters'
 import { API_URL } from '../config'
+import { Activity, Database, Clock, Zap, Search, Filter, ArrowRight, Play, Server } from 'lucide-react'
 
 export default function DashboardPage() {
     const [user, setUser] = useState(null)
     const [profile, setProfile] = useState(null)
     const [jobs, setJobs] = useState([])
     const [loading, setLoading] = useState(true)
+    const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
     const [filters, setFilters] = useState({
         status: '',
         search: '',
@@ -16,9 +18,20 @@ export default function DashboardPage() {
         maxAffinity: ''
     })
 
+    // Computed Stats
+    const [stats, setStats] = useState({
+        active: 0,
+        completed: 0,
+        avgAffinity: 0,
+        totalMolecules: 0
+    })
+
+    useEffect(() => {
+        fetchUserProfile()
+    }, [])
+
     useEffect(() => {
         fetchJobs()
-        fetchUserProfile()
     }, [filters])
 
     const fetchUserProfile = async () => {
@@ -44,15 +57,15 @@ export default function DashboardPage() {
             const url = `${API_URL}/jobs?${params.toString()}`
 
             const response = await fetch(url, {
-                headers: {
-                    'Authorization': `Bearer ${session.access_token}`
-                }
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
             })
 
             if (!response.ok) throw new Error('Failed to fetch jobs')
 
             const data = await response.json()
             setJobs(data)
+            calculateStats(data)
+
         } catch (error) {
             console.error('Error fetching jobs:', error)
         } finally {
@@ -60,8 +73,39 @@ export default function DashboardPage() {
         }
     }
 
+    const calculateStats = (jobData) => {
+        const active = jobData.filter(j => ['RUNNING', 'SUBMITTED', 'STARTING'].includes(j.status)).length
+        const completed = jobData.filter(j => j.status === 'SUCCEEDED').length
+
+        let totalAffinity = 0
+        let affinityCount = 0
+        jobData.forEach(j => {
+            if (j.binding_affinity) {
+                totalAffinity += j.binding_affinity
+                affinityCount++
+            }
+        })
+        const avg = affinityCount > 0 ? (totalAffinity / affinityCount).toFixed(2) : 0
+
+        setStats({
+            active,
+            completed,
+            avgAffinity: avg,
+            totalMolecules: 100 * active + completed // Rough estimate or real if we had field
+        })
+    }
+
     const handleFilterChange = (newFilters) => {
         setFilters(prev => ({ ...prev, ...newFilters }))
+    }
+
+    const getStatusColor = (status) => {
+        switch (status) {
+            case 'SUCCEEDED': return 'bg-emerald-100 text-emerald-700 border-emerald-200'
+            case 'FAILED': return 'bg-red-100 text-red-700 border-red-200'
+            case 'RUNNING': return 'bg-blue-100 text-blue-700 border-blue-200 animate-pulse'
+            default: return 'bg-slate-100 text-slate-700 border-slate-200'
+        }
     }
 
     return (
@@ -69,124 +113,152 @@ export default function DashboardPage() {
             {/* Header Section */}
             <div className="bg-white border-b border-slate-200 pt-24 pb-12">
                 <div className="container mx-auto px-4">
-                    <div className="flex justify-between items-end">
+                    <div className="flex flex-col md:flex-row justify-between items-end gap-6">
                         <div>
-                            <h1 className="text-3xl font-bold text-slate-900 mb-2">Dashboard</h1>
-                            <p className="text-slate-500">Manage and monitor your molecular docking simulations</p>
+                            <h1 className="text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
+                                <Activity className="w-8 h-8 text-indigo-600" /> Research Dashboard
+                            </h1>
+                            <p className="text-slate-500">Welcome back, <span className="font-semibold text-slate-700">{profile?.designation || 'Dr.'} {user?.email?.split('@')[0]}</span>. Here's your lab overview.</p>
                         </div>
-                        <Link to="/dock/batch" className="btn-primary">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4"></path></svg>
-                            New Batch Job
+                        <Link to="/dock/batch" className="btn-primary shadow-lg shadow-primary-500/20 flex items-center gap-2 px-6 py-3 rounded-xl font-bold">
+                            <Play className="w-5 h-5 fill-current" />
+                            New Campaign
                         </Link>
                     </div>
                 </div>
             </div>
 
-            <div className="container mx-auto px-4 py-8">
+            <div className="container mx-auto px-4 -mt-8">
 
-                {/* User Welcome Card (Fix for "Plain User" issue) */}
-                {user && (
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-8 flex items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-secondary-500 text-white flex items-center justify-center text-2xl font-bold shadow-md">
-                                {user.email[0].toUpperCase()}
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-bold text-slate-900">
-                                    Welcome back, {profile?.designation ? `${profile.designation} ` : ''}
-                                    <span className="text-primary-600">{user.email.split('@')[0]}</span>!
-                                </h2>
-                                <p className="text-slate-500 text-sm">
-                                    {profile?.organization ? `${profile.organization} • ` : ''}
-                                    Ready for your next breakthrough?
-                                </p>
-                            </div>
+                {/* Stats Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                    <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4">
+                        <div className="bg-blue-50 p-4 rounded-xl">
+                            <Zap className="w-8 h-8 text-blue-600" />
                         </div>
-                        <div className="hidden md:block text-right">
-                            <div className="text-sm text-slate-400 uppercase tracking-wider font-bold mb-1">Current Plan</div>
-                            <div className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-bold">
-                                Free Tier Active
-                            </div>
+                        <div>
+                            <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Active Jobs</div>
+                            <div className="text-3xl font-bold text-slate-900">{stats.active}</div>
                         </div>
                     </div>
-                )}
-
-                {/* Job Filters */}
-                <div className="mb-8">
-                    <JobFilters onFilterChange={handleFilterChange} />
+                    <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4">
+                        <div className="bg-emerald-50 p-4 rounded-xl">
+                            <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                        </div>
+                        <div>
+                            <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Completed</div>
+                            <div className="text-3xl font-bold text-slate-900">{stats.completed}</div>
+                        </div>
+                    </div>
+                    <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4">
+                        <div className="bg-purple-50 p-4 rounded-xl">
+                            <Database className="w-8 h-8 text-purple-600" />
+                        </div>
+                        <div>
+                            <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Avg Affinity</div>
+                            <div className="text-3xl font-bold text-slate-900">{stats.avgAffinity} <span className="text-sm text-slate-400 font-normal">kcal/mol</span></div>
+                        </div>
+                    </div>
                 </div>
 
-                {loading ? (
-                    <div className="text-center py-20">
-                        <div className="inline-block p-4 rounded-full bg-primary-50 text-primary-600 mb-4">
-                            <svg className="w-8 h-8 animate-spin" fill="none" viewBox="0 24 24">
-                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                            </svg>
+                {/* Main Content Area */}
+                <div className="flex flex-col lg:flex-row gap-8">
+
+                    {/* Left: Filter Sidebar (Desktop) or Top (Mobile) */}
+                    <aside className="lg:w-64 flex-shrink-0 space-y-6">
+                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-24">
+                            <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
+                                <Filter className="w-4 h-4" /> Filters
+                            </h3>
+                            <JobFilters onFilterChange={handleFilterChange} vertical={true} />
                         </div>
-                        <div className="text-slate-500 font-medium">Loading your research data...</div>
-                    </div>
-                ) : jobs.length === 0 ? (
-                    <div className="bg-white rounded-2xl border border-slate-200 p-16 text-center shadow-sm">
-                        <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-4xl">🧪</div>
-                        <h3 className="text-xl font-bold text-slate-900 mb-2">No jobs found</h3>
-                        <p className="text-slate-500 mb-8 max-w-md mx-auto">You haven't run any docking simulations yet. Start your first job to see results here.</p>
-                        <Link to="/dock/batch" className="btn-primary inline-flex">
-                            Create First Batch Job
-                        </Link>
-                    </div>
-                ) : (
-                    <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full divide-y divide-slate-200">
-                                <thead className="bg-slate-50">
-                                    <tr>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Job ID</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Status</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Created</th>
-                                        <th className="px-6 py-4 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Affinity</th>
-                                        <th className="px-6 py-4 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-slate-200 bg-white">
-                                    {jobs.map((job) => (
-                                        <tr key={job.id} className="hover:bg-slate-50 transition-colors group">
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">
-                                                <Link to={`/dock/${job.id}`} className="font-mono text-primary-600 hover:text-primary-700 hover:underline">
-                                                    {job.id.slice(0, 8)}
-                                                </Link>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm">
-                                                <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full 
-                                            ${job.status === 'SUCCEEDED' ? 'bg-green-100 text-green-700 border border-green-200' :
-                                                        job.status === 'FAILED' ? 'bg-red-100 text-red-700 border border-red-200' :
-                                                            'bg-amber-100 text-amber-700 border border-amber-200'}`}>
-                                                    {job.status}
-                                                </span>
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500">
-                                                {new Date(job.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-sm font-bold">
-                                                {job.binding_affinity ? (
-                                                    <span className="text-slate-900">{job.binding_affinity} <span className="text-slate-400 font-normal text-xs">kcal/mol</span></span>
-                                                ) : (
-                                                    <span className="text-slate-300">-</span>
-                                                )}
-                                            </td>
-                                            <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                                <Link to={`/dock/${job.id}`} className="text-slate-400 hover:text-primary-600 font-medium transition-colors">
-                                                    View Details →
-                                                </Link>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
+                    </aside>
+
+                    {/* Right: Job Grid/List */}
+                    <div className="flex-1">
+
+                        {/* View Toggle & Count */}
+                        <div className="flex justify-between items-center mb-6">
+                            <h2 className="text-xl font-bold text-slate-800">Recent Implementations</h2>
+                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setViewMode('grid')}
+                                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'grid' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    Grid
+                                </button>
+                                <button
+                                    onClick={() => setViewMode('list')}
+                                    className={`px-3 py-1.5 rounded-md text-sm font-medium transition-all ${viewMode === 'list' ? 'bg-white shadow text-slate-900' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    List
+                                </button>
+                            </div>
                         </div>
+
+                        {loading ? (
+                            <div className="text-center py-20">
+                                <div className="inline-block p-4 rounded-full bg-indigo-50 text-indigo-600 mb-4">
+                                    <Server className="w-8 h-8 animate-bounce" />
+                                </div>
+                                <div className="text-slate-500 font-medium">Syncing with cloud cluster...</div>
+                            </div>
+                        ) : jobs.length === 0 ? (
+                            <div className="bg-white rounded-2xl border-2 border-dashed border-slate-300 p-16 text-center">
+                                <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                    <FlaskConical className="w-10 h-10 text-slate-400" />
+                                </div>
+                                <h3 className="text-xl font-bold text-slate-900 mb-2">Ready to Discover?</h3>
+                                <p className="text-slate-500 mb-8 max-w-md mx-auto">Your research pipeline is empty. Launch your first docking campaign to see results.</p>
+                                <Link to="/dock/batch" className="btn-primary inline-flex">
+                                    Start New Experiment
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className={viewMode === 'grid' ? "grid grid-cols-1 md:grid-cols-2 gap-4" : "space-y-4"}>
+                                {jobs.map((job) => (
+                                    <div key={job.id} className={`group bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-all hover:border-indigo-300 ${viewMode === 'list' ? 'flex items-center justify-between' : ''}`}>
+
+                                        <div className="flex items-start gap-4">
+                                            <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-indigo-50 to-purple-50 flex items-center justify-center text-indigo-600 font-bold border border-indigo-100 group-hover:scale-105 transition-transform">
+                                                {job.ligand_filename ? job.ligand_filename.slice(0, 2).toUpperCase() : 'JG'}
+                                            </div>
+                                            <div>
+                                                <div className="flex items-center gap-2 mb-1">
+                                                    <h3 className="font-bold text-slate-900 group-hover:text-indigo-600 transition-colors">
+                                                        {job.ligand_filename || `Job ${job.id.slice(0, 8)}`}
+                                                    </h3>
+                                                    <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border ${getStatusColor(job.status)}`}>
+                                                        {job.status}
+                                                    </span>
+                                                </div>
+                                                <div className="text-xs text-slate-500 flex items-center gap-3">
+                                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString()}</span>
+                                                    {job.binding_affinity && (
+                                                        <span className="font-bold text-slate-700 bg-slate-100 px-1.5 rounded">{job.binding_affinity} kcal/mol</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className={viewMode === 'grid' ? "mt-4 pt-4 border-t border-slate-100 flex justify-between items-center" : ""}>
+                                            {viewMode === 'grid' && <span className="text-xs text-slate-400 font-mono">{job.id.slice(0, 8)}</span>}
+                                            <Link to={`/dock/${job.id}`} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 opacity-100 group-hover:translate-x-1 transition-all">
+                                                View Analysis <ArrowRight className="w-3 h-3" />
+                                            </Link>
+                                        </div>
+
+                                    </div>
+                                ))}
+                            </div>
+                        )}
                     </div>
-                )}
+                </div>
             </div>
         </div>
     )
 }
+
+// Missing imports fix
+import { CheckCircle2, FlaskConical } from 'lucide-react'
+
