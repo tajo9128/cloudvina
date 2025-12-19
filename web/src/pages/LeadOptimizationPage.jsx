@@ -39,6 +39,14 @@ const LeadOptimizationPage = () => {
                 // It returns binding_affinity. It doesn't seem to return custom MMGBSA analysis column yet.
                 // We will assume for now 'binding_affinity' is the primary score available.
 
+                // Gnina Score Extraction (Try standard locations)
+                let gnina_score = null;
+                if (job.docking_metadata && job.docking_metadata.engines && job.docking_metadata.engines.gnina) {
+                    gnina_score = job.docking_metadata.engines.gnina.best_affinity;
+                } else if (job.analysis_results && job.analysis_results.gnina_score) {
+                    gnina_score = job.analysis_results.gnina_score;
+                }
+
                 // Mocking QED for demo if not in DB
                 const qed = 0.5; // Placeholder
 
@@ -46,6 +54,7 @@ const LeadOptimizationPage = () => {
                     id: job.id,
                     compound_name: job.ligand_filename || "Unknown Ligand",
                     docking_score: docking_score,
+                    gnina_score: gnina_score, // Added: Pass Gnina score to Report Generator
                     binding_energy: null, // Populated if we had it in the list endpoint
                     qed: qed,
                     status: job.status
