@@ -34,7 +34,14 @@ class ExportService:
             'CNN Score',
             'Created At',
             'Receptor',
-            'Ligand'
+            'Ligand',
+            'Mol Weight',
+            'LogP',
+            'H-Donors',
+            'H-Acceptors',
+            'Lipinski Violations',
+            'BBB Permeable',
+            'Toxicity Alerts'
         ])
         
         # Write data
@@ -42,10 +49,26 @@ class ExportService:
             # Check if consensus results exist
             consensus = job.get('consensus_results') or {}
             engines = consensus.get('engines', {})
+            
             vina_aff = engines.get('vina', {}).get('best_affinity', 'N/A') if engines else 'N/A'
             gnina_aff = engines.get('gnina', {}).get('best_affinity', 'N/A') if engines else 'N/A'
             cnn_score = engines.get('gnina', {}).get('cnn_score', 'N/A') if engines else 'N/A'
             mode = 'Consensus' if consensus else 'Single Engine'
+            
+            # ADMET / Properties extraction
+            props = job.get('drug_properties') or {}
+            # Some jobs might have it in 'admet_results' or 'properties' depending on legacy coding.
+            # We check a few places.
+            if not props:
+                props = job.get('properties') or {}
+            if not props:
+                props = job.get('admet_results') or {}
+                
+            phys = props.get('physicochemical') or {}
+            admet = props.get('admet') or {}
+            bbb = admet.get('bbb') or {}
+            tox = admet.get('toxicity') or {}
+            lipinski = props.get('lipinski') or {}
             
             writer.writerow([
                 job.get('id', ''),
@@ -57,7 +80,14 @@ class ExportService:
                 cnn_score,
                 job.get('created_at', ''),
                 job.get('receptor_s3_key', '').split('/')[-1] if job.get('receptor_s3_key') else '',
-                job.get('ligand_s3_key', '').split('/')[-1] if job.get('ligand_s3_key') else ''
+                job.get('ligand_s3_key', '').split('/')[-1] if job.get('ligand_s3_key') else '',
+                phys.get('mw', 'N/A'),
+                phys.get('logp', 'N/A'),
+                phys.get('h_bond_donors', 'N/A'),
+                phys.get('h_bond_acceptors', 'N/A'),
+                lipinski.get('violations', 'N/A'),
+                "Yes" if bbb.get('permeable') else "No",
+                "Yes" if tox.get('has_alerts') else "No"
             ])
         
         output.seek(0)

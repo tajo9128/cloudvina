@@ -49,6 +49,10 @@ class DrugPropertiesCalculator:
                 "lead_likeness": self._check_lead_likeness(mol),
                 "bbb": self._predict_bbb_permeability(mol),
                 "toxicity": self._check_toxicity_alerts(mol),
+                # Advanced Toxicity (Phase 7 CADD Enhancements)
+                "herg": self._predict_herg_liability(mol),
+                "ames": self._predict_ames_mutagenicity(mol),
+                "cyp": self._predict_cyp_inhibition(mol),
                 "admet_links": self._get_admet_links(smiles),
                 "summary": self._get_summary(mol)
             }
@@ -281,13 +285,21 @@ class DrugPropertiesCalculator:
     def _check_toxicity_alerts(self, mol) -> Dict:
         """
         Check for common structural alerts (Toxicophores).
+        Extended with hERG, AMES, and hepatotoxicity patterns.
         """
+        # Basic toxicophores
         alerts = {
             "Nitro Group": "[N+](=O)[O-]",
             "Hydrazine": "[NX3][NX3]",
-            "Michael Acceptor": "[CX3]=[CX3]-[CX3](=[OX1])", # Basic pattern
+            "Michael Acceptor": "[CX3]=[CX3]-[CX3](=[OX1])",
             "Alkyl Halide": "[CX4][F,Cl,Br,I]",
-            "Aldehyde": "[CX3H1](=O)[#6]" 
+            "Aldehyde": "[CX3H1](=O)[#6]",
+            # Extended alerts
+            "Epoxide": "C1OC1",
+            "Acyl Halide": "[CX3](=[OX1])[F,Cl,Br,I]",
+            "Thiourea": "[NX3][CX3](=[SX1])[NX3]",
+            "Quinone": "O=C1C=CC(=O)C=C1",
+            "Azo Group": "[NX2]=[NX2]"
         }
         
         found_alerts = []
@@ -299,8 +311,149 @@ class DrugPropertiesCalculator:
         return {
             "has_alerts": len(found_alerts) > 0,
             "alerts": found_alerts,
-            "risk_level": "High" if len(found_alerts) > 1 else "Medium" if len(found_alerts) == 1 else "Low"
+            "risk_level": "High" if len(found_alerts) > 2 else "Medium" if len(found_alerts) >= 1 else "Low"
         }
+    
+    def _predict_herg_liability(self, mol) -> Dict:
+        """
+        Predict hERG channel liability (cardiac toxicity risk).
+        
+        Rule-based prediction using physicochemical properties:
+        - High lipophilicity (LogP > 3.5) + basic nitrogen -> High risk
+        - MW > 500 and TPSA < 75 -> Moderate risk
+        """
+        logp = Descriptors.MolLogP(mol)
+        mw = Descriptors.MolWt(mol)
+        tpsa = Descriptors.TPSA(mol)
+        
+        # Check for basic nitrogen (common in hERG blockers)
+        basic_n_pattern = Chem.MolFromSmarts("[NX3;H2,H1,H0;!$(NC=O)]")
+        has_basic_n = mol.HasSubstructMatch(basic_n_pattern) if basic_n_pattern else False
+        
+        # Risk assessment
+        risk_factors = []
+        if logp > 3.5:
+            risk_factors.append("High lipophilicity")
+        if has_basic_n:
+            risk_factors.append("Basic nitrogen present")
+        if mw > 500 and tpsa < 75:
+            risk_factors.append("Large hydrophobic molecule")
+            
+        if len(risk_factors) >= 2:
+            risk_level = "High"
+            recommendation = "⚠️ Consider hERG patch-clamp assay before proceeding"
+        elif len(risk_factors) == 1:
+            risk_level = "Moderate"
+            recommendation = "Monitor cardiac safety in preclinical studies"
+        else:
+            risk_level = "Low"
+            recommendation = "Favorable hERG profile"
+            
+        return {
+            "risk_level": risk_level,
+            "risk_factors": risk_factors,
+            "recommendation": recommendation
+        }
+    
+    def _predict_ames_mutagenicity(self, mol) -> Dict:
+        """
+        Predict AMES mutagenicity using structural alerts.
+        
+        Checks for known mutagenic moieties.
+        """
+        mutagenic_alerts = {
+            "Aromatic Nitro": "c[N+](=O)[O-]",
+            "Aromatic Amine": "c[NH2]",
+            "Aromatic Nitroso": "c[N]=O",
+            "Polycyclic Aromatic": "c1ccc2c(c1)ccc1ccccc12",  # Naphthalene-like
+            "Azide": "[N-]=[N+]=[N-]",
+            "Diazo": "[N]=[N]"
+        }
+        
+        found_alerts = []
+        for name, smarts in mutagenic_alerts.items():
+            pattern = Chem.MolFromSmarts(smarts)
+            if pattern and mol.HasSubstructMatch(pattern):
+                found_alerts.append(name)
+        
+        if len(found_alerts) >= 2:
+            prediction = "Positive"
+            confidence = "High"
+        elif len(found_alerts) == 1:
+            prediction = "Equivocal"
+            confidence = "Moderate"
+        else:
+            prediction = "Negative"
+            confidence = "High"
+            
+        return {
+            "prediction": prediction,
+            "confidence": confidence,
+            "alerts": found_alerts,
+            "recommendation": "AMES test recommended" if prediction != "Negative" else "Low mutagenic risk"
+        }
+    
+    def _predict_cyp_inhibition(self, mol) -> Dict:
+        """
+        Predict CYP450 inhibition potential.
+        
+        Rule-based assessment for major CYP isoforms.
+        """
+        mw = Descriptors.MolWt(mol)
+        logp = Descriptors.MolLogP(mol)
+        n_aromatic = Descriptors.NumAromaticRings(mol)
+        
+        # General CYP inhibition risk factors
+        cyp_risk = {}
+        
+        # CYP3A4 (major drug metabolizing enzyme)
+        # High MW + high LogP + multiple aromatics -> risk
+        cyp3a4_risk = 0
+        if mw > 400:
+            cyp3a4_risk += 1
+        if logp > 3:
+            cyp3a4_risk += 1
+        if n_aromatic >= 2:
+            cyp3a4_risk += 1
+            
+        cyp_risk['CYP3A4'] = {
+            'inhibition_risk': 'High' if cyp3a4_risk >= 2 else 'Moderate' if cyp3a4_risk == 1 else 'Low',
+            'score': cyp3a4_risk
+        }
+        
+        # CYP2D6 (polymorphic, many CNS drugs)
+        # Basic nitrogen + aromatic -> risk
+        basic_n = Chem.MolFromSmarts("[NX3;H2,H1,H0;!$(NC=O)]")
+        has_basic_n = mol.HasSubstructMatch(basic_n) if basic_n else False
+        
+        cyp2d6_risk = 0
+        if has_basic_n:
+            cyp2d6_risk += 1
+        if n_aromatic >= 1:
+            cyp2d6_risk += 1
+            
+        cyp_risk['CYP2D6'] = {
+            'inhibition_risk': 'High' if cyp2d6_risk >= 2 else 'Moderate' if cyp2d6_risk == 1 else 'Low',
+            'score': cyp2d6_risk
+        }
+        
+        # CYP2C9 (warfarin metabolism)
+        cyp2c9_risk = 1 if logp > 2.5 and mw > 300 else 0
+        cyp_risk['CYP2C9'] = {
+            'inhibition_risk': 'Moderate' if cyp2c9_risk else 'Low',
+            'score': cyp2c9_risk
+        }
+        
+        # Overall DDI risk
+        total_risk = sum(r['score'] for r in cyp_risk.values())
+        ddi_risk = 'High' if total_risk >= 4 else 'Moderate' if total_risk >= 2 else 'Low'
+        
+        return {
+            'isoforms': cyp_risk,
+            'overall_ddi_risk': ddi_risk,
+            'recommendation': 'CYP inhibition assays recommended' if ddi_risk != 'Low' else 'Low DDI risk'
+        }
+
 
     def _get_summary(self, mol) -> Dict:
         """Generate a summary for display."""
