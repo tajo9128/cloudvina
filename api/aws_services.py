@@ -189,3 +189,80 @@ def cancel_batch_job(batch_job_id: str, reason: str = "Cancelled by user") -> di
         except ClientError as e2:
             raise Exception(f"Failed to cancel/terminate Batch job: {str(e2)}")
 
+
+# --- AWS LAMBDA INTEGRATION (MD SCORER) ---
+lambda_client = boto3.client('lambda', region_name=AWS_REGION)
+MD_LAMBDA_FUNCTION = os.getenv("MD_LAMBDA_FUNCTION", "MD_Stability_Scorer")
+
+def invoke_md_stability_scorer(rmsd: float, rmsf: float) -> dict:
+    """
+    Invoke the MD Stability Scorer Lambda Function.
+    Args:
+        rmsd: Root Mean Square Deviation (Å)
+        rmsf: Root Mean Square Fluctuation (Å)
+    Returns:
+        Dict with 'md_stability_score', 'status', 'bucket_used'
+    """
+    import json
+    try:
+        payload = {"rmsd": rmsd, "rmsf": rmsf}
+        print(f"DEBUG: Invoking Lambda {MD_LAMBDA_FUNCTION} with {payload}")
+        
+        response = lambda_client.invoke(
+            FunctionName=MD_LAMBDA_FUNCTION,
+            InvocationType='RequestResponse',
+            Payload=json.dumps(payload)
+        )
+        
+        # Parse Response
+        response_payload = json.loads(response['Payload'].read())
+        
+        if 'errorMessage' in response_payload:
+            raise Exception(f"Lambda Error: {response_payload['errorMessage']}")
+            
+        # Lambda creates a nested 'body' JSON string in its return
+        if 'body' in response_payload:
+            return json.loads(response_payload['body'])
+            
+        return response_payload
+        
+
+    except ClientError as e:
+        raise Exception(f"Failed to invoke MD Scorer: {str(e)}")
+
+
+def submit_md_simulation_job(job_id: str, pdb_key: str) -> str:
+    """
+    Submits an MD Simulation + AI Scoring job to the separate AWS Batch Queue.
+    
+    Args:
+        job_id: Unique Job ID
+        pdb_key: S3 Key of the input PDB file
+        
+    Returns:
+        AWS Batch Job ID
+    """
+    BATCH_MD_QUEUE = "md-simulation-queue"  # Fixed name as per AWS_MD_Batch_Deploy.sh
+    BATCH_MD_DEF = "md-simulation-job-def"
+    
+    try:
+        print(f"DEBUG: Submitting MD Job {job_id} to {BATCH_MD_QUEUE} ({BATCH_MD_DEF})")
+        
+        response = batch_client.submit_job(
+            jobName=f'MD-Sim-{job_id}',
+            jobQueue=BATCH_MD_QUEUE,
+            jobDefinition=BATCH_MD_DEF,
+            containerOverrides={
+                'command': [
+                    '--job_id', job_id,
+                    '--pdb_key', pdb_key
+                ],
+                'environment': [
+                    {'name': 'BUCKET_NAME', 'value': S3_BUCKET}
+                ]
+            }
+        )
+        return response['jobId']
+        
+    except ClientError as e:
+        raise Exception(f"Failed to submit MD Batch Job: {str(e)}")

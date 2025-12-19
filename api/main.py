@@ -99,8 +99,13 @@ from services.target_prediction import router as target_prediction_router
 app.include_router(target_prediction_router)
 
 # Register MD Simulation Router (Colab/Celery)
+# Register MD Simulation Router (Colab/Celery)
 from routes.md import router as md_router
 app.include_router(md_router)
+
+# Register ISOLATED MD Stability Router (AWS Lambda)
+from routes.md_analysis import router as md_analysis_router
+app.include_router(md_analysis_router)
 
 # Register Lead Ranking Router
 from routes.ranking import router as ranking_router

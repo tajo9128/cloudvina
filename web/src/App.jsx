@@ -17,6 +17,7 @@ import ConverterPage from './pages/ConverterPage'
 import TargetPredictionPage from './pages/TargetPredictionPage'
 import MDSimulationPage from './pages/MDSimulationPage'
 import MDResultsPage from './pages/MDResultsPage'
+import MDStabilityPage from './pages/MDStabilityPage' // NEW: Isolated MD Page
 import LeadOptimizationPage from './pages/LeadOptimizationPage'
 import BlogPage from './pages/BlogPage'
 import BlogPostPage from './pages/BlogPostPage'
@@ -129,6 +130,11 @@ function App() {
                         <Route
                             path="/md-results/:jobId"
                             element={session ? <MDResultsPage /> : <Navigate to="/login" />}
+                        />
+                        {/* ISOLATED MD STABILITY ROUTE */}
+                        <Route
+                            path="/md-analysis"
+                            element={session ? <MDStabilityPage /> : <Navigate to="/login" />}
                         />
                         <Route
                             path="/leads"
