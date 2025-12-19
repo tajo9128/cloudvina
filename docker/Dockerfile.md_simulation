@@ -1,0 +1,39 @@
+# Dockerfile for MD Simulation & AI Stability Scoring
+# Target: AWS Batch
+FROM continuumio/miniconda3
+
+# 1. system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    git \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
+
+# 2. OpenMM & AmberTools via Conda-Forge
+# We use mamba or just conda. Miniconda3 includes conda.
+RUN conda install -c conda-forge -y \
+    openmm \
+    ambertools \
+    pdbfixer \
+    mdanalysis \
+    openff-toolkit \
+    rdkit \
+    pandas \
+    scikit-learn \
+    xgboost \
+    boto3 \
+    joblib \
+    && conda clean -afy
+
+# 3. Copy Application Code
+WORKDIR /app
+COPY docker/run_md.py .
+
+# 4. Copy AI Model (You must ensure this file is present locally before build)
+# The user's workflow implies this model exists or is downloaded.
+# Ideally, we COPY it. If missing, the build fails.
+# We assume 'alzheimers_ensemble_model.pkl' is in the build context.
+COPY alzheimers_ensemble_model.pkl .
+
+# 5. Entrypoint
+ENTRYPOINT ["python", "run_md.py"]
