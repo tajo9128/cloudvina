@@ -121,7 +121,10 @@ def submit_batch_job(job_id: str, receptor_key: str, ligand_key: str, engine: st
                     {'name': 'S3_BUCKET', 'value': S3_BUCKET},
                     {'name': 'RECEPTOR_S3_KEY', 'value': receptor_key},
                     {'name': 'LIGAND_S3_KEY', 'value': ligand_key},
-                    {'name': 'DOCKING_ENGINE', 'value': engine}
+                    {'name': 'DOCKING_ENGINE', 'value': engine},
+                    # FORCE Gnina to use Vina scoring if engine is gnina/consensus
+                    # This fixes the "0.0 affinity" issue in empty/fixed grids
+                    {'name': 'GNINA_ARGS', 'value': '--scoring vina'} 
                 ]
             }
         )
