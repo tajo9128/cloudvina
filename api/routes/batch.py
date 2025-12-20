@@ -552,6 +552,37 @@ async def get_batch_details(
         if not jobs:
              raise HTTPException(status_code=404, detail="Batch not found")
 
+        # 1.5. Lazy Repair: Fetch missing binding_affinity from S3 for SUCCEEDED jobs
+        # This handles cases where the docking container failed to update Supabase
+        import boto3
+        import json
+        s3 = boto3.client('s3', region_name=AWS_REGION)
+        
+        for job in jobs:
+            is_missing_score = job.get('binding_affinity') is None or float(job.get('binding_affinity') or 0) == 0.0
+            
+            if job['status'] == 'SUCCEEDED' and is_missing_score:
+                try:
+                    results_key = f"jobs/{job['id']}/results.json"
+                    obj = s3.get_object(Bucket=S3_BUCKET, Key=results_key)
+                    results_data = json.loads(obj['Body'].read().decode('utf-8'))
+                    
+                    if 'best_affinity' in results_data:
+                        job['binding_affinity'] = results_data['best_affinity']
+                        # Also update DB for future requests
+                        auth_client.table('jobs').update({'binding_affinity': results_data['best_affinity']}).eq('id', job['id']).execute()
+                except Exception as s3_err:
+                    # If results.json missing, try to parse from docking_results if it exists
+                    if job.get('docking_results'):
+                        try:
+                            dr = job['docking_results']
+                            if isinstance(dr, str):
+                                dr = json.loads(dr)
+                            if dr.get('best_affinity'):
+                                job['binding_affinity'] = dr['best_affinity']
+                        except:
+                            pass
+
         # 2. Calculate Stats & Enrich with ML Scoring
         from services.ml_scorer import MLScorer
         scorer = MLScorer(profile='balanced')
