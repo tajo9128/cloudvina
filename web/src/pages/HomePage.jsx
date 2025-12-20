@@ -170,10 +170,10 @@ export default function HomePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-20">
                         <h2 className="text-base text-indigo-600 font-bold tracking-widest uppercase mb-2">The Enterprise Workflow</h2>
-                        <h3 className="text-4xl md:text-5xl font-bold text-black mb-6">7-Phase Discovery Engine</h3>
+                        <h3 className="text-4xl md:text-5xl font-bold text-black mb-6">9-Phase Discovery Engine</h3>
                         <p className="text-xl text-slate-600 max-w-2xl mx-auto">
                             Automate the complex biology so your team can focus on the discovery.
-                            From raw PDBs to publication-ready data export.
+                            From target identification to FDA-compliant submission.
                         </p>
                     </div>
 
@@ -185,86 +185,182 @@ export default function HomePage() {
                             {/* Phase 1 */}
                             <TimelineItem
                                 number="1"
+                                title="Target Identification"
+                                subtitle="AI-Driven Target Prediction"
+                                description="Upload a FASTA sequence or PDB ID. Our AI models predict bindability and druggability scores before you start."
+                                tags={["Deep Learning", "Binding Site Detection", "Hotspot Analysis"]}
+                                status="completed"
+                                side="left"
+                                icon={<Brain size={24} />}
+                            />
+
+                            {/* Phase 2 (Old 1) */}
+                            <TimelineItem
+                                number="2"
                                 title="High-Throughput Docking"
                                 subtitle="AutoDock Vina Implementation"
                                 description="Parallelized virtual screening of multi-ligand libraries. Generates ranked binding poses and affinity scores instantly."
                                 tags={["Cloud Scaling", "PDBQT Automation", "Blind Docking"]}
                                 status="completed"
-                                side="left"
+                                side="right"
                                 icon={<Box size={24} />}
                             />
 
-                            {/* Phase 2 */}
+                            {/* Phase 3 (Old 2) */}
                             <TimelineItem
-                                number="2"
+                                number="3"
                                 title="Molecular Dynamics"
                                 subtitle="OpenMM Production Runs"
                                 description="Full-atomistic simulations on dedicated GPU instances. Validate ligand stability with energy minimization and equilibration."
                                 tags={["Explicit Solvent", "Amber14", "GPU Clusters"]}
                                 status="completed"
-                                side="right"
+                                side="left"
                                 icon={<Zap size={24} />}
                             />
 
-                            {/* Phase 3 */}
+                            {/* Phase 4 (Old 3) */}
                             <TimelineItem
-                                number="3"
+                                number="4"
                                 title="Trajectory Analysis"
                                 subtitle="MDAnalysis Integration"
-                                description="Quantify RMSD stability, RMSF flexibility, and Radius of Gyration. Identify true binders vs. sticky artifacts with precision."
+                                description="Quantify RMSD stability, RMSF flexibility, and Radius of Gyration. Identify true binders vs. sticky artifacts."
                                 tags={["RMSD/RMSF", "H-Bond Lifetime", "Clustering"]}
                                 status="completed"
-                                side="left"
+                                side="right"
                                 icon={<LineChart size={24} />}
                             />
 
-                            {/* Phase 4 */}
+                            {/* Phase 5 (Old 4) */}
                             <TimelineItem
-                                number="4"
+                                number="5"
                                 title="Binding Free Energy"
                                 subtitle="MM-PBSA / MM-GBSA"
                                 description="Calculate rigorous binding free energies (ΔG) including solvation effects. More accurate ranking than simple docking scores."
                                 tags={["Advanced Scoring", "Implicit Solvent", "Entropy Estimation"]}
                                 status="completed"
-                                side="right"
+                                side="left"
                                 icon={<FlaskConical size={24} />}
                             />
 
-                            {/* Phase 5 */}
+                            {/* Phase 6 (Old 5) */}
                             <TimelineItem
-                                number="5"
+                                number="6"
                                 title="Lead Ranking"
                                 subtitle="Consensus Scoring"
-                                description="Normalize and weigh scores from Docking, MD, and MM-GBSA. Filter false positives with a robust consensus algorithm."
+                                description="Normalize scores from Docking, MD, and GBSA. Filter false positives with a robust consensus algorithm."
                                 tags={["Weighted Scoring", "Rank Aggregation", "Outlier Removal"]}
                                 status="completed"
-                                side="left"
+                                side="right"
                                 icon={<Search size={24} />}
                             />
 
-                            {/* Phase 6 */}
+                            {/* Phase 7 (Old 6) */}
                             <TimelineItem
-                                number="6"
-                                title="ADMET Prediction"
+                                number="7"
+                                title="ADMET Profiling"
                                 subtitle="RDKit Cheminformatics"
-                                description="Screen for drug-likeness (Lipinski's Rule), toxicity alerts, and standard pharmacokinetic properties."
+                                description="Screen for drug-likeness (Lipinski), toxicity alerts, and pharmacokinetic properties (absorption, distribution, metabolism)."
                                 tags={["BBB Permeability", "Toxicity", "Oral Bioavailability"]}
                                 status="completed"
-                                side="right"
+                                side="left"
                                 icon={<Activity size={24} />}
                             />
 
-                            {/* Phase 7 */}
+                            {/* Phase 8 (New) */}
                             <TimelineItem
-                                number="7"
-                                title="Reporting & Export"
-                                subtitle="Automated PDF Generation"
-                                description="Generate comprehensive PDF reports for your top candidates, ready for internal review or regulatory submission."
-                                tags={["White-Label Reports", "Data Export", "Audit Trail"]}
+                                number="8"
+                                title="Accuracy Benchmarking"
+                                subtitle="Validation & Quality Control"
+                                description="Validate model performance against known experimental data (PDBbind, ChEMBL). Calculate R² and RMSE in real-time."
+                                tags={["Correlation Analysis", "Scatter Plots", "Model Validation"]}
+                                status="completed"
+                                side="right"
+                                icon={<CheckCircle size={24} />}
+                            />
+
+                            {/* Phase 9 (Old 7 - Enhanced) */}
+                            <TimelineItem
+                                number="9"
+                                title="Regulatory Submission"
+                                subtitle="FDA 21 CFR Part 11 Compliance"
+                                description="Generate immutable audit logs and comprehensive PDF reports. Ready for internal review or regulatory submission."
+                                tags={["Immutable Logs", "Role-Based Access", "Digital Compliance"]}
                                 status="completed"
                                 side="left"
                                 icon={<FileCode size={24} />}
                             />
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {/* 12-Week Roadmap Section */}
+            <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('/assets/images/grid.svg')] opacity-[0.03]"></div>
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="text-center mb-16">
+                        <h2 className="text-base text-indigo-400 font-bold tracking-widest uppercase mb-2">Strategic Roadmap</h2>
+                        <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">12-Week Integration Plan</h3>
+                        <p className="text-slate-400 max-w-2xl mx-auto">
+                            Our structured approach ensures seamless adoption and scalability for your organization.
+                        </p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                        {/* W 1-4 */}
+                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="text-xs font-bold bg-slate-700 px-2 py-1 rounded text-slate-300">Weeks 1-4</div>
+                                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                            </div>
+                            <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Foundation</h4>
+                            <ul className="space-y-3 text-sm text-slate-400">
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> User Onboarding & Analytics</li>
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> High-Throughput Docking</li>
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> MD Simulation Pipeline</li>
+                            </ul>
+                        </div>
+
+                        {/* W 5-8 */}
+                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="text-xs font-bold bg-slate-700 px-2 py-1 rounded text-slate-300">Weeks 5-8</div>
+                                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                            </div>
+                            <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Enterprise Core</h4>
+                            <ul className="space-y-3 text-sm text-slate-400">
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> FDA 21 CFR Part 11 Logs</li>
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> Role-Based Access (RBAC)</li>
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> Accuracy Benchmarking</li>
+                            </ul>
+                        </div>
+
+                        {/* W 9-10 */}
+                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="text-xs font-bold bg-slate-700 px-2 py-1 rounded text-slate-300">Weeks 9-10</div>
+                                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                            </div>
+                            <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Ecosystem</h4>
+                            <ul className="space-y-3 text-sm text-slate-400">
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> Python SDK Release</li>
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> Developer API Portal</li>
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> Custom Integrations</li>
+                            </ul>
+                        </div>
+
+                        {/* W 11-12 */}
+                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
+                            <div className="flex items-center justify-between mb-4">
+                                <div className="text-xs font-bold bg-indigo-900/50 px-2 py-1 rounded text-indigo-300 border border-indigo-500/30">Weeks 11-12</div>
+                                <Clock className="w-5 h-5 text-indigo-400" />
+                            </div>
+                            <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Scale & Optimization</h4>
+                            <ul className="space-y-3 text-sm text-slate-400">
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-indigo-500"></div> Global GPU Auto-Scaling</li>
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-indigo-500"></div> Multi-Region Redundancy</li>
+                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-indigo-500"></div> Dedicated Instance Pools</li>
+                            </ul>
                         </div>
                     </div>
                 </div>
