@@ -49,11 +49,13 @@ import RBACManagerPage from './pages/admin/RBACManagerPage' // [NEW] Sprint 2.2
 
 const queryClient = new QueryClient()
 
-function App() {
+// 50: const queryClient = new QueryClient()
+
+function AppRoutes() {
     const [session, setSession] = useState(null)
     const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true)
-    const location = useLocation(); // for tracking page views
+    const location = useLocation(); // Now safe to use here
 
     useEffect(() => {
         // Initialize Analytics Safe Mode
@@ -96,19 +98,7 @@ function App() {
     }, [])
 
     const checkAdmin = async (userId) => {
-        // ... existing admin check logic
-        // Example: Fetch user roles from Supabase and set isAdmin state
-        // For now, a placeholder:
-        // const { data, error } = await supabase
-        //     .from('profiles')
-        //     .select('is_admin')
-        //     .eq('id', userId)
-        //     .single();
-        // if (data && data.is_admin) {
-        //     setIsAdmin(true);
-        // } else {
-        //     setIsAdmin(false);
-        // }
+        // ... existing admin check logic placeholder
     };
 
     if (loading) {
@@ -118,98 +108,104 @@ function App() {
     }
 
     return (
+        <Routes>
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+                <AdminRoute>
+                    <AdminLayout />
+                </AdminRoute>
+            }>
+                <Route index element={<AdminDashboard />} />
+                <Route path="jobs" element={<AdminJobs />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="calendar" element={<AdminCalendar />} />
+                <Route path="messages" element={<AdminMessages />} />
+                <Route path="phases" element={<AdminPhases />} />
+                <Route path="pricing" element={<AdminPricing />} />
+                <Route path="fda" element={<FDACompliancePage />} />
+                <Route path="roles" element={<RBACManagerPage />} />
+            </Route>
+
+            {/* Public/User Routes with Main Layout */}
+            <Route element={<Layout><Outlet /></Layout>}>
+                <Route path="/test" element={<TestPage />} />
+                <Route path="/" element={<HomePage />} />
+                <Route path="/login" element={<LoginPage />} />
+                {/* [NEW] Onboarding */}
+                <Route path="/onboarding" element={<OnboardingPage />} />
+                <Route
+                    path="/dashboard"
+                    element={session ? <DashboardPage /> : <Navigate to="/login" />}
+                />
+                <Route
+                    path="/dock/new"
+                    element={<Navigate to="/dock/batch" replace />}
+                />
+                <Route
+                    path="/dock/batch"
+                    element={session ? <BatchDockingPage /> : <Navigate to="/login" />}
+                />
+                <Route
+                    path="/dock/batch/:batchId"
+                    element={session ? <BatchResultsPage /> : <Navigate to="/login" />}
+                />
+                <Route
+                    path="/dock/:jobId"
+                    element={session ? <JobResultsPage /> : <Navigate to="/login" />}
+                />
+                <Route path="/tools/converter" element={<ConverterPage />} />
+                <Route
+                    path="/tools/prediction"
+                    element={session ? <TargetPredictionPage /> : <Navigate to="/login" />}
+                />
+                <Route
+                    path="/tools/benchmark"
+                    element={session ? <BenchmarkingPage /> : <Navigate to="/login" />}
+                />
+                <Route
+                    path="/md-simulation"
+                    element={session ? <MDSimulationPage /> : <Navigate to="/login" />}
+                />
+                <Route
+                    path="/md-results/:jobId"
+                    element={session ? <MDResultsPage /> : <Navigate to="/login" />}
+                />
+                {/* ISOLATED MD STABILITY ROUTE */}
+                <Route
+                    path="/md-analysis"
+                    element={session ? <MDStabilityPage /> : <Navigate to="/login" />}
+                />
+                <Route
+                    path="/leads"
+                    element={session ? <LeadOptimizationPage /> : <Navigate to="/login" />}
+                />
+
+                <Route path="/blog" element={<BlogPage />} />
+                <Route path="/blog/:slug" element={<BlogPostPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/privacy" element={<PrivacyPage />} />
+                <Route path="/terms" element={<TermsPage />} />
+                <Route path="/pricing" element={<PricingPage />} />
+                <Route path="/developer" element={<DeveloperPage />} />
+                <Route path="/refund-policy" element={<RefundsPage />} />
+                <Route path="/refunds" element={<RefundsPage />} />
+                <Route path="/molecular-docking-online" element={<MolecularDockingPage />} />
+                <Route path="/contact" element={<ContactPage />} />
+
+                {/* User System Routes */}
+                <Route path="/profile" element={session ? <ProfilePage /> : <Navigate to="/login" />} />
+                <Route path="/billing" element={session ? <BillingPage /> : <Navigate to="/login" />} />
+                <Route path="/support" element={session ? <SupportPage /> : <Navigate to="/login" />} />
+            </Route>
+        </Routes>
+    )
+}
+
+function App() {
+    return (
         <QueryClientProvider client={queryClient}>
             <BrowserRouter>
-                <Routes>
-                    {/* Admin Routes */}
-                    <Route path="/admin" element={
-                        <AdminRoute>
-                            <AdminLayout />
-                        </AdminRoute>
-                    }>
-                        <Route index element={<AdminDashboard />} />
-                        <Route path="jobs" element={<AdminJobs />} />
-                        <Route path="users" element={<AdminUsers />} />
-                        <Route path="calendar" element={<AdminCalendar />} />
-                        <Route path="messages" element={<AdminMessages />} />
-                        <Route path="phases" element={<AdminPhases />} />
-                        <Route path="pricing" element={<AdminPricing />} />
-                        <Route path="fda" element={<FDACompliancePage />} />
-                        <Route path="roles" element={<RBACManagerPage />} />
-                    </Route>
-
-                    {/* Public/User Routes with Main Layout */}
-                    <Route element={<Layout><Outlet /></Layout>}>
-                        <Route path="/test" element={<TestPage />} />
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/login" element={<LoginPage />} />
-                        {/* [NEW] Onboarding */}
-                        <Route path="/onboarding" element={<OnboardingPage />} />
-                        <Route
-                            path="/dashboard"
-                            element={session ? <DashboardPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/dock/new"
-                            element={<Navigate to="/dock/batch" replace />}
-                        />
-                        <Route
-                            path="/dock/batch"
-                            element={session ? <BatchDockingPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/dock/batch/:batchId"
-                            element={session ? <BatchResultsPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/dock/:jobId"
-                            element={session ? <JobResultsPage /> : <Navigate to="/login" />}
-                        />
-                        <Route path="/tools/converter" element={<ConverterPage />} />
-                        <Route
-                            path="/tools/prediction"
-                            element={session ? <TargetPredictionPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/tools/benchmark"
-                            element={session ? <BenchmarkingPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/md-simulation"
-                            element={session ? <MDSimulationPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/md-results/:jobId"
-                            element={session ? <MDResultsPage /> : <Navigate to="/login" />}
-                        />
-                        {/* ISOLATED MD STABILITY ROUTE */}
-                        <Route
-                            path="/md-analysis"
-                            element={session ? <MDStabilityPage /> : <Navigate to="/login" />}
-                        />
-                        <Route
-                            path="/leads"
-                            element={session ? <LeadOptimizationPage /> : <Navigate to="/login" />}
-                        />
-
-                        <Route path="/blog" element={<BlogPage />} />
-                        <Route path="/blog/:slug" element={<BlogPostPage />} />
-                        <Route path="/about" element={<AboutPage />} />
-                        <Route path="/privacy" element={<PrivacyPage />} />
-                        <Route path="/terms" element={<TermsPage />} />
-                        <Route path="/pricing" element={<PricingPage />} />
-                        <Route path="/developer" element={<DeveloperPage />} />
-                        <Route path="/refund-policy" element={<RefundsPage />} />
-                        <Route path="/refunds" element={<RefundsPage />} />
-                        <Route path="/molecular-docking-online" element={<MolecularDockingPage />} />
-                        <Route path="/contact" element={<ContactPage />} />
-
-                        {/* User System Routes */}
-                        <Route path="/profile" element={session ? <ProfilePage /> : <Navigate to="/login" />} />
-                        <Route path="/billing" element={session ? <BillingPage /> : <Navigate to="/login" />} />
-                        <Route path="/support" element={session ? <SupportPage /> : <Navigate to="/login" />} />
-                    </Route>
-                </Routes>
+                <AppRoutes />
             </BrowserRouter>
         </QueryClientProvider>
     )
