@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Security
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from auth import get_current_user, get_authenticated_client
 from services.accuracy_service import accuracy_service
