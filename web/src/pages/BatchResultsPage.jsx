@@ -5,7 +5,7 @@ import { API_URL } from '../config'
 import MoleculeViewer from '../components/MoleculeViewer'
 import AdmetRadar from '../components/AdmetRadar' // [NEW] Import Radar
 import { trackEvent } from '../services/analytics' // Import Analytics
-import { ChevronLeft, Download, Eye, Maximize2, RefreshCw, BarChart2, Star, Zap, Activity, ShieldCheck, AlertTriangle } from 'lucide-react'
+import { ChevronLeft, Download, Eye, Maximize2, RefreshCw, BarChart2, Star, Zap, Activity, ShieldCheck, AlertTriangle, ThumbsUp, ThumbsDown } from 'lucide-react'
 
 export default function BatchResultsPage() {
     const { batchId } = useParams()
@@ -164,6 +164,41 @@ export default function BatchResultsPage() {
         }
     }, [activeTab, firstJobId])
 
+    const handleFeedback = async (e, job, rating) => {
+        e.stopPropagation() // Prevent row selection
+
+        try {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) return
+
+            // Optimistic Update (Optional: could add local state to track processed IDs)
+            // But ideally we'd want to reload data or update local cache
+            // For MVP, just visual feedback via toast or simple console log, or update batchData locally
+
+            const res = await fetch(`${API_URL}/feedback/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${session.access_token}`
+                },
+                body: JSON.stringify({
+                    job_id: job.id,
+                    rating: rating
+                })
+            })
+
+            if (!res.ok) throw new Error('Feedback failed')
+
+            // Update local state to show the feedback (simplified)
+            // Ideally we'd fetch this from DB, but let's just alert
+            alert(`Draft: Feedback ${rating === 1 ? 'Positive' : 'Negative'} Recorded!`)
+
+        } catch (err) {
+            console.error(err)
+            alert('Failed to submit feedback')
+        }
+    }
+
 
     const handleSort = (key) => {
         let direction = 'ascending'
@@ -303,6 +338,7 @@ export default function BatchResultsPage() {
                                 <tr>
                                     <th onClick={() => handleSort('ligand_filename')} className="px-4 py-3 cursor-pointer hover:bg-slate-100">Ligand</th>
                                     <th onClick={() => handleSort('binding_affinity')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right">Affinity (kcal/mol)</th>
+                                    <th className="px-4 py-3 text-center">Feedback</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-100">
@@ -318,8 +354,23 @@ export default function BatchResultsPage() {
                                         </td>
                                         <td className="px-4 py-3 text-right font-mono">
                                             <span className={getAffinityColor(job.binding_affinity)}>
-                                                {job.binding_affinity ? job.binding_affinity.toFixed(1) : '-'}
                                             </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-center flex justify-center gap-2">
+                                            <button
+                                                onClick={(e) => handleFeedback(e, job, 1)}
+                                                className="p-1 hover:bg-green-100 text-slate-400 hover:text-green-600 rounded transition-colors"
+                                                title="Good Result"
+                                            >
+                                                <ThumbsUp className="w-4 h-4" />
+                                            </button>
+                                            <button
+                                                onClick={(e) => handleFeedback(e, job, -1)}
+                                                className="p-1 hover:bg-red-100 text-slate-400 hover:text-red-600 rounded transition-colors"
+                                                title="Bad Result"
+                                            >
+                                                <ThumbsDown className="w-4 h-4" />
+                                            </button>
                                         </td>
                                     </tr>
                                 ))}

@@ -1,13 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import SEOHelmet from '../components/SEOHelmet'
-import {
-    PlayCircle, Zap, Activity, CheckCircle, Clock,
-    ArrowRight, Github, Info, Download,
-    Box, Cpu, FileCode, FlaskConical, LineChart, Cloud,
-    Brain, GraduationCap, Factory, Search, Database, CreditCard
-} from 'lucide-react'
-import CountUp from '../components/CountUp'
 
 export default function HomePage() {
     const [isVisible, setIsVisible] = useState(false)
@@ -79,12 +72,12 @@ export default function HomePage() {
 
                             <div className="flex flex-col sm:flex-row gap-4 mb-12">
                                 <Link to="/dock/new" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transform hover:-translate-y-1">
-                                    <PlayCircle size={20} fill="currentColor" className="text-white/20" />
+                                    <span className="text-xl">▶️</span>
                                     <span>Start Free Trial</span>
                                 </Link>
                                 <Link to="/contact" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl backdrop-blur-sm transition-all">
                                     <span>Contact Sales</span>
-                                    <ArrowRight size={18} />
+                                    <span className="text-xl">➡️</span>
                                 </Link>
                             </div>
 
@@ -92,7 +85,7 @@ export default function HomePage() {
                             <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-md max-w-sm">
                                 <div className="flex items-center justify-between mb-3">
                                     <span className="text-slate-200 text-sm font-medium flex items-center gap-2">
-                                        <Activity size={16} className="text-emerald-400" /> Platform Status
+                                        <span className="text-emerald-400">📈</span> Platform Status
                                     </span>
                                     <span className="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">99.9% UPTIME</span>
                                 </div>
@@ -120,7 +113,7 @@ export default function HomePage() {
                             {/* Floating Cards */}
                             <div className="absolute top-10 -left-10 bg-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-slate-700 shadow-xl animate-fade-in-up delay-100">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-green-500/20 rounded-lg text-green-400"><Database size={20} /></div>
+                                    <div className="p-2 bg-green-500/20 rounded-lg text-green-400"><span className="text-xl">🗄️</span></div>
                                     <div>
                                         <div className="text-xs text-slate-400 uppercase font-bold">Secure Storage</div>
                                         <div className="text-white font-bold">Encrypted & Compliant</div>
@@ -130,7 +123,7 @@ export default function HomePage() {
 
                             <div className="absolute bottom-10 -right-5 bg-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-slate-700 shadow-xl animate-fade-in-up delay-300">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400"><Zap size={20} /></div>
+                                    <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400"><span className="text-xl">⚡</span></div>
                                     <div>
                                         <div className="text-xs text-slate-400 uppercase font-bold">High Performance</div>
                                         <div className="text-white font-bold">GPU Accelerated</div>
@@ -147,17 +140,17 @@ export default function HomePage() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-800/50">
                         {[
-                            { label: "Compounds Screened", value: 1500, icon: <CheckCircle size={18} className="text-green-500" /> },
-                            { label: "Active Organizations", value: 124, icon: <Factory size={18} className="text-purple-500" /> },
-                            { label: "Compute Hours", value: 850, icon: <Clock size={18} className="text-blue-500" /> },
-                            { label: "Success Rate", value: 92, suffix: "%", icon: <LineChart size={18} className="text-yellow-500" /> }
+                            { label: "Compounds Screened", value: 1500, icon: <span className="text-xl">✅</span> },
+                            { label: "Active Organizations", value: 124, icon: <span className="text-xl">🏭</span> },
+                            { label: "Compute Hours", value: 850, icon: <span className="text-xl">🕒</span> },
+                            { label: "Success Rate", value: 92, suffix: "%", icon: <span className="text-xl">📊</span> }
                         ].map((stat, i) => (
                             <div key={i} className="py-8 px-4 text-center group hover:bg-slate-800/30 transition-colors">
                                 <div className="flex items-center justify-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">
                                     {stat.icon} {stat.label}
                                 </div>
                                 <div className="text-3xl font-bold text-white">
-                                    {stat.prefix}<CountUp end={stat.value} duration={2000} suffix={stat.suffix || "+"} />
+                                    {stat.prefix}{stat.value.toLocaleString()}{stat.suffix || "+"}
                                 </div>
                             </div>
                         ))}
@@ -191,7 +184,7 @@ export default function HomePage() {
                                 tags={["Deep Learning", "Binding Site Detection", "Hotspot Analysis"]}
                                 status="completed"
                                 side="left"
-                                icon={<Brain size={24} />}
+                                icon={<span className="text-2xl">🧠</span>}
                             />
 
                             {/* Phase 2 (Old 1) */}
@@ -203,7 +196,7 @@ export default function HomePage() {
                                 tags={["Cloud Scaling", "PDBQT Automation", "Blind Docking"]}
                                 status="completed"
                                 side="right"
-                                icon={<Box size={24} />}
+                                icon={<span className="text-2xl">📦</span>}
                             />
 
                             {/* Phase 3 (Old 2) */}
@@ -215,7 +208,7 @@ export default function HomePage() {
                                 tags={["Explicit Solvent", "Amber14", "GPU Clusters"]}
                                 status="completed"
                                 side="left"
-                                icon={<Zap size={24} />}
+                                icon={<span className="text-2xl">⚡</span>}
                             />
 
                             {/* Phase 4 (Old 3) */}
@@ -227,7 +220,7 @@ export default function HomePage() {
                                 tags={["RMSD/RMSF", "H-Bond Lifetime", "Clustering"]}
                                 status="completed"
                                 side="right"
-                                icon={<LineChart size={24} />}
+                                icon={<span className="text-2xl">📊</span>}
                             />
 
                             {/* Phase 5 (Old 4) */}
@@ -239,7 +232,7 @@ export default function HomePage() {
                                 tags={["Advanced Scoring", "Implicit Solvent", "Entropy Estimation"]}
                                 status="completed"
                                 side="left"
-                                icon={<FlaskConical size={24} />}
+                                icon={<span className="text-2xl">🧪</span>}
                             />
 
                             {/* Phase 6 (Old 5) */}
@@ -251,7 +244,7 @@ export default function HomePage() {
                                 tags={["Weighted Scoring", "Rank Aggregation", "Outlier Removal"]}
                                 status="completed"
                                 side="right"
-                                icon={<Search size={24} />}
+                                icon={<span className="text-2xl">🔍</span>}
                             />
 
                             {/* Phase 7 (Old 6) */}
@@ -263,7 +256,7 @@ export default function HomePage() {
                                 tags={["BBB Permeability", "Toxicity", "Oral Bioavailability"]}
                                 status="completed"
                                 side="left"
-                                icon={<Activity size={24} />}
+                                icon={<span className="text-2xl">📈</span>}
                             />
 
                             {/* Phase 8 (New) */}
@@ -275,7 +268,7 @@ export default function HomePage() {
                                 tags={["Correlation Analysis", "Scatter Plots", "Model Validation"]}
                                 status="completed"
                                 side="right"
-                                icon={<CheckCircle size={24} />}
+                                icon={<span className="text-2xl">✅</span>}
                             />
 
                             {/* Phase 9 (Old 7 - Enhanced) */}
@@ -287,7 +280,7 @@ export default function HomePage() {
                                 tags={["Immutable Logs", "Role-Based Access", "Digital Compliance"]}
                                 status="completed"
                                 side="left"
-                                icon={<FileCode size={24} />}
+                                icon={<span className="text-2xl">📄</span>}
                             />
                         </div>
                     </div>
@@ -311,7 +304,7 @@ export default function HomePage() {
                         <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="text-xs font-bold bg-slate-700 px-2 py-1 rounded text-slate-300">Weeks 1-4</div>
-                                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                                <span className="text-xl">✅</span>
                             </div>
                             <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Foundation</h4>
                             <ul className="space-y-3 text-sm text-slate-400">
@@ -325,7 +318,7 @@ export default function HomePage() {
                         <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="text-xs font-bold bg-slate-700 px-2 py-1 rounded text-slate-300">Weeks 5-8</div>
-                                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                                <span className="text-xl">✅</span>
                             </div>
                             <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Enterprise Core</h4>
                             <ul className="space-y-3 text-sm text-slate-400">
@@ -339,7 +332,7 @@ export default function HomePage() {
                         <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="text-xs font-bold bg-slate-700 px-2 py-1 rounded text-slate-300">Weeks 9-10</div>
-                                <CheckCircle className="w-5 h-5 text-emerald-500" />
+                                <span className="text-xl">✅</span>
                             </div>
                             <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Ecosystem</h4>
                             <ul className="space-y-3 text-sm text-slate-400">
@@ -353,7 +346,7 @@ export default function HomePage() {
                         <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
                             <div className="flex items-center justify-between mb-4">
                                 <div className="text-xs font-bold bg-indigo-900/50 px-2 py-1 rounded text-indigo-300 border border-indigo-500/30">Weeks 11-12</div>
-                                <Clock className="w-5 h-5 text-indigo-400" />
+                                <span className="text-xl">🕒</span>
                             </div>
                             <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Scale & Optimization</h4>
                             <ul className="space-y-3 text-sm text-slate-400">
@@ -372,12 +365,12 @@ export default function HomePage() {
                     <div className="text-center mb-16">
                         <h2 className="text-3xl font-bold text-black mb-6">Powered by Industry Standards</h2>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <ToolCard name="AutoDock Vina" type="Docking Engine" icon={<Box />} desc="The industry standard for molecular docking." color="blue" />
-                            <ToolCard name="OpenMM" type="MD Engine" icon={<Zap />} desc="High-performance toolkit for molecular simulation." color="purple" />
-                            <ToolCard name="MDAnalysis" type="Analysis Library" icon={<LineChart />} desc="Advanced trajectory analysis for complex systems." color="orange" />
-                            <ToolCard name="RDKit" type="Cheminformatics" icon={<FlaskConical />} desc="Robust cheminformatics and machine learning tools." color="green" />
-                            <ToolCard name="FastAPI" type="Backend Framework" icon={<Cpu />} desc="High-performance, secure API infrastructure." color="indigo" />
-                            <ToolCard name="Cloud Compute" type="Infrastructure" icon={<Cloud />} desc="Dedicated GPU clusters for maximum throughput." color="yellow" />
+                            <ToolCard name="AutoDock Vina" type="Docking Engine" icon={<span className="text-2xl">📦</span>} desc="The industry standard for molecular docking." color="blue" />
+                            <ToolCard name="OpenMM" type="MD Engine" icon={<span className="text-2xl">⚡</span>} desc="High-performance toolkit for molecular simulation." color="purple" />
+                            <ToolCard name="MDAnalysis" type="Analysis Library" icon={<span className="text-2xl">📊</span>} desc="Advanced trajectory analysis for complex systems." color="orange" />
+                            <ToolCard name="RDKit" type="Cheminformatics" icon={<span className="text-2xl">🧪</span>} desc="Robust cheminformatics and machine learning tools." color="green" />
+                            <ToolCard name="FastAPI" type="Backend Framework" icon={<span className="text-2xl">🖥️</span>} desc="High-performance, secure API infrastructure." color="indigo" />
+                            <ToolCard name="Cloud Compute" type="Infrastructure" icon={<span className="text-2xl">☁️</span>} desc="Dedicated GPU clusters for maximum throughput." color="yellow" />
                         </div>
                     </div>
                 </div>
@@ -480,11 +473,11 @@ function TimelineItem({ number, title, subtitle, description, tags, status, side
                         ))}
                         {isCompleted ? (
                             <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full flex items-center gap-1">
-                                <CheckCircle size={12} /> Live
+                                <span className="text-sm">✅</span> Live
                             </span>
                         ) : (
                             <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full flex items-center gap-1">
-                                <Clock size={12} /> Coming Soon
+                                <span className="text-sm">🕒</span> Coming Soon
                             </span>
                         )}
                     </div>

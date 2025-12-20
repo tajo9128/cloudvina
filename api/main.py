@@ -25,7 +25,8 @@ from services.ai_explainer import AIExplainer
 from tools import router as tools_router
 from routes.admin import router as admin_router
 from routes.evolution import router as evolution_router
-from routes.batch import router as batch_router  # ADD BATCH ROUTES
+from routes.batch import router as batch_router
+from routes.feedback import router as feedback_router # ADD FEEDBACK ROUTER
 from services.cavity_detector import CavityDetector
 from services.cavity_detector import CavityDetector
 from services.drug_properties import DrugPropertiesCalculator
@@ -96,7 +97,8 @@ app.include_router(evolution_router)
 from routes.qsar import router as qsar_router
 app.include_router(qsar_router)
 
-app.include_router(batch_router)  # Enable batch job endpoints
+app.include_router(batch_router)
+app.include_router(feedback_router) # Enable feedback endpoints
 # Register Target Prediction Router
 from services.target_prediction import router as target_prediction_router
 app.include_router(target_prediction_router)

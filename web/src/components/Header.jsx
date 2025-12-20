@@ -1,7 +1,6 @@
 import { Link, useLocation } from 'react-router-dom'
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import { ChevronDown } from 'lucide-react'
 
 export default function Header() {
     const [scrolled, setScrolled] = useState(false)
@@ -80,7 +79,7 @@ export default function Header() {
                                     className="flex items-center gap-1 font-medium text-sm w-max uppercase tracking-wide transition-colors text-slate-900 hover:text-primary-600"
                                 >
                                     {item.name}
-                                    <ChevronDown size={14} />
+                                    <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </button>
                             ) : (
                                 <Link
@@ -119,7 +118,7 @@ export default function Header() {
                         <div className="relative group">
                             <button className="flex items-center gap-2 font-bold text-slate-900 hover:text-primary-600 transition-colors">
                                 <span>Hi, {user.email ? user.email.split('@')[0] : 'User'}</span>
-                                <ChevronDown size={16} />
+                                <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                             </button>
 
                             {/* User Dropdown */}
