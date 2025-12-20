@@ -5,51 +5,38 @@
 
 ---
 
-## 📅 Weekly Execution Plan
+## 📅 3-Week Ultra-Compute Plan (Colab Pro / L4 GPU)
 
-### **Week 1 (Dec 14-20): Data Prep & Baseline**
-*Focus: Data ingestion and establishing performance baselines.*
-- [ ] **Day 1-2 (Data):** 
-  - Download ChEMBL/PubChem AD inhibitors (7K SMILES).
-  - Add PhD plant SMIs (Evolvulus, Cordia) with **10x weighting**.
-  - Split: 80/10/10 stratified by target.
-- [ ] **Day 3-4 (Baseline):** 
-  - Load MolFormer-XL & ChemBERTa-2.
-  - Run zero-shot or light training baseline.
-- [ ] **Day 5-7 (Fine-Tune):** 
-  - Fine-tune ChemBERTa (lr=5e-5, 3 epochs, batch=16).
-  - Target Metric: **RMSE < 0.42**.
+### **Week 1: The "Intelligence" Sprint (Training)**
+*Goal: Train the World's Best Open Source Alzheimer's Model.*
+- [ ] **Data Fusion (Day 1-2):** Run `level3_rigorous_training.py` to aggregate 100K+ compounds from PubChem/BindingDB.
+- [ ] **MolFormer Training (Day 3-5):** Run `MolFormer_Training_Script.py` on **L4 GPU**.
+  - **Objective:** Fine-tune 1.1 Billion Parameters with **bfloat16** precision.
+  - **Output:** A model that understands chemical structure better than any standard algorithm.
+- [ ] **Ensemble (Day 6-7):** Train the Tier 2 Ensemble (ChemBERTa + XGBoost) to assist MolFormer prediction.
 
-### **Week 2 (Dec 21-27): Ensemble & Interpretability**
-*Focus: Maximizing accuracy and generating explanations.*
-- [ ] **Ensemble Construction:** 
-  - Combine MolFormer + ChemBERTa + Random Forest.
-  - Target Performance: **>95% Accuracy** / **R² > 0.74**.
-- [ ] **SHAP Analysis:** 
-  - Generate SHAP waterfall plots for top plant compounds.
-  - Identify pharmacophoric features (binding site interactions).
-- [ ] **ADMET Prediction:** 
-  - Predict BBB permeability for Phase 5 ranking.
+### **Week 2: The "Creation" Sprint (Generative AI)**
+*Goal: Use the AI to invent NEW drugs.*
+- [ ] **Generative Sampling (Day 8-10):** 
+  - Use MolFormer as a **Generator** (Masked Language Modeling) to dream up new structures.
+  - Generate 10,000 novel candidates seeded from your PhD plant compounds.
+- [ ] **Toxicity Screening (Day 11-12):** 
+  - Filter these 10k candidates using our `toxicity_engine.py`.
+  - Discard anything with high hepatotoxicity risk.
+- [ ] **Explainability (Day 13-14):** 
+  - Run **SHAP Analysis** on the top 10 survivors.
+  - Visualize *exactly* which atoms make them potent (great for thesis figures).
 
-### **Week 3 (Dec 28-Jan 3): Docking & Molecular Dynamics**
-*Focus: Structural validation of top ML predictions.*
-- [ ] **AutoDock Vina:** 
-  - Dock top 5 plant leads against AChE (4EY7), BACE1 (5VCZ), GSK-3β (1J1B).
-  - Visualize binding poses.
-- [ ] **MD Simulations (OpenMM):** 
-  - Run **10ns MD** trajectories for best complexes (~2hr/run on L4).
-  - Compute RMSD, RMSF, and MM-PBSA energies.
-
-### **Week 4 (Jan 4-10): Analysis & Publication**
-*Focus: Finalizing the submission package.*
-- [ ] **Figures Generation:** 
-  - SHAP plots, Docking poses, MD trajectories.
-  - Learning curves and Accuracy tables.
-- [ ] **Manuscript Drafting:** 
-  - Write Results/Methods sections for **Journal of Cheminformatics**.
-- [ ] **Integration:** 
-  - Upload final model to Hugging Face (`biodockify/alzheimers-ensemble-v2`).
-  - Deploy to `ai.biodockify.com`.
+### **Week 3: The "Physics" Sprint (Deep Docking & MD)**
+*Goal: Prove they work in 3D (The "Gold Standard").*
+- [ ] **Deep Docking (Day 15-18):** 
+  - Install **DiffDock** (SOTA Deep Learning Docker) on L4 GPU.
+  - Dock the Top 5 AI-generated compounds into BACE1 (PDB: 1FKN).
+  - Compare poses with standard Vina results.
+- [ ] **Molecular Dynamics (Day 19-21):** 
+  - Run short **10ns MD Simulations** (OpenMM) on the #1 Candidate.
+  - Create a video of your molecule binding to the protein.
+  - **Result:** definitive computational proof for publication.
 
 ---
 
