@@ -5,7 +5,7 @@ import { API_URL } from '../config'
 import MoleculeViewer from '../components/MoleculeViewer'
 import AdmetRadar from '../components/AdmetRadar' // [NEW] Import Radar
 import { trackEvent } from '../services/analytics' // Import Analytics
-// import { ChevronLeft, Download, Eye, Maximize2, RefreshCw, BarChart2, Star, Zap, Activity, ShieldCheck, AlertTriangle, ThumbsUp, ThumbsDown } from 'lucide-react'
+import { ChevronLeft, Download, Eye, Maximize2, RefreshCw, BarChart2, Star, Zap, Activity, ShieldCheck, AlertTriangle, ThumbsUp, ThumbsDown } from 'lucide-react'
 
 export default function BatchResultsPage() {
     const { batchId } = useParams()
