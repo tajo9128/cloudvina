@@ -1,5 +1,5 @@
 import { defineConfig } from 'vite'
-// Force Vercel Rebuild: Cache Buster v3.1.0
+// Force Vercel Rebuild: Cache Buster v3.1.1 (Router Fix)
 import react from '@vitejs/plugin-react'
 
 export default defineConfig({
