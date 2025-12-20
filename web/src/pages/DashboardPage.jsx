@@ -292,6 +292,3 @@ export default function DashboardPage() {
     )
 }
 
-// Missing imports fix
-import { CheckCircle2, FlaskConical } from 'lucide-react'
-
