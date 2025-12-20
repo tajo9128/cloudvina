@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { API_URL } from '../../config';
-import { Line, Scatter } from 'react-chartjs-2';
+// import { Line, Scatter } from 'react-chartjs-2';
+/*
 import {
     Chart as ChartJS,
     LinearScale,
@@ -10,9 +11,10 @@ import {
     Tooltip,
     Legend,
 } from 'chart.js';
-import { Target, Upload, FileText, ChevronRight, Activity, TrendingUp } from 'lucide-react';
+*/
+// import { Target, Upload, FileText, ChevronRight, Activity, TrendingUp } from 'lucide-react';
 
-ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
+// ChartJS.register(LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 export default function BenchmarkingPage() {
     const [batches, setBatches] = useState([]);
@@ -163,7 +165,7 @@ export default function BenchmarkingPage() {
         <div className="min-h-screen bg-slate-50 p-6">
             <header className="mb-8">
                 <div className="flex items-center gap-3 mb-2">
-                    <Activity className="w-8 h-8 text-indigo-600" />
+                    <span className="text-3xl text-indigo-600">📊</span>
                     <h1 className="text-2xl font-bold text-slate-900">Accuracy Benchmarking</h1>
                 </div>
                 <p className="text-slate-600">Validate engine performance against experimental datasets (e.g., PDBbind, ChEMBL).</p>
@@ -174,7 +176,7 @@ export default function BenchmarkingPage() {
                 {/* LEFT: New Analysis Form */}
                 <div className="lg:col-span-1 space-y-6">
                     <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><Target className="w-5 h-5 text-emerald-600" /> New Analysis</h3>
+                        <h3 className="font-bold text-lg mb-4 flex items-center gap-2"><span>🎯</span> New Analysis</h3>
                         <form onSubmit={handleAnalyze} className="space-y-4">
                             <div>
                                 <label className="block text-xs font-bold text-slate-500 mb-1">Batch Job (Predictions)</label>
@@ -216,7 +218,7 @@ export default function BenchmarkingPage() {
                                         required
                                     />
                                     <div className="pointer-events-none">
-                                        <Upload className="w-6 h-6 text-slate-400 mx-auto mb-2" />
+                                        <span className="text-2xl">📤</span>
                                         <div className="text-xs text-slate-500">
                                             {file ? file.name : "Upload CSV (name, value)"}
                                         </div>
@@ -230,7 +232,7 @@ export default function BenchmarkingPage() {
                                 disabled={loading}
                                 className="w-full py-2 bg-indigo-600 text-white rounded-lg font-bold hover:bg-indigo-700 disabled:opacity-50 flex justify-center items-center gap-2"
                             >
-                                {loading ? "Analyzing..." : "Run Analysis"} <TrendingUp className="w-4 h-4" />
+                                {loading ? "Analyzing..." : "Run Analysis"} <span>📈</span>
                             </button>
                         </form>
                     </div>
@@ -249,7 +251,7 @@ export default function BenchmarkingPage() {
                                         <div className="text-sm font-bold text-slate-800">{item.name}</div>
                                         <div className="text-xs text-slate-500">R²: {item.metrics?.r2 || 'N/A'} • n={item.metrics?.n}</div>
                                     </div>
-                                    <ChevronRight className="w-4 h-4 text-slate-300 group-hover:text-indigo-500" />
+                                    <span className="text-slate-300 group-hover:text-indigo-500">➡️</span>
                                 </div>
                             ))}
                             {history.length === 0 && <div className="text-xs text-slate-400 text-center py-4">No history yet.</div>}
@@ -283,9 +285,13 @@ export default function BenchmarkingPage() {
                                 </div>
                             </div>
 
-                            {/* Chart */}
-                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                                <Scatter options={chartOptions} data={chartData} height={150} />
+                            {/* Chart Replacement */}
+                            <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 text-center">
+                                <h3 className="font-bold text-slate-700 mb-2">Experimental vs Predicted Affinity</h3>
+                                <div className="p-8 bg-slate-50 rounded text-slate-500">
+                                    Chart visualization disabled.
+                                </div>
+                                {/* <Scatter options={chartOptions} data={chartData} height={150} /> */}
                             </div>
                         </div>
                     ) : (

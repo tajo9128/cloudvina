@@ -3,7 +3,7 @@ import { supabase } from '../supabaseClient'
 import { Link, useNavigate } from 'react-router-dom'
 import JobFilters from '../components/JobFilters'
 import { API_URL } from '../config'
-import { Activity, Database, Clock, Zap, Search, Filter, ArrowRight, Play, Server, CheckCircle2, FlaskConical } from 'lucide-react'
+// import { Activity, Database, Clock, Zap, Search, Filter, ArrowRight, Play, Server, CheckCircle2, FlaskConical } from 'lucide-react'
 
 export default function DashboardPage() {
     const navigate = useNavigate()
@@ -149,12 +149,12 @@ export default function DashboardPage() {
                     <div className="flex flex-col md:flex-row justify-between items-end gap-6">
                         <div>
                             <h1 className="text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-                                <Activity className="w-8 h-8 text-indigo-600" /> Research Dashboard
+                                <span className="text-3xl text-indigo-600">📊</span> Research Dashboard
                             </h1>
                             <p className="text-slate-500">Welcome back, <span className="font-semibold text-slate-700">{profile?.designation || 'Dr.'} {user?.email?.split('@')[0]}</span>. Here's your lab overview.</p>
                         </div>
                         <Link to="/dock/batch" className="btn-primary shadow-lg shadow-primary-500/20 flex items-center gap-2 px-6 py-3 rounded-xl font-bold">
-                            <Play className="w-5 h-5 fill-current" />
+                            <span className="fill-current text-lg">▶️</span>
                             New Campaign
                         </Link>
                     </div>
@@ -167,7 +167,7 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
                     <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4">
                         <div className="bg-blue-50 p-4 rounded-xl">
-                            <Zap className="w-8 h-8 text-blue-600" />
+                            <span className="text-3xl text-blue-600">⚡</span>
                         </div>
                         <div>
                             <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Active Jobs</div>
@@ -176,7 +176,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4">
                         <div className="bg-emerald-50 p-4 rounded-xl">
-                            <CheckCircle2 className="w-8 h-8 text-emerald-600" />
+                            <span className="text-3xl text-emerald-600">✅</span>
                         </div>
                         <div>
                             <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Completed</div>
@@ -185,7 +185,7 @@ export default function DashboardPage() {
                     </div>
                     <div className="bg-white rounded-2xl p-6 shadow-xl shadow-slate-200/50 border border-slate-100 flex items-center gap-4">
                         <div className="bg-purple-50 p-4 rounded-xl">
-                            <Database className="w-8 h-8 text-purple-600" />
+                            <span className="text-3xl text-purple-600">🗄️</span>
                         </div>
                         <div>
                             <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Avg Affinity</div>
@@ -201,7 +201,7 @@ export default function DashboardPage() {
                     <aside className="lg:w-64 flex-shrink-0 space-y-6">
                         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 sticky top-24">
                             <h3 className="font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                <Filter className="w-4 h-4" /> Filters
+                                <span className="w-4 h-4">🔍</span> Filters
                             </h3>
                             <JobFilters onFilterChange={handleFilterChange} vertical={true} />
                         </div>
@@ -232,14 +232,14 @@ export default function DashboardPage() {
                         {loading ? (
                             <div className="text-center py-20">
                                 <div className="inline-block p-4 rounded-full bg-indigo-50 text-indigo-600 mb-4">
-                                    <Server className="w-8 h-8 animate-bounce" />
+                                    <span className="text-3xl animate-bounce">🖥️</span>
                                 </div>
                                 <div className="text-slate-500 font-medium">Syncing with cloud cluster...</div>
                             </div>
                         ) : jobs.length === 0 ? (
                             <div className="bg-white rounded-2xl border-2 border-dashed border-slate-300 p-16 text-center">
                                 <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                                    <FlaskConical className="w-10 h-10 text-slate-400" />
+                                    <span className="text-4xl text-slate-400">🧪</span>
                                 </div>
                                 <h3 className="text-xl font-bold text-slate-900 mb-2">Ready to Discover?</h3>
                                 <p className="text-slate-500 mb-8 max-w-md mx-auto">Your research pipeline is empty. Launch your first docking campaign to see results.</p>
@@ -266,7 +266,7 @@ export default function DashboardPage() {
                                                     </span>
                                                 </div>
                                                 <div className="text-xs text-slate-500 flex items-center gap-3">
-                                                    <span className="flex items-center gap-1"><Clock className="w-3 h-3" /> {new Date(job.created_at).toLocaleDateString()}</span>
+                                                    <span className="flex items-center gap-1"><span>🕒</span> {new Date(job.created_at).toLocaleDateString()}</span>
                                                     {job.binding_affinity && (
                                                         <span className="font-bold text-slate-700 bg-slate-100 px-1.5 rounded">{job.binding_affinity} kcal/mol</span>
                                                     )}
@@ -277,7 +277,7 @@ export default function DashboardPage() {
                                         <div className={viewMode === 'grid' ? "mt-4 pt-4 border-t border-slate-100 flex justify-between items-center" : ""}>
                                             {viewMode === 'grid' && <span className="text-xs text-slate-400 font-mono">{job.id.slice(0, 8)}</span>}
                                             <Link to={`/dock/${job.id}`} className="text-sm font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 opacity-100 group-hover:translate-x-1 transition-all">
-                                                View Analysis <ArrowRight className="w-3 h-3" />
+                                                View Analysis <span>➡️</span>
                                             </Link>
                                         </div>
 
