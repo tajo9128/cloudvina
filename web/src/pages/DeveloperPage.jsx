@@ -26,7 +26,7 @@ export default function DeveloperPage() {
                     <div className="flex flex-col md:flex-row items-center gap-12">
                         <div className="flex-1 space-y-6">
                             <div className="inline-flex items-center gap-2 px-3 py-1 bg-indigo-500/20 text-indigo-300 rounded-full text-xs font-bold border border-indigo-500/30">
-                                <Terminal className="w-3 h-3" /> v1.0.0 Now Available
+                                <Terminal className="w-3 h-3" /> v6.0.0 Now Available
                             </div>
                             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
                                 Build on <span className="text-indigo-400">BioDockify</span>

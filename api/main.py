@@ -38,7 +38,7 @@ from rdkit import Chem
 app = FastAPI(
     title="BioDockify API",
     description="Molecular docking as a service with AutoDock Vina",
-    version="1.0.0",
+    version="6.0.0",
     docs_url="/docs",  # Swagger UI
     redoc_url="/redoc"  # ReDoc
 )
@@ -46,7 +46,7 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event():
     print("="*50)
-    print("BioDockify API v1.1.0 - Deployed at " + datetime.utcnow().isoformat())
+    print("BioDockify API v6.0.0 - Deployed at " + datetime.utcnow().isoformat())
     print("Fix: RateLimiter Admin API call removed")
     print("Fix: Signup handled by DB Triggers")
     print("="*50)

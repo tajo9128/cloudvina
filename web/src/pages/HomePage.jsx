@@ -35,7 +35,7 @@ export default function HomePage() {
                     "MD Simulation via OpenMM",
                     "Enterprise Drug Discovery"
                 ],
-                "softwareVersion": "5.0.0"
+                "softwareVersion": "6.0.0"
             }
         ]
     }
@@ -66,7 +66,7 @@ export default function HomePage() {
                         <div className="text-left mb-12 lg:mb-0">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-6 animate-fade-in">
                                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                Major Release v5.0.0: Privacy-First Consensus Docking
+                                Major Release v6.0.0: Privacy-First Consensus Docking
                             </div>
                             <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
                                 Cloud-Native, <br />
