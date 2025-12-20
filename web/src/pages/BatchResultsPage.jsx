@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import MoleculeViewer from '../components/MoleculeViewer'
 import AdmetRadar from '../components/AdmetRadar' // [NEW] Import Radar
+import { trackEvent } from '../services/analytics' // Import Analytics
 import { ChevronLeft, Download, Eye, Maximize2, RefreshCw, BarChart2, Star, Zap, Activity, ShieldCheck, AlertTriangle } from 'lucide-react'
 
 export default function BatchResultsPage() {
@@ -31,14 +32,31 @@ export default function BatchResultsPage() {
         if (batchId) fetchBatchDetails(batchId)
     }, [batchId])
 
+    // [NEW] Real-time Updates via Supabase
     useEffect(() => {
-        const interval = setInterval(() => {
-            if (batchData && ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(batchData.status)) {
-                fetchBatchDetails(batchId, true)
-            }
-        }, 5000)
-        return () => clearInterval(interval)
-    }, [batchId, batchData?.status])
+        if (!batchId) return
+
+        const channel = supabase
+            .channel(`realtime:batch:${batchId}`)
+            .on(
+                'postgres_changes',
+                {
+                    event: '*', // Listen for inserts/updates
+                    schema: 'public',
+                    table: 'jobs',
+                    filter: `batch_id=eq.${batchId}`
+                },
+                () => {
+                    // Refresh data instantly on any change
+                    fetchBatchDetails(batchId, true)
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [batchId])
 
     const fetchBatchDetails = async (id, background = false) => {
         try {
@@ -244,6 +262,13 @@ export default function BatchResultsPage() {
                         onClick={async () => {
                             const { data: { session } } = await supabase.auth.getSession()
                             if (!session) return
+
+                            // Track PDF Download
+                            trackEvent('report:downloaded', {
+                                batch_id: batchId,
+                                format: 'pdf'
+                            });
+
                             const res = await fetch(`${API_URL}/jobs/batch/${batchId}/report-pdf`, {
                                 headers: { 'Authorization': `Bearer ${session.access_token}` }
                             })
@@ -264,10 +289,10 @@ export default function BatchResultsPage() {
             </div>
 
             {/* 2. Main Workbench Area */}
-            <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
                 {/* LEFT: Data Table with Heatmap */}
-                <div className="w-1/3 min-w-[400px] border-r border-slate-200 bg-white flex flex-col">
+                <div className="w-full h-1/2 md:h-full md:w-1/3 md:min-w-[350px] border-b md:border-b-0 md:border-r border-slate-200 bg-white flex flex-col">
                     <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
                         <h3 className="font-bold text-slate-700 text-sm uppercase tracking-wider">Results Table</h3>
                         <div className="text-xs text-slate-500">Sorted by Affinity</div>

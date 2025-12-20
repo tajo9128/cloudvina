@@ -1,7 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
+import { initAnalytics, identifyUser, trackEvent } from './services/analytics';
 
 // Pages
 import TestPage from './pages/TestPage'
@@ -18,6 +19,8 @@ import TargetPredictionPage from './pages/TargetPredictionPage'
 import MDSimulationPage from './pages/MDSimulationPage'
 import MDResultsPage from './pages/MDResultsPage'
 import MDStabilityPage from './pages/MDStabilityPage' // NEW: Isolated MD Page
+import OnboardingPage from './pages/OnboardingPage' // [NEW]
+import BenchmarkingPage from './pages/tools/BenchmarkingPage' // [NEW] Sprint 3.1
 import LeadOptimizationPage from './pages/LeadOptimizationPage'
 import BlogPage from './pages/BlogPage'
 import BlogPostPage from './pages/BlogPostPage'
@@ -26,6 +29,7 @@ import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
 import PricingPage from './pages/PricingPage'
+import DeveloperPage from './pages/DeveloperPage' // [NEW] Sprint 4
 import RefundsPage from './pages/RefundsPage'
 import ProfilePage from './pages/ProfilePage'
 import BillingPage from './pages/BillingPage'
@@ -40,17 +44,28 @@ import AdminPhases from './pages/admin/PhasesControl'
 import AdminPricing from './pages/admin/PricingControl'
 import AdminMessages from './pages/admin/Messages'
 import AdminCalendar from './pages/admin/Calendar' // Anticipating Calendar next
+import FDACompliancePage from './pages/admin/FDACompliancePage' // [NEW] Sprint 2.1
+import RBACManagerPage from './pages/admin/RBACManagerPage' // [NEW] Sprint 2.2
 
 const queryClient = new QueryClient()
 
 function App() {
     const [session, setSession] = useState(null)
+    const [isAdmin, setIsAdmin] = useState(false);
     const [loading, setLoading] = useState(true)
+    const location = useLocation(); // for tracking page views
 
     useEffect(() => {
+        // Initialize Analytics Safe Mode
+        initAnalytics();
+
         // Get initial session
         supabase.auth.getSession().then(({ data: { session } }) => {
             setSession(session)
+            if (session) {
+                checkAdmin(session.user.id);
+                identifyUser(session.user.id, { email: session.user.email }); // Track User
+            }
             setLoading(false)
         })
 
@@ -59,14 +74,42 @@ function App() {
             data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, session) => {
             setSession(session)
+            if (session) {
+                checkAdmin(session.user.id);
+                identifyUser(session.user.id, { email: session.user.email });
+            } else {
+                setIsAdmin(false);
+            }
+            setLoading(false);
         })
 
         return () => subscription.unsubscribe()
     }, [])
 
+    // Track Page Views
+    useEffect(() => {
+        trackEvent('page:viewed', { path: location.pathname });
+    }, [location]);
+
     useEffect(() => {
         console.log('BioDockify v3.0 Loaded - Build: ' + new Date().toISOString())
     }, [])
+
+    const checkAdmin = async (userId) => {
+        // ... existing admin check logic
+        // Example: Fetch user roles from Supabase and set isAdmin state
+        // For now, a placeholder:
+        // const { data, error } = await supabase
+        //     .from('profiles')
+        //     .select('is_admin')
+        //     .eq('id', userId)
+        //     .single();
+        // if (data && data.is_admin) {
+        //     setIsAdmin(true);
+        // } else {
+        //     setIsAdmin(false);
+        // }
+    };
 
     if (loading) {
         return <div className="min-h-screen flex items-center justify-center">
@@ -91,6 +134,8 @@ function App() {
                         <Route path="messages" element={<AdminMessages />} />
                         <Route path="phases" element={<AdminPhases />} />
                         <Route path="pricing" element={<AdminPricing />} />
+                        <Route path="fda" element={<FDACompliancePage />} />
+                        <Route path="roles" element={<RBACManagerPage />} />
                     </Route>
 
                     {/* Public/User Routes with Main Layout */}
@@ -98,6 +143,8 @@ function App() {
                         <Route path="/test" element={<TestPage />} />
                         <Route path="/" element={<HomePage />} />
                         <Route path="/login" element={<LoginPage />} />
+                        {/* [NEW] Onboarding */}
+                        <Route path="/onboarding" element={<OnboardingPage />} />
                         <Route
                             path="/dashboard"
                             element={session ? <DashboardPage /> : <Navigate to="/login" />}
@@ -124,6 +171,10 @@ function App() {
                             element={session ? <TargetPredictionPage /> : <Navigate to="/login" />}
                         />
                         <Route
+                            path="/tools/benchmark"
+                            element={session ? <BenchmarkingPage /> : <Navigate to="/login" />}
+                        />
+                        <Route
                             path="/md-simulation"
                             element={session ? <MDSimulationPage /> : <Navigate to="/login" />}
                         />
@@ -147,6 +198,7 @@ function App() {
                         <Route path="/privacy" element={<PrivacyPage />} />
                         <Route path="/terms" element={<TermsPage />} />
                         <Route path="/pricing" element={<PricingPage />} />
+                        <Route path="/developer" element={<DeveloperPage />} />
                         <Route path="/refund-policy" element={<RefundsPage />} />
                         <Route path="/refunds" element={<RefundsPage />} />
                         <Route path="/molecular-docking-online" element={<MolecularDockingPage />} />

@@ -50,7 +50,10 @@ export default function AdmetRadar({ data, width = 300, height = 300 }) {
 
     return (
         <div className="relative flex flex-col items-center">
-            <svg width={width} height={height} className="overflow-visible">
+            <svg
+                viewBox={`0 0 ${width} ${height}`}
+                className="overflow-visible w-full h-auto max-w-[350px]"
+            >
                 {/* Background Grid Circles */}
                 {[0.33, 0.66, 1].map((scale, i) => (
                     <circle

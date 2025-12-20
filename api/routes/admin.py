@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks, Request, Body
 from typing import List, Optional, Dict, Any
 from datetime import datetime, timedelta
 from supabase import Client
@@ -8,6 +8,8 @@ import os
 # Use absolute imports
 from auth import supabase, get_current_user, get_service_client
 from aws_services import cancel_batch_job
+from services.fda_service import fda_service
+from services.rbac_service import rbac_service
 
 router = APIRouter(prefix="/admin", tags=["admin"])
 
@@ -411,3 +413,70 @@ async def delete_user(
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+@router.get("/fda/logs")
+async def get_fda_logs(
+    limit: int = 100,
+    user_id: Optional[str] = None,
+    resource_id: Optional[str] = None,
+    admin: dict = Depends(verify_admin)
+):
+    """Get FDA Audit Logs (21 CFR Part 11)"""
+    # Use Service Client to read all logs (Bypassing RLS since Admin is verified)
+    svc_client = get_service_client()
+    logs = await fda_service.get_audit_trail(svc_client, limit, user_id, resource_id)
+    return logs
+
+# --- RBAC Routes ---
+
+@router.get("/rbac/roles")
+async def get_all_roles(admin: dict = Depends(verify_admin)):
+    """Get list of available roles"""
+    return await rbac_service.get_all_roles(supabase)
+
+@router.get("/rbac/users/{target_user_id}/roles")
+async def get_user_roles(target_user_id: str, admin: dict = Depends(verify_admin)):
+    """Get roles for a specific user"""
+    return await rbac_service.get_user_roles(supabase, target_user_id)
+
+@router.post("/rbac/assign")
+async def assign_role(
+    role_code: str = Body(...),
+    user_id: str = Body(...),
+    admin: dict = Depends(verify_admin)
+):
+    """Assign a role to a user"""
+    service_client = get_service_client()
+    success = await rbac_service.assign_role(service_client, user_id, role_code, admin['id'])
+    
+    # Audit
+    if success:
+        supabase.table("admin_actions").insert({
+            "admin_id": admin["id"],
+            "action_type": "assign_role",
+            "target_id": user_id,
+            "details": {"role": role_code}
+        }).execute()
+        
+    return {"success": success}
+
+@router.post("/rbac/remove")
+async def remove_role(
+    role_code: str = Body(...),
+    user_id: str = Body(...),
+    admin: dict = Depends(verify_admin)
+):
+    """Remove a role from a user"""
+    service_client = get_service_client()
+    success = await rbac_service.remove_role(service_client, user_id, role_code)
+         
+    # Audit
+    if success:
+        supabase.table("admin_actions").insert({
+            "admin_id": admin["id"],
+            "action_type": "remove_role",
+            "target_id": user_id,
+            "details": {"role": role_code}
+        }).execute()
+
+    return {"success": success}

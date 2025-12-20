@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import JobFilters from '../components/JobFilters'
 import { API_URL } from '../config'
-import { Activity, Database, Clock, Zap, Search, Filter, ArrowRight, Play, Server } from 'lucide-react'
+import { Activity, Database, Clock, Zap, Search, Filter, ArrowRight, Play, Server, CheckCircle2, FlaskConical } from 'lucide-react'
 
 export default function DashboardPage() {
+    const navigate = useNavigate()
     const [user, setUser] = useState(null)
     const [profile, setProfile] = useState(null)
     const [jobs, setJobs] = useState([])
@@ -27,12 +28,44 @@ export default function DashboardPage() {
     })
 
     useEffect(() => {
+        // [NEW] First-Time User Check (BioDockify 2.0 Launch)
+        const hasVisited = localStorage.getItem('biodockify_visited');
+        if (!hasVisited) {
+            navigate('/onboarding');
+            return;
+        }
+
         fetchUserProfile()
     }, [])
 
     useEffect(() => {
         fetchJobs()
     }, [filters])
+
+    // [NEW] Real-time Dashboard Updates
+    useEffect(() => {
+        if (!user) return
+
+        const channel = supabase
+            .channel('realtime:dashboard')
+            .on(
+                'postgres_changes',
+                {
+                    event: '*',
+                    schema: 'public',
+                    table: 'jobs',
+                    filter: `created_by=eq.${user.id}` // Assuming created_by or user_id column
+                },
+                () => {
+                    fetchJobs()
+                }
+            )
+            .subscribe()
+
+        return () => {
+            supabase.removeChannel(channel)
+        }
+    }, [user])
 
     const fetchUserProfile = async () => {
         const { data: { user } } = await supabase.auth.getUser()

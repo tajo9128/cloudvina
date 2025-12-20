@@ -9,6 +9,7 @@ import boto3
 from rdkit import Chem
 from meeko import MoleculePreparation
 import io
+from services.fda_service import fda_service
 
 router = APIRouter(prefix="/jobs/batch", tags=["Batch Jobs"])
 security = HTTPBearer()
@@ -288,6 +289,10 @@ async def start_batch(
                 traceback.print_exc()
                 # Continue starting others? Yes.
 
+        # FDA Audit Log
+        if auth_client and current_user:
+             await fda_service.log_audit_event(auth_client, current_user['id'], 'BATCH_STARTED', batch_id, {'jobs': started_count, 'engine': engine})
+
         return {
             "batch_id": batch_id,
             "started": started_count,
@@ -516,6 +521,10 @@ async def submit_csv_batch(
                     'error_message': str(e)[:500]
                 }).eq('id', job_id).execute()
         
+        # FDA Audit Log
+        if auth_client and current_user:
+             await fda_service.log_audit_event(auth_client, current_user['id'], 'BATCH_SUBMITTED_CSV', batch_id, {'jobs': len(jobs_created), 'engine': engine})
+
         return {
             "batch_id": batch_id,
             "jobs_created": len(jobs_created),

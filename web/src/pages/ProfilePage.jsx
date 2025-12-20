@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import { useNavigate } from 'react-router-dom'
+import { API_URL } from '../../config'
+import { TrendingUp, Activity, BarChart2 } from 'lucide-react'
 
 export default function ProfilePage() {
     const [loading, setLoading] = useState(true)
@@ -15,6 +17,7 @@ export default function ProfilePage() {
     const [passwordData, setPasswordData] = useState({ newPassword: '', confirmPassword: '' })
     const [passwordError, setPasswordError] = useState('')
     const [notification, setNotification] = useState(null)
+    const [accuracyStats, setAccuracyStats] = useState(null)
     const navigate = useNavigate()
 
     useEffect(() => {
@@ -44,6 +47,15 @@ export default function ProfilePage() {
                     social_links: profileData.social_links || { linkedin: '', twitter: '' }
                 })
             }
+
+            // 2. Fetch Accuracy Stats
+            const statsRes = await fetch(`${API_URL}/tools/benchmark/stats`, {
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            });
+            if (statsRes.ok) {
+                setAccuracyStats(await statsRes.json());
+            }
+
         } catch (error) {
             console.error('Error fetching profile:', error)
         } finally {
@@ -221,6 +233,52 @@ export default function ProfilePage() {
                                     </button>
                                 </div>
                             </form>
+                        </div>
+
+                        {/* Accuracy Profile Card */}
+                        <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+                                <Activity className="w-5 h-5 text-indigo-600" />
+                                <span>Accuracy Profile</span>
+                            </h2>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Benchmarks Run</div>
+                                    <div className="text-3xl font-black text-slate-800">{accuracyStats?.count || 0}</div>
+                                </div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Average R²</div>
+                                    <div className={`text-3xl font-black ${accuracyStats?.average_r2 > 0.6 ? 'text-emerald-500' : 'text-slate-700'}`}>
+                                        {accuracyStats?.average_r2 || '0.00'}
+                                    </div>
+                                </div>
+                                <div className="p-4 bg-slate-50 rounded-xl border border-slate-100 text-center">
+                                    <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Peak Accuracy</div>
+                                    <div className="text-3xl font-black text-indigo-600">{accuracyStats?.best_r2 || '0.00'}</div>
+                                </div>
+                            </div>
+
+                            {/* Simple Sparkline */}
+                            {accuracyStats?.trend && accuracyStats.trend.length > 0 && (
+                                <div className="mt-6">
+                                    <div className="text-xs font-bold text-slate-400 uppercase mb-2 flex items-center gap-2">
+                                        <TrendingUp className="w-3 h-3" /> Recent Performance Trend
+                                    </div>
+                                    <div className="h-16 flex items-end gap-1">
+                                        {accuracyStats.trend.map((val, i) => (
+                                            <div
+                                                key={i}
+                                                style={{ height: `${(val / (Math.max(...accuracyStats.trend) || 1)) * 100}%` }}
+                                                className="flex-1 bg-indigo-200 rounded-t hover:bg-indigo-400 transition-colors relative group"
+                                            >
+                                                <span className="absolute -top-6 left-1/2 -translate-x-1/2 text-[10px] bg-slate-800 text-white px-1 rounded opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    {val}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         {/* Security Card */}

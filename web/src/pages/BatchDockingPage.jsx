@@ -4,6 +4,7 @@ import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import PreparationProgress from '../components/PreparationProgress'
 import { Upload, FileText, Database, Cpu, Play, CheckCircle2, AlertCircle, ArrowRight, FlaskConical } from 'lucide-react'
+import { trackEvent } from '../services/analytics' // Import Analytics
 
 export default function BatchDockingPage() {
     const navigate = useNavigate()
@@ -73,6 +74,15 @@ export default function BatchDockingPage() {
         try {
             const { data: { session } } = await supabase.auth.getSession()
             if (!session) throw new Error('Not authenticated')
+
+            // Track Job Submission
+            trackEvent('job:submitting', {
+                upload_mode: isCsv ? 'csv' : 'files',
+                receptor_name: receptorFile?.name,
+                ligand_count: isCsv ? null : ligandFiles.length, // CSV count unknown until processed
+                engine: engine,
+                grid_params: gridParams
+            });
 
             if (isCsv) {
                 // CSV FLOW
@@ -185,7 +195,7 @@ export default function BatchDockingPage() {
     return (
         <div className="min-h-screen bg-slate-50 pb-20">
             {/* HERO SECTION */}
-            <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 pt-32 pb-20 text-white relative overflow-hidden">
+            <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 pt-24 pb-12 md:pt-32 md:pb-20 text-white relative overflow-hidden">
                 <div className="absolute inset-0 bg-[url('/assets/images/grid.svg')] opacity-10"></div>
                 <div className="container mx-auto px-4 relative z-10 text-center">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-100 text-sm font-semibold mb-6 backdrop-blur-sm">
@@ -202,12 +212,12 @@ export default function BatchDockingPage() {
                 </div>
             </div>
 
-            <main className="container mx-auto px-4 -mt-10 relative z-20">
+            <main className="container mx-auto px-4 -mt-6 md:-mt-10 relative z-20">
                 <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
 
                     {/* PROGRESS HEADER */}
-                    <div className="bg-slate-50 border-b border-slate-200 px-8 py-4">
-                        <div className="flex items-center justify-between text-sm font-medium text-slate-500">
+                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-4 md:px-8">
+                        <div className="flex flex-wrap gap-2 justify-center md:justify-between text-sm font-medium text-slate-500">
                             <div className="flex items-center gap-2 text-primary-600">
                                 <span className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center text-xs font-bold">1</span>
                                 Target
