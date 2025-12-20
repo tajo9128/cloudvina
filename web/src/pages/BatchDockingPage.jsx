@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import PreparationProgress from '../components/PreparationProgress'
-import { CloudUpload, FileText, Database, Cpu, Play, CheckCircle2, AlertCircle, ArrowRight, FlaskConical } from 'lucide-react'
+import { Upload, FileText, Database, Cpu, Play, CheckCircle2, AlertCircle, ArrowRight, FlaskConical } from 'lucide-react'
 
 export default function BatchDockingPage() {
     const navigate = useNavigate()
@@ -249,7 +249,7 @@ export default function BatchDockingPage() {
                                         </div>
                                     ) : (
                                         <div>
-                                            <CloudUpload className="w-12 h-12 mx-auto mb-2 text-slate-400" />
+                                            <Upload className="w-12 h-12 mx-auto mb-2 text-slate-400" />
                                             <span className="block font-semibold text-slate-700">Drop PDB/PDBQT file here</span>
                                             <span className="text-sm text-slate-500">or click to browse</span>
                                         </div>
