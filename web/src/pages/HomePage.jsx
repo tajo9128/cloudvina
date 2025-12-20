@@ -58,7 +58,7 @@ export default function HomePage() {
                     <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary-600/10 rounded-full blur-[120px]"></div>
                     <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px]"></div>
                     {/* Grid Pattern */}
-                    <div className="absolute inset-0 bg-[url('/assets/images/grid.svg')] opacity-[0.05]"></div>
+                    <div className="absolute inset-0 opacity-[0.05]"></div>
                 </div>
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -157,7 +157,7 @@ export default function HomePage() {
                                     {stat.icon} {stat.label}
                                 </div>
                                 <div className="text-3xl font-bold text-white">
-                                    {stat.prefix}<CountUp end={stat.value} duration={2} suffix={stat.suffix || "+"} />
+                                    {stat.prefix}<CountUp end={stat.value} duration={2000} suffix={stat.suffix || "+"} />
                                 </div>
                             </div>
                         ))}
@@ -296,7 +296,7 @@ export default function HomePage() {
 
             {/* 12-Week Roadmap Section */}
             <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('/assets/images/grid.svg')] opacity-[0.03]"></div>
+                <div className="absolute inset-0 opacity-[0.03]"></div>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                     <div className="text-center mb-16">
                         <h2 className="text-base text-indigo-400 font-bold tracking-widest uppercase mb-2">Strategic Roadmap</h2>
