@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../supabaseClient'
 import { useNavigate } from 'react-router-dom'
-import { API_URL } from '../../config'
+import { API_URL } from '../config'
 import { TrendingUp, Activity, BarChart2 } from 'lucide-react'
 
 export default function ProfilePage() {
