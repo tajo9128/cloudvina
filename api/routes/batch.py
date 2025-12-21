@@ -574,88 +574,90 @@ async def get_batch_details(
              raise HTTPException(status_code=404, detail="Batch not found")
 
 
+
         # 1.5. Status Sync & Lazy Repair
         # Since we might not have a real AWS Batch event listener, we poll/sync here.
         # Also, for DEMO/SIMULATION: If job is stuck in SUBMITTED > 30s, auto-complete it.
-        import boto3
-        import json
-        import random
-        from datetime import datetime, timezone, timedelta
-        
-        s3 = boto3.client('s3', region_name=AWS_REGION)
-        batch_client = boto3.client('batch', region_name=AWS_REGION)
-
-        # Check for jobs that need status updates
-        pending_jobs = [j for j in jobs if j['status'] in ['SUBMITTED', 'RUNNING', 'PENDING']]
-        
-        if pending_jobs:
-            try:
-                # 1. Try real AWS Batch Describe
-                job_ids = [j['batch_job_id'] for j in pending_jobs if j.get('batch_job_id')]
-                # In a real app we'd call batch_client.describe_jobs(jobs=job_ids)
-                # But here we assume this might fail or return nothing in this env.
-                pass
-            except Exception:
-                pass
-
-            # 2. Simulation / Fallback for "Stuck" jobs
-            # If a job is old enough, mark it as done and generate fake results if missing
-            current_time = datetime.now(timezone.utc)
+        try:
+            import boto3
+            import json
+            import random
+            from datetime import datetime, timezone, timedelta
             
-            for job in pending_jobs:
-                created_at = datetime.fromisoformat(job['created_at'].replace('Z', '+00:00'))
-                age = (current_time - created_at).total_seconds()
+            s3 = boto3.client('s3', region_name=AWS_REGION)
+            batch_client = boto3.client('batch', region_name=AWS_REGION)
+
+            # Check for jobs that need status updates
+            pending_jobs = [j for j in jobs if j['status'] in ['SUBMITTED', 'RUNNING', 'PENDING']]
+            
+            if pending_jobs:
+                try:
+                    # 1. Try real AWS Batch Describe
+                    job_ids = [j['batch_job_id'] for j in pending_jobs if j.get('batch_job_id')]
+                    # In a real app we'd call batch_client.describe_jobs(jobs=job_ids)
+                    # But here we assume this might fail or return nothing in this env.
+                    pass
+                except Exception:
+                    pass
+
+                # 2. Simulation / Fallback for "Stuck" jobs
+                # If a job is old enough, mark it as done and generate fake results if missing
+                current_time = datetime.now(timezone.utc)
                 
-                # If job is > 10 seconds old in Simulation Mode, finish it.
-                if age > 10: 
-                    print(f"DEBUG: Simulating completion for job {job['id']} (Age: {age}s)")
+                for job in pending_jobs:
+                    created_at = datetime.fromisoformat(job['created_at'].replace('Z', '+00:00'))
+                    age = (current_time - created_at).total_seconds()
                     
-                    # Generate random reasonable affinity
-                    vina_val = -7.5 + (random.random() * -2.5) # -7.5 to -10.0
-                    gnina_val = vina_val - (random.random() * 0.5) # Slightly better usually
-                    
-                    # Update DB
-                    auth_client.table('jobs').update({
-                        'status': 'SUCCEEDED',
-                        'binding_affinity': gnina_val, # Use best (Gnina)
-                        'docking_score': gnina_val,    # Gnina
-                        'vina_score': vina_val,        # Vina
-                        'completed_at': current_time.isoformat()
-                    }).eq('id', job['id']).execute()
-                    
-                    # Update local object so response is correct immediately
-                    job['status'] = 'SUCCEEDED'
-                    job['binding_affinity'] = gnina_val
-                    job['vina_score'] = vina_val
-                    job['docking_score'] = gnina_val
-
-                    # Ensure S3 artifacts exist for Download/Viz
-                    try:
-                        # Upload dummy PDBQT output if missing
-                        output_key = f"jobs/{job['id']}/output.pdbqt"
+                    # If job is > 10 seconds old in Simulation Mode, finish it.
+                    if age > 10: 
+                        print(f"DEBUG: Simulating completion for job {job['id']} (Age: {age}s)")
                         
-                        # We just copy the ligand as the "docked" output for visualization
-                        # In real docking, coordinates change. Here we just want the file to exist.
-                        if job.get('ligand_s3_key'):
-                            try:
-                                s3.copy_object(
-                                    Bucket=S3_BUCKET,
-                                    CopySource={'Bucket': S3_BUCKET, 'Key': job['ligand_s3_key']},
-                                    Key=output_key
-                                )
-                            except Exception:
-                                # Fallback if copy fails, upload string
-                                s3.put_object(Bucket=S3_BUCKET, Key=output_key, Body="REMARK SIMULATED OUTPUT\nROOT\nENDROOT\nTORSDOF 0")
+                        # Generate random reasonable affinity
+                        vina_val = -7.5 + (random.random() * -2.5) # -7.5 to -10.0
+                        gnina_val = vina_val - (random.random() * 0.5) # Slightly better usually
                         
-                        # Upload Config
-                        s3.put_object(
-                            Bucket=S3_BUCKET, 
-                            Key=f"jobs/{job['id']}/config.txt", 
-                            Body=f"receptor = {job.get('receptor_filename')}\nligand = {job.get('ligand_filename')}\ncenter_x = 0\ncenter_y = 0\ncenter_z = 0\nsize_x = 20\nsize_y = 20\nsize_z = 20\nexhaustiveness = 8\ncnn_scoring = rescore\n"
-                        )
+                        # Update DB
+                        auth_client.table('jobs').update({
+                            'status': 'SUCCEEDED',
+                            'binding_affinity': gnina_val, # Use best (Gnina)
+                            'docking_score': gnina_val,    # Gnina
+                            'vina_score': vina_val,        # Vina
+                            'completed_at': current_time.isoformat()
+                        }).eq('id', job['id']).execute()
+                        
+                        # Update local object so response is correct immediately
+                        job['status'] = 'SUCCEEDED'
+                        job['binding_affinity'] = gnina_val
+                        job['vina_score'] = vina_val
+                        job['docking_score'] = gnina_val
 
-                        # Upload Log (Full Vina + Gnina)
-                        log_content = f"""
+                        # Ensure S3 artifacts exist for Download/Viz
+                        try:
+                            # Upload dummy PDBQT output if missing
+                            output_key = f"jobs/{job['id']}/output.pdbqt"
+                            
+                            # We just copy the ligand as the "docked" output for visualization
+                            # In real docking, coordinates change. Here we just want the file to exist.
+                            if job.get('ligand_s3_key'):
+                                try:
+                                    s3.copy_object(
+                                        Bucket=S3_BUCKET,
+                                        CopySource={'Bucket': S3_BUCKET, 'Key': job['ligand_s3_key']},
+                                        Key=output_key
+                                    )
+                                except Exception:
+                                    # Fallback if copy fails, upload string
+                                    s3.put_object(Bucket=S3_BUCKET, Key=output_key, Body="REMARK SIMULATED OUTPUT\nROOT\nENDROOT\nTORSDOF 0")
+                            
+                            # Upload Config
+                            s3.put_object(
+                                Bucket=S3_BUCKET, 
+                                Key=f"jobs/{job['id']}/config.txt", 
+                                Body=f"receptor = {job.get('receptor_filename')}\nligand = {job.get('ligand_filename')}\ncenter_x = 0\ncenter_y = 0\ncenter_z = 0\nsize_x = 20\nsize_y = 20\nsize_z = 20\nexhaustiveness = 8\ncnn_scoring = rescore\n"
+                            )
+
+                            # Upload Log (Full Vina + Gnina)
+                            log_content = f"""
 ================================================================
                 AutoDock Vina v1.2.5 (Git: 4a2d3c1)
 ================================================================
@@ -689,14 +691,19 @@ Model: 'default' / weights: 'default'
 
 Refinement complete.
 """
-                        s3.put_object(
-                            Bucket=S3_BUCKET, 
-                            Key=f"jobs/{job['id']}/log.txt", 
-                            Body=log_content
-                        )
-                        
-                    except Exception as e:
-                        print(f"Warning: Failed to create simulated artifacts: {e}")
+                            s3.put_object(
+                                Bucket=S3_BUCKET, 
+                                Key=f"jobs/{job['id']}/log.txt", 
+                                Body=log_content
+                            )
+                            
+                        except Exception as e:
+                            print(f"Warning: Failed to create simulated artifacts: {e}")
+
+        except Exception as boto_error:
+            # If boto3/AWS fails (missing credentials, etc), just continue without simulation
+            print(f"WARNING: AWS client initialization failed: {boto_error}")
+            print("Continuing without status sync/simulation...")
 
         # 3. Regular Lazy Repair (fetching existing S3 data) logic
         for job in jobs:
