@@ -323,13 +323,16 @@ export default function BatchDockingPage() {
                     {(processingStage === 'processing' || processingStage === 'complete') && (
                         <div className="mb-0">
                             <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
-                                <PreparationProgress currentStep={
-                                    processingStage === 'complete' ? 6 :
-                                        (prepStatus.grid === 100 ? 5 :
-                                            prepStatus.grid > 0 ? 4 :
-                                                prepStatus.ligand === 100 ? 3 :
-                                                    prepStatus.ligand > 0 ? 2 : 1)
-                                } />
+                                <PreparationProgress
+                                    currentStep={
+                                        processingStage === 'complete' ? 6 :
+                                            (prepStatus.grid === 100 ? 5 :
+                                                prepStatus.grid > 0 ? 4 :
+                                                    prepStatus.ligand === 100 ? 3 :
+                                                        prepStatus.ligand > 0 ? 2 : 1)
+                                    }
+                                    batchId={batchId}
+                                />
                             </div>
                         </div>
                     )}

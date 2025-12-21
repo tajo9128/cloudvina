@@ -1,4 +1,13 @@
-export default function PreparationProgress({ currentStep }) {
+import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { supabase } from '../supabaseClient'
+
+export default function PreparationProgress({ currentStep, batchId }) {
+    const navigate = useNavigate()
+    const [jobStatus, setJobStatus] = useState(null) // 'SUBMITTED', 'RUNNABLE', 'RUNNING', 'SUCCEEDED'
+    const [jobsCompleted, setJobsCompleted] = useState(0)
+    const [jobsTotal, setJobsTotal] = useState(0)
+
     const steps = [
         {
             id: 1,
@@ -32,6 +41,54 @@ export default function PreparationProgress({ currentStep }) {
         }
     ]
 
+    // Poll job status after preparation is complete
+    useEffect(() => {
+        if (!batchId || currentStep < 5) return
+
+        const pollStatus = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession()
+                if (!session) return
+
+                const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://api.biodockify.com'}/jobs/batch/${batchId}`, {
+                    headers: { 'Authorization': `Bearer ${session.access_token}` }
+                })
+
+                if (response.ok) {
+                    const data = await response.json()
+
+                    // Determine overall status
+                    if (data.jobs && data.jobs.length > 0) {
+                        const statuses = data.jobs.map(j => j.status)
+                        const completed = statuses.filter(s => s === 'SUCCEEDED').length
+                        const running = statuses.filter(s => s === 'RUNNING').length
+                        const submitted = statuses.filter(s => s === 'SUBMITTED').length
+
+                        setJobsCompleted(completed)
+                        setJobsTotal(data.jobs.length)
+
+                        if (completed === data.jobs.length) {
+                            setJobStatus('SUCCEEDED')
+                        } else if (running > 0) {
+                            setJobStatus('RUNNING')
+                        } else if (submitted > 0) {
+                            setJobStatus('RUNNABLE') // Show as RUNNABLE when submitted
+                        } else {
+                            setJobStatus('SUBMITTED')
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error('Failed to poll job status:', err)
+            }
+        }
+
+        pollStatus() // Initial poll
+        const interval = setInterval(pollStatus, 5000) // Poll every 5 seconds
+
+        return () => clearInterval(interval)
+    }, [batchId, currentStep])
+
     return (
         <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
             <h3 className="text-lg font-bold text-slate-900 mb-6 flex items-center gap-2">
@@ -43,7 +100,6 @@ export default function PreparationProgress({ currentStep }) {
             </h3>
 
             {/* Progress Bar */}
-            {/* 5 Separate Progress Bars */}
             <div className="mb-8">
                 <div className="flex justify-between mb-2">
                     <span className="text-sm font-medium text-slate-700">
@@ -62,8 +118,8 @@ export default function PreparationProgress({ currentStep }) {
                         <div
                             key={step}
                             className={`h-2 flex-1 rounded-full transition-all duration-500 ${currentStep >= step
-                                    ? 'bg-gradient-to-r from-primary-500 to-primary-600 shadow-sm'
-                                    : 'bg-slate-200'
+                                ? 'bg-gradient-to-r from-primary-500 to-primary-600 shadow-sm'
+                                : 'bg-slate-200'
                                 } ${currentStep === step ? 'animate-pulse' : ''}`}
                         ></div>
                     ))}
@@ -134,7 +190,7 @@ export default function PreparationProgress({ currentStep }) {
             </div>
 
             {/* Current Action */}
-            {currentStep <= 5 && (
+            {currentStep <= 5 && !jobStatus && (
                 <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                     <div className="flex items-start gap-3">
                         <svg className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -150,6 +206,56 @@ export default function PreparationProgress({ currentStep }) {
                             }
                         </div>
                     </div>
+                </div>
+            )}
+
+            {/* Job Status Bar (appears after step 5 is complete) */}
+            {currentStep >= 5 && batchId && (
+                <div className="mt-6 space-y-4">
+                    <div className="p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-lg border border-indigo-200">
+                        <h4 className="font-bold text-indigo-900 mb-3 flex items-center gap-2">
+                            <span className="text-lg">🚀</span>
+                            Job Execution Status
+                        </h4>
+
+                        <div className="space-y-3">
+                            {/* Status Timeline */}
+                            <div className="flex items-center gap-3">
+                                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${jobStatus === 'SUBMITTED' || jobStatus === 'RUNNABLE' || jobStatus === 'RUNNING' || jobStatus === 'SUCCEEDED' ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'}`}>
+                                    <span className="text-xs font-bold">✓ SUBMITTED</span>
+                                </div>
+                                <div className="h-1 w-8 bg-gray-300 rounded"></div>
+                                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${jobStatus === 'RUNNABLE' || jobStatus === 'RUNNING' || jobStatus === 'SUCCEEDED' ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-500'}`}>
+                                    <span className="text-xs font-bold">{jobStatus === 'RUNNABLE' ? '⏳ ' : jobStatus === 'RUNNING' || jobStatus === 'SUCCEEDED' ? '✓ ' : ''}RUNNABLE</span>
+                                </div>
+                                <div className="h-1 w-8 bg-gray-300 rounded"></div>
+                                <div className={`flex items-center gap-2 px-3 py-2 rounded-lg ${jobStatus === 'RUNNING' || jobStatus === 'SUCCEEDED' ? 'bg-purple-100 text-purple-700 animate-pulse' : 'bg-gray-100 text-gray-500'}`}>
+                                    <span className="text-xs font-bold">{jobStatus === 'RUNNING' ? '🔄 ' : jobStatus === 'SUCCEEDED' ? '✓ ' : ''}RUNNING</span>
+                                </div>
+                            </div>
+
+                            {/* Progress Info */}
+                            {jobsTotal > 0 && (
+                                <div className="text-sm text-indigo-700">
+                                    <strong>Progress:</strong> {jobsCompleted} / {jobsTotal} ligands completed
+                                </div>
+                            )}
+                        </div>
+                    </div>
+
+                    {/* View Live Result Button */}
+                    {jobStatus && (
+                        <button
+                            onClick={() => navigate(`/dock/batch/${batchId}`)}
+                            className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all hover:scale-105"
+                        >
+                            <span className="text-xl">📊</span>
+                            <span>View Live Results</span>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
+                            </svg>
+                        </button>
+                    )}
                 </div>
             )}
         </div>
