@@ -195,12 +195,16 @@ class DockingEngine:
             '--size_y', str(params.get('size_y', 20)),
             '--size_z', str(params.get('size_z', 20)),
             '--cpu', '1',
-            '--exhaustiveness', str(params.get('exhaustiveness', 8))
-            # CNN scoring happens automatically - removed unsupported --cnn parameter
+            '--exhaustiveness', '4',  # Reduced from 8 to speed up
+            '--num_modes', '3'  # Limit output modes for faster completion
         ]
         
         logger.info(f"Running Gnina: {' '.join(cmd)}")
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        try:
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)  # 5 minute timeout
+        except subprocess.TimeoutExpired:
+            logger.error("Gnina timed out after 300 seconds")
+            raise Exception("Gnina execution timed out after 5 minutes")
         
         if result.returncode != 0:
             # Gnina might output useful info even on failure, but for now specific check
