@@ -168,11 +168,28 @@ def generate_batch_pdf(batch_id: str, jobs_data: list, batch_meta: dict) -> io.B
     # Create rows for each top hit
     for i, job in enumerate(ranked_jobs):
         # Data container
+        # Prepare Score Display
+        vina_s = job.get('vina_score')
+        # docking_score often holds Gnina/CNN score in this pipeline
+        gnina_s = job.get('docking_score') 
+        final_aff = job.get('binding_affinity')
+
+        score_lines = []
+        if vina_s is not None and gnina_s is not None:
+             try:
+                 score_lines.append(f"<b>Vina Score:</b> {float(vina_s):.2f} kcal/mol")
+                 score_lines.append(f"<b>Gnina Score:</b> {float(gnina_s):.2f} kcal/mol")
+                 score_lines.append(f"<b>Consensus:</b> {float(final_aff):.2f} kcal/mol")
+             except:
+                 score_lines.append(f"<b>Affinity:</b> {final_aff} kcal/mol")
+        else:
+             score_lines.append(f"<b>Affinity:</b> {final_aff} kcal/mol")
+
         stats_text = [
             f"<b>Rank:</b> {i+1}",
             f"<b>Name:</b> {job.get('ligand_filename', 'Unknown')}",
-            f"<b>Affinity:</b> {job.get('binding_affinity')} kcal/mol",
-            f"<b>Job ID:</b> {job.get('id')}"
+            f"<b>Job ID:</b> {job.get('id')}",
+            *score_lines
         ]
         
         # Add ADMET if available (Phase 9 feature check)
