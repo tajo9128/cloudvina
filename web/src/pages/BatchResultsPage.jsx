@@ -531,7 +531,7 @@ export default function BatchResultsPage() {
                                                     </div>
                                                     <div className="p-3 bg-slate-50 rounded-lg border border-slate-100 text-center">
                                                         <div className="text-xs text-slate-500 uppercase">Violations</div>
-                                                        <div className="text-xl font-bold text-slate-700">{admetData.lipinski.violations}</div>
+                                                        <div className="text-xl font-bold text-slate-700">{admetData.lipinski?.violations ?? '-'}</div>
                                                     </div>
                                                 </div>
                                             </div>
@@ -549,7 +549,7 @@ export default function BatchResultsPage() {
                                                             <span>⚡</span> AI Ranking Explanation
                                                         </h3>
                                                         <p className="text-slate-800 font-medium leading-relaxed relative z-10">
-                                                            {batchData.jobs.find(j => j.id === firstJobId)?.ai_explanation || "No explanation available."}
+                                                            {batchData.jobs?.find(j => j.id === firstJobId)?.ai_explanation || "No explanation available."}
                                                         </p>
                                                     </div>
                                                 )}
@@ -568,10 +568,10 @@ export default function BatchResultsPage() {
                                                                         <div className="text-xs text-slate-400">Cardiotoxicity Risk</div>
                                                                     </div>
                                                                 </div>
-                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${admetData.herg.risk_level === 'Low' ? 'bg-green-100 text-green-700' :
-                                                                    admetData.herg.risk_level === 'Moderate' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${admetData.herg?.risk_level === 'Low' ? 'bg-green-100 text-green-700' :
+                                                                    admetData.herg?.risk_level === 'Moderate' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
                                                                     }`}>
-                                                                    {admetData.herg.risk_level || 'Unknown'}
+                                                                    {admetData.herg?.risk_level || 'Unknown'}
                                                                 </span>
                                                             </div>
                                                         )}
@@ -586,22 +586,22 @@ export default function BatchResultsPage() {
                                                                         <div className="text-xs text-slate-400">Genotoxicity Risk</div>
                                                                     </div>
                                                                 </div>
-                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${admetData.ames.prediction === 'Negative' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${admetData.ames?.prediction === 'Negative' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
                                                                     }`}>
-                                                                    {admetData.ames.prediction || 'Unknown'}
+                                                                    {admetData.ames?.prediction || 'Unknown'}
                                                                 </span>
                                                             </div>
                                                         )}
 
                                                         {/* PAINS */}
                                                         {admetData?.pains && (
-                                                            admetData.pains.passed ? (
+                                                            admetData.pains?.passed ? (
                                                                 <div className="flex items-center gap-2 text-xs text-green-600 font-medium px-2">
                                                                     <span>🛡️</span> No PAINS alerts detected
                                                                 </div>
                                                             ) : (
                                                                 <div className="flex items-center gap-2 text-xs text-red-600 font-medium px-2 bg-red-50 p-2 rounded">
-                                                                    <span>⚠️</span> PAINS Alert: {admetData.pains.alerts?.join(", ") || "Risk Detected"}
+                                                                    <span>⚠️</span> PAINS Alert: {admetData.pains?.alerts?.join(", ") || "Risk Detected"}
                                                                 </div>
                                                             )
                                                         )}
@@ -611,16 +611,16 @@ export default function BatchResultsPage() {
                                                             <div className="mt-4 pt-4 border-t border-slate-100">
                                                                 <div className="flex items-center justify-between mb-2">
                                                                     <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Metabolic Liability (DDI)</div>
-                                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${admetData.cyp.overall_ddi_risk === 'Low' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                                                                        {admetData.cyp.overall_ddi_risk} Risk
+                                                                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${admetData.cyp?.overall_ddi_risk === 'Low' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
+                                                                        {admetData.cyp?.overall_ddi_risk || 'Unknown'} Risk
                                                                     </span>
                                                                 </div>
                                                                 <div className="grid grid-cols-3 gap-2">
                                                                     {admetData.cyp?.isoforms && Object.entries(admetData.cyp.isoforms).map(([isoform, data]) => (
                                                                         <div key={isoform} className="text-center p-1.5 bg-slate-50 rounded border border-slate-100">
                                                                             <div className="text-[10px] text-slate-500 font-medium">{isoform}</div>
-                                                                            <div className={`text-xs font-bold ${data.inhibition_risk === 'High' ? 'text-red-500' : 'text-slate-700'}`}>
-                                                                                {data.inhibition_risk === 'High' ? 'Inhibitor' : '-'}
+                                                                            <div className={`text-xs font-bold ${data?.inhibition_risk === 'High' ? 'text-red-500' : 'text-slate-700'}`}>
+                                                                                {data?.inhibition_risk === 'High' ? 'Inhibitor' : '-'}
                                                                             </div>
                                                                         </div>
                                                                     ))}

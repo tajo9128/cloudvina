@@ -345,6 +345,69 @@ export default function BatchDockingPage() {
                         )}
                     </div>
                 </div>
+
+                {/* RIGHT HALF: Live Deep Dive Console */}
+                <div className="w-full md:w-7/12 h-1/2 md:h-full bg-slate-900 border-l border-slate-800 p-8 flex flex-col relative overflow-hidden">
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:16px_16px]"></div>
+
+                    {/* Console Header */}
+                    <div className="relative z-10 mb-6 flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <div className="p-2 bg-slate-800 rounded-lg border border-slate-700">
+                                <Terminal className="w-5 h-5 text-emerald-400" />
+                            </div>
+                            <div>
+                                <h3 className="text-slate-100 font-bold font-mono">BioDockify CLI</h3>
+                                <div className="flex items-center gap-2 text-xs text-slate-500">
+                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                                    SYSTEM ACTIVE
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex gap-2">
+                            <div className="px-3 py-1 bg-slate-800 rounded border border-slate-700 text-xs text-slate-400 font-mono">
+                                {logs.length} events
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Console Content Area */}
+                    <div className="flex-1 bg-black/50 rounded-xl border border-slate-700/50 backdrop-blur-sm p-4 overflow-y-auto font-mono text-sm relative custom-scrollbar">
+                        {(processingStage === 'processing' || processingStage === 'complete') && (
+                            <div className="mb-8">
+                                <PreparationProgress currentStep={
+                                    processingStage === 'complete' ? 6 :
+                                        (prepStatus.grid === 100 ? 5 :
+                                            prepStatus.grid > 0 ? 4 :
+                                                prepStatus.ligand === 100 ? 3 :
+                                                    prepStatus.ligand > 0 ? 2 : 1)
+                                } />
+                            </div>
+                        )}
+
+                        <div className="space-y-2">
+                            {logs.map((log, i) => (
+                                <div key={i} className={`flex gap-3 animate-fade-in ${getLogColor(log.type)}`}>
+                                    <span className="text-slate-600 select-none">[{log.time}]</span>
+                                    <span className="break-all">
+                                        {log.type === 'success' && '✓ '}
+                                        {log.type === 'error' && '✗ '}
+                                        {log.type === 'warning' && '⚠ '}
+                                        {log.msg}
+                                    </span>
+                                </div>
+                            ))}
+                            {processingStage === 'processing' && (
+                                <div className="flex gap-3 text-slate-500 animate-pulse">
+                                    <span className="text-slate-600">[{new Date().toLocaleTimeString('en-US', { hour12: false })}]</span>
+                                    <span>_</span>
+                                </div>
+                            )}
+                            <div ref={terminalEndRef} />
+                        </div>
+                    </div>
+                </div>
             </div>
         )
     }
