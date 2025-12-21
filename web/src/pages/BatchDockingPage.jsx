@@ -40,24 +40,25 @@ export default function BatchDockingPage() {
     // --- SUBMISSION HANDLERS ---
 
     // Helper to simulate deep-dive logs during latency
-    const simulateProcessingLogs = () => {
-        const steps = [
-            "Analyzing receptor geometry...",
-            "Removing water molecules (implicit solvation)...",
-            "Adding polar hydrogens...",
-            "Calculating Gasteiger charges...",
-            "Generating affinity grid (20x20x20)...",
-            "Validating ligand bonding parameters...",
-            "Checking AWS Batch compute capacity...",
-            "Allocating spot instances (g4dn.xlarge)..."
-        ]
-        let i = 0
+    const [prepStatus, setPrepStatus] = useState({ receptor: 0, ligand: 0, grid: 0 })
+
+    // Helper to simulate granular prep progress
+    const simulatePrepProgress = () => {
+        // Sequence: Receptor -> Ligand -> Grid
+        let r = 0, l = 0, g = 0;
+
         return setInterval(() => {
-            if (i < steps.length) {
-                addLog(steps[i], 'process')
-                i++
+            if (r < 100) {
+                r += 5;
+                setPrepStatus(prev => ({ ...prev, receptor: Math.min(r, 100) }));
+            } else if (l < 100) {
+                l += 10;
+                setPrepStatus(prev => ({ ...prev, ligand: Math.min(l, 100) }));
+            } else if (g < 100) {
+                g += 20;
+                setPrepStatus(prev => ({ ...prev, grid: Math.min(g, 100) }));
             }
-        }, 1500)
+        }, 150) // Fast animation
     }
 
     const handleFilesSubmit = async () => {
@@ -125,7 +126,7 @@ export default function BatchDockingPage() {
             setProcessingStage('processing')
             addLog("Starting Protein Preparation & Docking Pipeline...", 'warning')
 
-            const logInterval = simulateProcessingLogs() // Start fake logs
+            const listInterval = simulatePrepProgress() // Start fake logs
 
             const startRes = await fetch(`${API_URL}/jobs/batch/${newBatchId}/start`, {
                 method: 'POST',
@@ -139,7 +140,7 @@ export default function BatchDockingPage() {
                 })
             })
 
-            clearInterval(logInterval) // Stop fake logs
+            clearInterval(listInterval) // Stop fake logs
 
             if (!startRes.ok) {
                 const errJson = await startRes.json()
@@ -217,12 +218,12 @@ export default function BatchDockingPage() {
             }
 
             setProcessingStage('processing')
-            const logInterval = simulateProcessingLogs()
+            const listInterval = simulatePrepProgress()
 
             // Artificial delay to let user see the logs if response was too fast
             await new Promise(r => setTimeout(r, 2000))
 
-            clearInterval(logInterval)
+            clearInterval(listInterval)
 
             addLog("Batch Submitted to Queue", 'success')
             setBatchId(data.batch_id)
@@ -354,33 +355,133 @@ export default function BatchDockingPage() {
                     )}
                 </div>
 
-                {/* RIGHT HALF: Live Terminal */}
-                <div className="w-full md:w-7/12 h-1/2 md:h-full bg-slate-950 p-6 font-mono text-sm overflow-hidden flex flex-col border-l border-slate-800">
-                    <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-2">
-                        <div className="flex items-center gap-2 text-emerald-400">
-                            <Terminal size={18} />
-                            <span className="font-bold tracking-wider">BioDockify CLI v2.4.0</span>
-                        </div>
-                        <div className="flex items-center gap-2 text-slate-500 text-xs">
-                            <Server size={14} />
-                            <span>us-east-1 // g4dn.xlarge</span>
-                        </div>
-                    </div>
+                {/* RIGHT HALF: Visual Progress Tracker */}
+                <div className="w-full md:w-7/12 h-1/2 md:h-full bg-slate-50 p-8 flex flex-col justify-center border-l border-slate-200 relative overflow-hidden">
 
-                    <div className="flex-1 overflow-y-auto space-y-1.5 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent pr-2">
-                        {logs.map((log, i) => (
-                            <div key={i} className={`flex gap-3 animate-fade-in-left ${getLogColor(log.type)}`}>
-                                <span className="opacity-40 min-w-[70px] select-none">[{log.time}]</span>
-                                <span className="flex-1">{log.msg}</span>
+                    {/* Background Pattern */}
+                    <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:16px_16px]"></div>
+
+                    <div className="max-w-md mx-auto w-full relative z-10">
+                        <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">Batch Deployment Status</h2>
+
+                        <div className="space-y-8 relative">
+                            {/* Vertical Line */}
+                            <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-200 -z-10"></div>
+
+                            {/* Step 1: Uploads */}
+                            <div className="flex gap-4">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors duration-500 ${uploadProgress === 100
+                                    ? 'bg-emerald-100 border-emerald-500 text-emerald-600'
+                                    : 'bg-white border-indigo-600 text-indigo-600'
+                                    }`}>
+                                    {uploadProgress === 100 ? <CheckCircle2 size={20} /> : <span className="text-xs font-bold text-indigo-600">{uploadProgress}%</span>}
+                                </div>
+                                <div>
+                                    <h3 className={`font-bold ${uploadProgress === 100 ? 'text-slate-900' : 'text-indigo-600 animate-pulse'}`}>Submission Initiated</h3>
+                                    <p className="text-sm text-slate-500">Securely uploading {uploadMode === 'files' ? ligandFiles.length : 'CSV'} payload to S3 bucket.</p>
+                                </div>
                             </div>
-                        ))}
-                        {processingStage !== 'complete' && (
-                            <div className="flex gap-3 text-slate-500 animate-pulse">
-                                <span className="opacity-40 min-w-[70px] select-none">...</span>
-                                <span>_</span>
+
+                            {/* Step 2: Structure Preparation (Detailed) */}
+                            <div className="flex gap-4">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors duration-500 ${processingStage === 'processing' || processingStage === 'complete'
+                                    ? 'bg-emerald-100 border-emerald-500 text-emerald-600'
+                                    : 'bg-white border-slate-200 text-slate-300'
+                                    }`}>
+                                    {processingStage === 'complete' ? <CheckCircle2 size={20} /> : processingStage === 'processing' ? <FlaskConical size={20} className="animate-bounce" /> : <div className="w-2 h-2 bg-slate-200 rounded-full"></div>}
+                                </div>
+                                <div className="flex-1">
+                                    <h3 className={`font-bold ${processingStage === 'processing' || processingStage === 'complete' ? 'text-slate-900' : 'text-slate-400'
+                                        }`}>Structure Preparation</h3>
+
+                                    {/* Sub-Progress Bars for Protein/Ligand/Grid */}
+                                    {(processingStage === 'processing' || processingStage === 'complete') && (
+                                        <div className="mt-3 space-y-3 animate-fade-in-down">
+
+                                            {/* Protein Prep */}
+                                            <div>
+                                                <div className="flex justify-between text-xs mb-1">
+                                                    <span className={prepStatus.receptor === 100 ? "text-emerald-600 font-bold" : "text-slate-500"}>Receptor Optimization</span>
+                                                    <span className="text-slate-400">{prepStatus.receptor}%</span>
+                                                </div>
+                                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${prepStatus.receptor}%` }}></div>
+                                                </div>
+                                            </div>
+
+                                            {/* Ligand Prep */}
+                                            <div>
+                                                <div className="flex justify-between text-xs mb-1">
+                                                    <span className={prepStatus.ligand === 100 ? "text-emerald-600 font-bold" : "text-slate-500"}>Ligand Minimization</span>
+                                                    <span className="text-slate-400">{prepStatus.ligand}%</span>
+                                                </div>
+                                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${prepStatus.ligand}%` }}></div>
+                                                </div>
+                                            </div>
+
+                                            {/* Grid Gen */}
+                                            <div>
+                                                <div className="flex justify-between text-xs mb-1">
+                                                    <span className={prepStatus.grid === 100 ? "text-emerald-600 font-bold" : "text-slate-500"}>Affinity Grid Generation</span>
+                                                    <span className="text-slate-400">{prepStatus.grid}%</span>
+                                                </div>
+                                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                                                    <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${prepStatus.grid}%` }}></div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Step 3: Queue Allocation */}
+                            <div className="flex gap-4">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors duration-500 ${processingStage === 'processing'
+                                    ? 'bg-amber-50 border-amber-500 text-amber-600 animate-pulse'
+                                    : processingStage === 'complete' ? 'bg-emerald-100 border-emerald-500 text-emerald-600' : 'bg-white border-slate-200 text-slate-300'
+                                    }`}>
+                                    {processingStage === 'complete' ? <CheckCircle2 size={20} /> : processingStage === 'processing' ? <Server size={20} /> : <div className="w-2 h-2 bg-slate-200 rounded-full"></div>}
+                                </div>
+                                <div>
+                                    <h3 className={`font-bold ${processingStage === 'processing' ? 'text-amber-600' : processingStage === 'complete' ? 'text-slate-900' : 'text-slate-400'
+                                        }`}>Queue Allocation (Runnable)</h3>
+                                    <p className="text-sm text-slate-500">Provisioning spot instances on AWS Batch (g4dn.xlarge).</p>
+                                </div>
+                            </div>
+
+                            {/* Step 4: Execution */}
+                            <div className="flex gap-4">
+                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors duration-500 ${processingStage === 'complete'
+                                    ? 'bg-blue-100 border-blue-500 text-blue-600'
+                                    : 'bg-white border-slate-200 text-slate-300'
+                                    }`}>
+                                    {processingStage === 'complete' ? <Activity size={20} /> : <div className="w-2 h-2 bg-slate-200 rounded-full"></div>}
+                                </div>
+                                <div>
+                                    <h3 className={`font-bold ${processingStage === 'complete' ? 'text-blue-600' : 'text-slate-400'}`}>Execution Started (Running)</h3>
+                                    <p className="text-sm text-slate-500">Consensus docking job is now active.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* FINAL BATCH ID DISPLAY */}
+                        {processingStage === 'complete' && (
+                            <div className="mt-12 bg-white p-6 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center animate-fade-in-up">
+                                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Deployed Batch ID</div>
+                                <div className="text-3xl font-mono font-bold text-slate-900 bg-slate-50 px-6 py-3 rounded-xl border border-slate-200 select-all mb-6">
+                                    {batchId}
+                                </div>
+                                <button
+                                    onClick={() => navigate(`/batch/${batchId}`)}
+                                    className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-all shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-1"
+                                >
+                                    <span>Monitoring Dashboard</span>
+                                    <ArrowRight size={20} />
+                                </button>
                             </div>
                         )}
-                        <div ref={terminalEndRef} />
                     </div>
                 </div>
             </div>

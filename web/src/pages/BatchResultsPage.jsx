@@ -307,13 +307,20 @@ export default function BatchResultsPage() {
                             Batch Analysis <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 font-mono">{batchId.slice(0, 8)}</span>
                         </h1>
                         <div className="text-xs text-slate-500 flex items-center gap-2">
-                            {['RUNNING', 'SUBMITTED'].includes(batchData.status) ? (
-                                <span className="flex items-center gap-1 text-blue-600 font-bold"><span className="animate-spin">🔄</span> Processing ({batchData.stats.completed}/{batchData.stats.total})</span>
-                            ) : (
+                            {batchData.status === 'SUBMITTED' && (
+                                <span className="flex items-center gap-1 text-amber-600 font-bold"><span className="animate-pulse">⏳</span> Queued (Runnable)</span>
+                            )}
+                            {batchData.status === 'RUNNING' && (
+                                <span className="flex items-center gap-1 text-blue-600 font-bold"><span className="animate-spin">🔄</span> Processing ({batchData.stats?.completed || 0}/{batchData.stats?.total || 0})</span>
+                            )}
+                            {batchData.status === 'SUCCEEDED' && (
                                 <span className="text-emerald-600 font-bold flex items-center gap-1"><span>⭐</span> Complete</span>
                             )}
+                            {batchData.status === 'FAILED' && (
+                                <span className="text-red-600 font-bold flex items-center gap-1"><span>⚠️</span> Failed</span>
+                            )}
                             <span className="text-slate-300">|</span>
-                            <span>{batchData.stats.total} Ligands</span>
+                            <span>{batchData.stats?.total || 0} Ligands</span>
                         </div>
                     </div>
                 </div>
@@ -366,6 +373,8 @@ export default function BatchResultsPage() {
                         <table className="w-full text-sm text-left">
                             <thead className="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 z-10 shadow-sm">
                                 <tr>
+                                    <th className="px-4 py-3 text-xs w-[100px]">ID</th>
+                                    <th className="px-4 py-3">Status</th>
                                     <th onClick={() => handleSort('ligand_filename')} className="px-4 py-3 cursor-pointer hover:bg-slate-100">Ligand</th>
                                     <th onClick={() => handleSort('binding_affinity')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right">Affinity</th>
                                     <th className="px-4 py-3 text-center">Files</th>
@@ -379,14 +388,29 @@ export default function BatchResultsPage() {
                                         onClick={() => handleJobSelect(job)}
                                         className={`cursor-pointer transition-colors hover:bg-indigo-50 ${firstJobId === job.id ? 'bg-indigo-50 border-l-4 border-indigo-500' : ''}`}
                                     >
-                                        <td className="px-4 py-3 font-medium text-slate-900 truncate max-w-[150px]">
+                                        <td className="px-4 py-3 font-mono text-xs text-slate-400">
+                                            {job.id.slice(0, 8)}
+                                        </td>
+                                        <td className="px-4 py-3">
+                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${job.status === 'SUCCEEDED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                job.status === 'FAILED' ? 'bg-red-50 text-red-600 border-red-100' :
+                                                    'bg-blue-50 text-blue-600 border-blue-100'
+                                                }`}>
+                                                {job.status}
+                                            </span>
+                                        </td>
+                                        <td className="px-4 py-3 font-medium text-slate-900 truncate max-w-[150px]" title={job.ligand_filename}>
                                             {job.ligand_filename.replace('.pdbqt', '')}
-                                            {job.status !== 'SUCCEEDED' && <span className="ml-2 text-[10px] bg-slate-100 px-1 rounded text-slate-500">{job.status}</span>}
                                         </td>
                                         <td className="px-4 py-3 text-right font-mono font-bold">
-                                            <span className={getAffinityColor(getAffinity(job))}>
-                                                {getAffinity(job) !== null ? getAffinity(job).toFixed(1) : '-'}
-                                            </span>
+                                            {(() => {
+                                                const aff = getAffinity(job);
+                                                if (aff !== null && aff !== 0) {
+                                                    return <span className={getAffinityColor(aff)}>{aff.toFixed(1)}</span>
+                                                }
+                                                if (job.status === 'SUCCEEDED') return <span className="text-red-500 text-xs">Error</span>
+                                                return <span className="text-slate-300">-</span>
+                                            })()}
                                         </td>
                                         <td className="px-4 py-3 text-center flex justify-center gap-2">
                                             <button

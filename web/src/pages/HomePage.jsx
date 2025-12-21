@@ -2,12 +2,10 @@ import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import SEOHelmet from '../components/SEOHelmet'
 import {
-    PlayCircle, Zap, Activity, CheckCircle, Clock,
-    ArrowRight, Github, Info, Download,
-    Box, Cpu, FileCode, FlaskConical, LineChart, Cloud,
-    GraduationCap, Factory, Search, Database, CreditCard
+    Activity, GraduationCap, Factory, FlaskConical, Stethoscope,
+    ArrowRight, CheckCircle2, Zap, Search, Globe, ShieldCheck, Layers,
+    Brain, Package, BarChart3, TrendingUp, FileText, CheckCircle
 } from 'lucide-react'
-import CountUp from '../components/CountUp'
 
 export default function HomePage() {
     const [isVisible, setIsVisible] = useState(false)
@@ -16,173 +14,80 @@ export default function HomePage() {
         setIsVisible(true)
     }, [])
 
-    const schemaMarkup = {
-        "@context": "https://schema.org",
-        "@graph": [
-            {
-                "@type": "SoftwareApplication",
-                "name": "BioDockify",
-                "applicationCategory": "ScientificApplication",
-                "operatingSystem": "Web Browser",
-                "offers": {
-                    "@type": "AggregateOffer",
-                    "lowPrice": "49",
-                    "priceCurrency": "USD"
-                },
-                "featureList": [
-                    "AutoDock Vina Integration",
-                    "Cloud-based Molecular Docking",
-                    "MD Simulation via OpenMM",
-                    "Enterprise Drug Discovery"
-                ],
-                "softwareVersion": "6.0.0"
-            }
-        ]
-    }
-
     return (
         <div className="overflow-hidden bg-slate-50 font-sans text-slate-900">
             <SEOHelmet
-                title="BioDockify | Enterprise Cloud Drug Discovery"
-                description="Run AutoDock Vina & OpenMM simulations on high-performance cloud infrastructure. Scalable drug discovery platform for biotechs and academic labs."
-                keywords="molecular docking, cloud computing, drug discovery software, enterprise bioinformatics, virtual screening"
+                title="BioDockify | Intelligent Molecular Research Platform"
+                description="Accelerating Drug Discovery Through Intelligent Molecular Research. Simplify and accelerate modern drug discovery research without expensive infrastructure."
+                keywords="drug discovery, molecular analysis, computational pharmacology, virtual screening, medicinal chemistry"
                 canonical="https://biodockify.com/"
-                schema={schemaMarkup}
             />
 
-            {/* Hero Section */}
-            <section className="relative pt-32 pb-24 lg:pt-48 lg:pb-32 bg-[#0B1121] overflow-hidden">
-                {/* Abstract Background Elements */}
+            {/* 1. MODERN HERO SECTION */}
+            <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
+                {/* Background Image with Overlay */}
                 <div className="absolute inset-0 z-0">
-                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-indigo-950 via-slate-900 to-black opacity-90"></div>
-                    <div className="absolute top-[-10%] right-[-5%] w-[500px] h-[500px] bg-primary-600/10 rounded-full blur-[120px]"></div>
-                    <div className="absolute bottom-[-10%] left-[-5%] w-[500px] h-[500px] bg-purple-600/10 rounded-full blur-[120px]"></div>
-                    {/* Grid Pattern */}
-                    <div className="absolute inset-0 opacity-[0.05]"></div>
+                    <img
+                        src="/assets/images/hero-molecular.png"
+                        alt="Molecular Research"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "https://images.unsplash.com/photo-1614935151651-0bea6508db6b?auto=format&fit=crop&q=80&w=2500";
+                        }}
+                    />
+                    <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px]"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B1121] via-transparent to-transparent"></div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="lg:grid lg:grid-cols-2 lg:gap-16 items-center">
-                        <div className="text-left mb-12 lg:mb-0">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-300 text-xs font-bold uppercase tracking-wider mb-6 animate-fade-in">
-                                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                                Major Release v6.0.0: Privacy-First Consensus Docking
-                            </div>
-                            <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 leading-tight tracking-tight">
-                                Cloud-Native, <br />
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">End-to-End</span> <br />
-                                Drug Discovery.
-                            </h1>
-                            <p className="text-xl text-slate-400 mb-8 leading-relaxed max-w-xl font-light">
-                                Accelerate your pipeline from <strong>Virtual Screening</strong> to <strong>Lead Optimization</strong> with our high-performance cloud infrastructure. Scalable, secure, and ready for production.
-                            </p>
-
-                            <div className="flex flex-col sm:flex-row gap-4 mb-12">
-                                <Link to="/dock/new" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_30px_rgba(79,70,229,0.5)] transform hover:-translate-y-1">
-                                    <span className="text-xl">▶️</span>
-                                    <span>Start Free Trial</span>
-                                </Link>
-                                <Link to="/contact" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white font-semibold rounded-xl backdrop-blur-sm transition-all">
-                                    <span>Contact Sales</span>
-                                    <span className="text-xl">➡️</span>
-                                </Link>
-                            </div>
-
-                            {/* Status Pill */}
-                            <div className="bg-white/5 border border-white/10 rounded-2xl p-5 backdrop-blur-md max-w-sm">
-                                <div className="flex items-center justify-between mb-3">
-                                    <span className="text-slate-200 text-sm font-medium flex items-center gap-2">
-                                        <span className="text-emerald-400">📈</span> Platform Status
-                                    </span>
-                                    <span className="text-xs font-mono text-emerald-400 bg-emerald-400/10 px-2 py-0.5 rounded">99.9% UPTIME</span>
-                                </div>
-                                <div className="w-full bg-slate-800 rounded-full h-2 mb-2">
-                                    <div className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full w-[85%]" title="Pipeline Optimization"></div>
-                                </div>
-                                <div className="flex justify-between text-[10px] text-slate-500 uppercase tracking-wider font-semibold">
-                                    <span>Screening</span>
-                                    <span>MD Sim</span>
-                                    <span>Analysis</span>
-                                    <span className="text-slate-700">Report</span>
-                                </div>
-                            </div>
+                <div className="container mx-auto px-4 z-10 text-center">
+                    <div className="animate-fade-in-up max-w-5xl mx-auto">
+                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-indigo-300 text-sm font-bold uppercase tracking-wider mb-8 backdrop-blur-md">
+                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                            The Future of Molecular Research
                         </div>
 
-                        {/* Hero Right: 3D Molecule or Abstract Vis */}
-                        <div className="hidden lg:block relative">
-                            <div className="absolute inset-0 bg-indigo-500/20 blur-[100px] rounded-full"></div>
-                            <img
-                                src="/assets/images/hero-molecular.png"
-                                alt="Molecular Dynamics Visualization"
-                                className="relative z-10 w-full h-auto rounded-2xl shadow-2xl border border-white/10 mix-blend-screen opacity-90 animate-float"
-                            />
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-8 leading-tight tracking-tight drop-shadow-2xl">
+                            Accelerating <br />
+                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-emerald-300">Drug Discovery</span>
+                        </h1>
 
-                            {/* Floating Cards */}
-                            <div className="absolute top-10 -left-10 bg-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-slate-700 shadow-xl animate-fade-in-up delay-100">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-green-500/20 rounded-lg text-green-400"><span className="text-xl">🗄️</span></div>
-                                    <div>
-                                        <div className="text-xs text-slate-400 uppercase font-bold">Secure Storage</div>
-                                        <div className="text-white font-bold">Encrypted & Compliant</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <p className="text-xl md:text-2xl text-slate-200 mb-12 leading-relaxed max-w-3xl mx-auto font-light drop-shadow-lg">
+                            An intelligent, cloud-native platform designed to simplify and accelerate modern pharmaceutical research.
+                            From target identification to FDA-compliant submission.
+                        </p>
 
-                            <div className="absolute bottom-10 -right-5 bg-slate-900/90 backdrop-blur-xl p-4 rounded-xl border border-slate-700 shadow-xl animate-fade-in-up delay-300">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400"><span className="text-xl">⚡</span></div>
-                                    <div>
-                                        <div className="text-xs text-slate-400 uppercase font-bold">High Performance</div>
-                                        <div className="text-white font-bold">GPU Accelerated</div>
-                                    </div>
-                                </div>
-                            </div>
+                        <div className="flex flex-col sm:flex-row justify-center gap-6">
+                            <Link to="/dock/new" className="inline-flex items-center justify-center gap-3 px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white text-lg font-bold rounded-2xl transition-all shadow-[0_0_40px_rgba(79,70,229,0.4)] hover:shadow-[0_0_60px_rgba(79,70,229,0.6)] transform hover:-translate-y-1">
+                                <span>Start Discovery</span>
+                                <ArrowRight size={24} />
+                            </Link>
+                            <Link to="/contact" className="inline-flex items-center justify-center gap-3 px-10 py-5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-lg font-semibold rounded-2xl backdrop-blur-md transition-all">
+                                <span>Talk to Us</span>
+                            </Link>
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Quick Stats Strip */}
-            <div className="bg-[#0f172a] border-y border-slate-800">
+            {/* 2. 9-PHASE DISCOVERY ENGINE (WORKFLOW) */}
+            <section id="workflow" className="py-32 bg-slate-50 relative overflow-hidden">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-slate-800/50">
-                        {[
-                            { label: "Compounds Screened", value: 1500, icon: <span className="text-xl">✅</span> },
-                            { label: "Active Organizations", value: 124, icon: <span className="text-xl">🏭</span> },
-                            { label: "Compute Hours", value: 850, icon: <span className="text-xl">🕒</span> },
-                            { label: "Success Rate", value: 92, suffix: "%", icon: <span className="text-xl">📊</span> }
-                        ].map((stat, i) => (
-                            <div key={i} className="py-8 px-4 text-center group hover:bg-slate-800/30 transition-colors">
-                                <div className="flex items-center justify-center gap-2 text-slate-400 text-xs font-bold uppercase tracking-widest mb-2">
-                                    {stat.icon} {stat.label}
-                                </div>
-                                <div className="text-3xl font-bold text-white">
-                                    {stat.prefix}{stat.value.toLocaleString()}{stat.suffix || "+"}
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            </div>
-
-            {/* Pipeline Timeline Section */}
-            <section id="pipeline" className="py-24 bg-slate-50 relative overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-20">
-                        <h2 className="text-base text-indigo-600 font-bold tracking-widest uppercase mb-2">The Enterprise Workflow</h2>
-                        <h3 className="text-4xl md:text-5xl font-bold text-black mb-6">9-Phase Discovery Engine</h3>
-                        <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+                    <div className="text-center mb-24">
+                        <h2 className="text-sm font-bold text-indigo-600 tracking-[0.2em] uppercase mb-4">The Enterprise Workflow</h2>
+                        <h3 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">9-Phase Discovery Engine</h3>
+                        <p className="text-xl text-slate-600 max-w-3xl mx-auto">
                             Automate the complex biology so your team can focus on the discovery.
-                            From target identification to FDA-compliant submission.
+                            A complete pipeline from target identification to FDA-compliant submission.
                         </p>
                     </div>
 
                     <div className="relative">
                         {/* Vertical Timeline Line */}
-                        <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-slate-300 via-indigo-200 to-slate-200"></div>
+                        <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-slate-200 via-indigo-200 to-slate-200"></div>
 
-                        <div className="space-y-24">
-                            {/* Phase 1 */}
+                        <div className="space-y-4 lg:space-y-24">
+                            {/* 1. Target Identification */}
                             <TimelineItem
                                 number="1"
                                 title="Target Identification"
@@ -191,10 +96,10 @@ export default function HomePage() {
                                 tags={["Deep Learning", "Binding Site Detection", "Hotspot Analysis"]}
                                 status="completed"
                                 side="left"
-                                icon={<span className="text-2xl">🧠</span>}
+                                icon={<Brain size={24} />}
                             />
 
-                            {/* Phase 2 (Old 1) */}
+                            {/* 2. High-Throughput Docking */}
                             <TimelineItem
                                 number="2"
                                 title="High-Throughput Docking"
@@ -203,10 +108,10 @@ export default function HomePage() {
                                 tags={["Cloud Scaling", "PDBQT Automation", "Blind Docking"]}
                                 status="completed"
                                 side="right"
-                                icon={<span className="text-2xl">📦</span>}
+                                icon={<Package size={24} />}
                             />
 
-                            {/* Phase 3 (Old 2) */}
+                            {/* 3. Molecular Dynamics */}
                             <TimelineItem
                                 number="3"
                                 title="Molecular Dynamics"
@@ -215,10 +120,10 @@ export default function HomePage() {
                                 tags={["Explicit Solvent", "Amber14", "GPU Clusters"]}
                                 status="completed"
                                 side="left"
-                                icon={<span className="text-2xl">⚡</span>}
+                                icon={<Zap size={24} />}
                             />
 
-                            {/* Phase 4 (Old 3) */}
+                            {/* 4. Trajectory Analysis */}
                             <TimelineItem
                                 number="4"
                                 title="Trajectory Analysis"
@@ -227,10 +132,10 @@ export default function HomePage() {
                                 tags={["RMSD/RMSF", "H-Bond Lifetime", "Clustering"]}
                                 status="completed"
                                 side="right"
-                                icon={<span className="text-2xl">📊</span>}
+                                icon={<BarChart3 size={24} />}
                             />
 
-                            {/* Phase 5 (Old 4) */}
+                            {/* 5. Binding Free Energy */}
                             <TimelineItem
                                 number="5"
                                 title="Binding Free Energy"
@@ -239,10 +144,10 @@ export default function HomePage() {
                                 tags={["Advanced Scoring", "Implicit Solvent", "Entropy Estimation"]}
                                 status="completed"
                                 side="left"
-                                icon={<span className="text-2xl">🧪</span>}
+                                icon={<FlaskConical size={24} />}
                             />
 
-                            {/* Phase 6 (Old 5) */}
+                            {/* 6. Lead Ranking */}
                             <TimelineItem
                                 number="6"
                                 title="Lead Ranking"
@@ -251,10 +156,10 @@ export default function HomePage() {
                                 tags={["Weighted Scoring", "Rank Aggregation", "Outlier Removal"]}
                                 status="completed"
                                 side="right"
-                                icon={<span className="text-2xl">🔍</span>}
+                                icon={<Search size={24} />}
                             />
 
-                            {/* Phase 7 (Old 6) */}
+                            {/* 7. ADMET Profiling */}
                             <TimelineItem
                                 number="7"
                                 title="ADMET Profiling"
@@ -263,10 +168,10 @@ export default function HomePage() {
                                 tags={["BBB Permeability", "Toxicity", "Oral Bioavailability"]}
                                 status="completed"
                                 side="left"
-                                icon={<span className="text-2xl">📈</span>}
+                                icon={<TrendingUp size={24} />}
                             />
 
-                            {/* Phase 8 (New) */}
+                            {/* 8. Accuracy Benchmarking */}
                             <TimelineItem
                                 number="8"
                                 title="Accuracy Benchmarking"
@@ -275,10 +180,10 @@ export default function HomePage() {
                                 tags={["Correlation Analysis", "Scatter Plots", "Model Validation"]}
                                 status="completed"
                                 side="right"
-                                icon={<span className="text-2xl">✅</span>}
+                                icon={<CheckCircle2 size={24} />}
                             />
 
-                            {/* Phase 9 (Old 7 - Enhanced) */}
+                            {/* 9. Regulatory Submission */}
                             <TimelineItem
                                 number="9"
                                 title="Regulatory Submission"
@@ -287,206 +192,170 @@ export default function HomePage() {
                                 tags={["Immutable Logs", "Role-Based Access", "Digital Compliance"]}
                                 status="completed"
                                 side="left"
-                                icon={<span className="text-2xl">📄</span>}
+                                icon={<FileText size={24} />}
                             />
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* 12-Week Roadmap Section */}
-            <section className="py-24 bg-slate-900 text-white relative overflow-hidden">
-                <div className="absolute inset-0 opacity-[0.03]"></div>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-                    <div className="text-center mb-16">
-                        <h2 className="text-base text-indigo-400 font-bold tracking-widest uppercase mb-2">Strategic Roadmap</h2>
-                        <h3 className="text-3xl md:text-4xl font-bold text-white mb-6">12-Week Integration Plan</h3>
-                        <p className="text-slate-400 max-w-2xl mx-auto">
-                            Our structured approach ensures seamless adoption and scalability for your organization.
-                        </p>
-                    </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-                        {/* W 1-4 */}
-                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="text-xs font-bold bg-slate-700 px-2 py-1 rounded text-slate-300">Weeks 1-4</div>
-                                <span className="text-xl">✅</span>
+            {/* 3. WHY BIODOCKIFY (Challenges & Advantages) */}
+            <section className="py-24 bg-white border-t border-slate-100">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="lg:grid lg:grid-cols-2 gap-16 items-center">
+                        <div className="mb-12 lg:mb-0">
+                            <h2 className="text-sm font-bold text-indigo-600 tracking-widest uppercase mb-3">Why BioDockify?</h2>
+                            <h3 className="text-3xl md:text-5xl font-bold text-slate-900 mb-6">Bridging the Gap Between Research and Discovery</h3>
+                            <p className="text-lg text-slate-600 mb-8 leading-relaxed">
+                                Drug discovery today faces major challenges—high costs, long timelines, fragmented tools, and limited accessibility.
+                                BioDockify addresses these by providing a unified environment where scientists can focus on discovery rather than software complexity.
+                            </p>
+                            <div className="space-y-6">
+                                <div className="flex items-start gap-4">
+                                    <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600 mt-1"><CheckCircle2 size={20} /></div>
+                                    <div>
+                                        <h4 className="font-bold text-lg text-slate-900">Faster Molecular Analysis</h4>
+                                        <p className="text-slate-500">Rapid compound evaluation and screening.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="p-2 bg-indigo-100 rounded-lg text-indigo-600 mt-1"><Globe size={20} /></div>
+                                    <div>
+                                        <h4 className="font-bold text-lg text-slate-900">Accessible Anywhere</h4>
+                                        <p className="text-slate-500">Cloud-native with no hardware dependency.</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="p-2 bg-amber-100 rounded-lg text-amber-600 mt-1"><Zap size={20} /></div>
+                                    <div>
+                                        <h4 className="font-bold text-lg text-slate-900">For All Skill Levels</h4>
+                                        <p className="text-slate-500">Designed for both beginners and advanced researchers.</p>
+                                    </div>
+                                </div>
                             </div>
-                            <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Foundation</h4>
-                            <ul className="space-y-3 text-sm text-slate-400">
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> User Onboarding & Analytics</li>
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> High-Throughput Docking</li>
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> MD Simulation Pipeline</li>
-                            </ul>
                         </div>
-
-                        {/* W 5-8 */}
-                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="text-xs font-bold bg-slate-700 px-2 py-1 rounded text-slate-300">Weeks 5-8</div>
-                                <span className="text-xl">✅</span>
-                            </div>
-                            <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Enterprise Core</h4>
-                            <ul className="space-y-3 text-sm text-slate-400">
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> FDA 21 CFR Part 11 Logs</li>
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> Role-Based Access (RBAC)</li>
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> Accuracy Benchmarking</li>
-                            </ul>
-                        </div>
-
-                        {/* W 9-10 */}
-                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="text-xs font-bold bg-slate-700 px-2 py-1 rounded text-slate-300">Weeks 9-10</div>
-                                <span className="text-xl">✅</span>
-                            </div>
-                            <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Ecosystem</h4>
-                            <ul className="space-y-3 text-sm text-slate-400">
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> Python SDK Release</li>
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> Developer API Portal</li>
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-emerald-500"></div> Custom Integrations</li>
-                            </ul>
-                        </div>
-
-                        {/* W 11-12 */}
-                        <div className="bg-slate-800/50 p-6 rounded-2xl border border-slate-700 hover:border-indigo-500 transition-colors group">
-                            <div className="flex items-center justify-between mb-4">
-                                <div className="text-xs font-bold bg-indigo-900/50 px-2 py-1 rounded text-indigo-300 border border-indigo-500/30">Weeks 11-12</div>
-                                <span className="text-xl">🕒</span>
-                            </div>
-                            <h4 className="text-xl font-bold mb-2 text-white group-hover:text-indigo-400 transition-colors">Scale & Optimization</h4>
-                            <ul className="space-y-3 text-sm text-slate-400">
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-indigo-500"></div> Global GPU Auto-Scaling</li>
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-indigo-500"></div> Multi-Region Redundancy</li>
-                                <li className="flex gap-2"><div className="w-1.5 h-1.5 mt-1.5 rounded-full bg-indigo-500"></div> Dedicated Instance Pools</li>
-                            </ul>
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-blue-600 blur-[80px] opacity-10 rounded-full"></div>
+                            <img
+                                src="/assets/images/hero-molecular.png"
+                                alt="Molecular Analysis Interface"
+                                className="relative w-full h-auto rounded-3xl shadow-2xl border border-slate-200 transform hover:scale-[1.02] transition-transform duration-500"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "https://placehold.co/800x600/f8fafc/e2e8f0?text=Analysis+Interface";
+                                }}
+                            />
                         </div>
                     </div>
                 </div>
             </section>
 
-            {/* Tools Grid Section */}
-            <section className="py-24 bg-white">
+            {/* 4. WHO CAN USE (Personas) */}
+            <section className="py-24 bg-slate-50">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
-                        <h2 className="text-3xl font-bold text-black mb-6">Powered by Industry Standards</h2>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            <ToolCard name="AutoDock Vina" type="Docking Engine" icon={<span className="text-2xl">📦</span>} desc="The industry standard for molecular docking." color="blue" />
-                            <ToolCard name="OpenMM" type="MD Engine" icon={<span className="text-2xl">⚡</span>} desc="High-performance toolkit for molecular simulation." color="purple" />
-                            <ToolCard name="MDAnalysis" type="Analysis Library" icon={<span className="text-2xl">📊</span>} desc="Advanced trajectory analysis for complex systems." color="orange" />
-                            <ToolCard name="RDKit" type="Cheminformatics" icon={<span className="text-2xl">🧪</span>} desc="Robust cheminformatics and machine learning tools." color="green" />
-                            <ToolCard name="FastAPI" type="Backend Framework" icon={<span className="text-2xl">🖥️</span>} desc="High-performance, secure API infrastructure." color="indigo" />
-                            <ToolCard name="Cloud Compute" type="Infrastructure" icon={<span className="text-2xl">☁️</span>} desc="Dedicated GPU clusters for maximum throughput." color="yellow" />
-                        </div>
+                        <h2 className="text-3xl md:text-4xl font-bold text-slate-900 mb-4">Who Can Use BioDockify?</h2>
+                        <p className="text-lg text-slate-600">Start-to-finish support for the entire scientific community.</p>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <PersonaCard
+                            icon={<GraduationCap className="w-8 h-8 text-indigo-600" />}
+                            title="PhD Scholars & Academia"
+                            desc="Conduct computational studies, validate hypotheses, and support publications with reliable molecular insights."
+                            color="indigo"
+                        />
+                        <PersonaCard
+                            icon={<Factory className="w-8 h-8 text-emerald-600" />}
+                            title="Pharma & Biotech"
+                            desc="Accelerate lead identification and reduce early-stage R&D timelines with scalable screening."
+                            color="emerald"
+                        />
+                        <PersonaCard
+                            icon={<FlaskConical className="w-8 h-8 text-violet-600" />}
+                            title="CROs & Research Labs"
+                            desc="Perform high-throughput screening and molecular analysis for multiple clients efficiently."
+                            color="violet"
+                        />
+                        <PersonaCard
+                            icon={<Stethoscope className="w-8 h-8 text-blue-600" />}
+                            title="Medicinal Chemistry"
+                            desc="Explore compound behavior, binding potential, and structure-activity relationships."
+                            color="blue"
+                        />
                     </div>
                 </div>
             </section>
 
-            {/* User Persona Section */}
-            <section className="py-24 bg-slate-900 text-white">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        <div className="text-center">
-                            <div className="w-16 h-16 mx-auto bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 mb-6">
-                                <Activity size={32} />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3">Pharma R&D</h3>
-                            <p className="text-slate-400">Optimize lead candidates with specialized Blood-Brain Barrier (BBB) permeability filtering.</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-16 h-16 mx-auto bg-emerald-500/20 rounded-2xl flex items-center justify-center text-emerald-400 mb-6">
-                                <GraduationCap size={32} />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3">Academic Labs</h3>
-                            <p className="text-slate-400">Accelerate publication timelines with high-throughput simulation capabilities.</p>
-                        </div>
-                        <div className="text-center">
-                            <div className="w-16 h-16 mx-auto bg-purple-500/20 rounded-2xl flex items-center justify-center text-purple-400 mb-6">
-                                <Factory size={32} />
-                            </div>
-                            <h3 className="text-xl font-bold mb-3">Biotech Startups</h3>
-                            <p className="text-slate-400">Rapidly screen thousands of compounds and fail fast with predictive toxicity ADMET.</p>
-                        </div>
-                    </div>
-                </div>
-            </section>
+            {/* 5. FINAL CTA */}
+            <section className="py-32 bg-[#0B1121] text-center relative overflow-hidden">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10"></div>
+                <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px]"></div>
+                <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] bg-emerald-600/20 rounded-full blur-[120px]"></div>
 
-            {/* Final CTA Section */}
-            <section className="py-24 bg-indigo-600 relative overflow-hidden">
-                <div className="absolute top-0 right-0 w-1/2 h-full opacity-10 pointer-events-none mix-blend-screen">
-                    <img
-                        src="https://images.unsplash.com/photo-1559757175-5700dde675bc?auto=format&fit=crop&q=80&w=2000"
-                        alt="White Ribbon Protein Structure"
-                        className="w-full h-full object-cover"
-                    />
-                </div>
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-                    <h2 className="text-4xl font-bold text-white mb-6">Ready to Accelerate Your Research?</h2>
-                    <p className="text-xl text-indigo-100 max-w-2xl mx-auto mb-10">
-                        Join the platform that is democratizing High-Performance Computing for biology.
-                        Start your first docking run in minutes.
+                <div className="max-w-4xl mx-auto px-4 relative z-10">
+                    <h2 className="text-5xl font-bold text-white mb-8">Start Your Research with Confidence</h2>
+                    <p className="text-xl text-slate-300 mb-12 max-w-2xl mx-auto leading-relaxed">
+                        Reduce experimental risk, improve decision-making, and accelerate discovery timelines.
+                        From academic exploration to industry-ready insights.
                     </p>
-                    <div className="flex justify-center gap-4">
-                        <Link to="/dock/new" className="px-8 py-4 bg-white text-indigo-600 font-bold rounded-xl shadow-xl hover:bg-indigo-50 transition-all transform hover:-translate-y-1">
-                            Get Started Free
+                    <div className="flex flex-col sm:flex-row justify-center gap-6">
+                        <Link to="/dock/new" className="px-10 py-5 bg-white text-slate-900 font-bold text-lg rounded-2xl shadow-xl hover:bg-indigo-50 transition-all transform hover:-translate-y-1">
+                            Begin Your Research
                         </Link>
-                        <Link to="/contact" className="px-8 py-4 bg-indigo-700 text-white font-bold rounded-xl border border-indigo-500 hover:bg-indigo-800 transition-all">
-                            Talk to Us
+                        <Link to="/contact" className="px-10 py-5 bg-indigo-900/50 text-white font-bold text-lg rounded-2xl border border-indigo-700/50 hover:bg-indigo-800 transition-all backdrop-blur-sm">
+                            Contact Us
                         </Link>
                     </div>
                 </div>
             </section>
-
-
         </div>
     )
 }
+
+// --- Subcomponents ---
 
 function TimelineItem({ number, title, subtitle, description, tags, status, side, icon }) {
     const isCompleted = status === 'completed';
     const alignClass = side === 'left' ? 'lg:flex-row' : 'lg:flex-row-reverse';
     const textClass = side === 'left' ? 'lg:text-right' : 'lg:text-left';
-    const paddingClass = side === 'left' ? 'lg:pr-16' : 'lg:pl-16';
+    const paddingClass = side === 'left' ? 'lg:pr-20' : 'lg:pl-20';
     const colorClass = isCompleted ? 'border-emerald-500' : 'border-indigo-400';
     const bgIconClass = isCompleted ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600';
 
     return (
         <div className={`relative flex flex-col ${alignClass} items-center group`}>
-            {/* Center Node */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center w-12 h-12 rounded-full bg-white border-4 border-slate-100 z-10 shadow-lg group-hover:scale-110 transition-transform hidden lg:flex">
-                <span className={`text-lg font-bold ${isCompleted ? 'text-emerald-600' : 'text-slate-400'}`}>{number}</span>
+            {/* Center Node (Desktop only) */}
+            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full bg-white border-4 border-slate-100 z-10 shadow-xl group-hover:scale-110 transition-transform hidden lg:flex">
+                <span className={`text-xl font-bold ${isCompleted ? 'text-emerald-600' : 'text-slate-400'}`}>{number}</span>
             </div>
 
             {/* Content Card */}
             <div className={`w-full lg:w-1/2 ${paddingClass} ${textClass}`}>
-                <div className={`bg-white p-8 rounded-2xl shadow-sm border-l-4 ${colorClass} hover:shadow-xl transition-all duration-300 transform group-hover:-translate-y-1`}>
+                <div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-2xl hover:border-indigo-100 transition-all duration-300 transform group-hover:-translate-y-1 relative overflow-hidden`}>
+                    {/* Decorative top border */}
+                    <div className={`absolute top-0 left-0 w-full h-1 ${isCompleted ? 'bg-emerald-500' : 'bg-indigo-500'}`}></div>
+
                     <div className={`flex items-center gap-4 mb-4 ${side === 'left' ? 'lg:justify-end' : 'lg:justify-start'}`}>
-                        {side === 'right' && <div className={`p-3 rounded-xl ${bgIconClass}`}>{icon}</div>}
+                        {side === 'right' && <div className={`p-3 rounded-2xl ${bgIconClass}`}>{icon}</div>}
                         <div>
-                            <h3 className="text-xl font-bold text-black">{title}</h3>
-                            <div className="text-sm font-semibold text-indigo-600 uppercase tracking-wide">{subtitle}</div>
+                            <h3 className="text-xl font-bold text-slate-900">{title}</h3>
+                            <div className="text-xs font-bold text-indigo-600 uppercase tracking-widest">{subtitle}</div>
                         </div>
-                        {side === 'left' && <div className={`p-3 rounded-xl ${bgIconClass}`}>{icon}</div>}
+                        {side === 'left' && <div className={`p-3 rounded-2xl ${bgIconClass}`}>{icon}</div>}
                     </div>
 
-                    <p className="text-slate-600 mb-6 leading-relaxed">{description}</p>
+                    <p className="text-slate-600 mb-6 leading-relaxed font-medium">{description}</p>
 
                     <div className={`flex flex-wrap gap-2 ${side === 'left' ? 'lg:justify-end' : 'lg:justify-start'}`}>
                         {tags.map((tag, i) => (
-                            <span key={i} className="px-3 py-1 bg-slate-100 text-slate-600 text-xs font-semibold rounded-full">
+                            <span key={i} className="px-3 py-1 bg-slate-50 text-slate-500 text-xs font-bold rounded-lg border border-slate-100">
                                 {tag}
                             </span>
                         ))}
-                        {isCompleted ? (
-                            <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-full flex items-center gap-1">
-                                <span className="text-sm">✅</span> Live
-                            </span>
-                        ) : (
-                            <span className="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs font-bold rounded-full flex items-center gap-1">
-                                <span className="text-sm">🕒</span> Coming Soon
-                            </span>
-                        )}
+                        <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg flex items-center gap-1">
+                            <CheckCircle size={12} /> Live
+                        </span>
                     </div>
                 </div>
             </div>
@@ -497,28 +366,21 @@ function TimelineItem({ number, title, subtitle, description, tags, status, side
     )
 }
 
-function ToolCard({ name, type, icon, desc, color }) {
-    const colors = {
-        blue: "bg-blue-50 text-blue-600 border-blue-200 group-hover:border-blue-500",
-        purple: "bg-purple-50 text-purple-600 border-purple-200 group-hover:border-purple-500",
-        orange: "bg-orange-50 text-orange-600 border-orange-200 group-hover:border-orange-500",
-        green: "bg-green-50 text-green-600 border-green-200 group-hover:border-green-500",
-        indigo: "bg-indigo-50 text-indigo-600 border-indigo-200 group-hover:border-indigo-500",
-        yellow: "bg-yellow-50 text-yellow-600 border-yellow-200 group-hover:border-yellow-500",
+function PersonaCard({ icon, title, desc, color }) {
+    const bgColors = {
+        indigo: 'bg-indigo-50 hover:bg-indigo-100',
+        emerald: 'bg-emerald-50 hover:bg-emerald-100',
+        violet: 'bg-violet-50 hover:bg-violet-100',
+        blue: 'bg-blue-50 hover:bg-blue-100'
     }
 
     return (
-        <div className={`p-6 rounded-2xl border ${colors[color].split(' ')[2]} ${colors[color].split(' ')[3]} bg-white shadow-sm hover:shadow-lg transition-all group text-left`}>
-            <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${colors[color].split(' ')[0]} ${colors[color].split(' ')[1]}`}>
+        <div className={`p-8 rounded-2xl ${bgColors[color]} transition-colors text-center border border-slate-100`}>
+            <div className="w-16 h-16 mx-auto bg-white rounded-full flex items-center justify-center shadow-sm mb-6">
                 {icon}
             </div>
-            <h3 className="text-lg font-bold text-black">{name}</h3>
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400 mb-3">{type}</p>
-            <p className="text-slate-600 text-sm leading-relaxed mb-4">{desc}</p>
-            <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                <span className="text-xs font-bold text-slate-400">Enterprise Ready</span>
-                <Link to="/pricing" className="text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full hover:bg-indigo-100 transition-colors">View Pricing</Link>
-            </div>
+            <h3 className="text-lg font-bold text-slate-900 mb-3">{title}</h3>
+            <p className="text-slate-600 text-sm leading-relaxed">{desc}</p>
         </div>
     )
 }
