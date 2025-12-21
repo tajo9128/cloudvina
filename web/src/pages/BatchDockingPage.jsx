@@ -253,19 +253,21 @@ export default function BatchDockingPage() {
     }
 
 
-    // --- SPLIT VIEW RENDERING ---
+    // --- SPLIT VIEW RENDERING (SIDE-BY-SIDE) ---
     if (processingStage !== 'idle' || batchId) {
         return (
-            <div className="h-screen flex flex-col bg-slate-900 overflow-hidden">
-                {/* TOP HALF: Context / Summary */}
-                <div className="h-1/2 bg-slate-50 border-b border-slate-700 p-8 overflow-y-auto relative">
-                    <div className="max-w-4xl mx-auto">
+            <div className="h-screen flex flex-col md:flex-row bg-slate-900 overflow-hidden">
+
+                {/* LEFT HALF: Context / Summary */}
+                <div className="w-full md:w-5/12 h-1/2 md:h-full bg-slate-50 border-r border-slate-700 p-8 overflow-y-auto relative flex-shrink-0">
+                    <div className="max-w-xl mx-auto">
                         <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
                             <Activity className="text-indigo-600 animate-pulse" />
                             Active Experiment Context
                         </h2>
 
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        {/* Vertical Stack for Side Panel */}
+                        <div className="flex flex-col gap-4">
                             {/* Card 1: Receptor */}
                             <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
                                 <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Receptor Target</div>
@@ -273,8 +275,8 @@ export default function BatchDockingPage() {
                                     <div className="p-2 bg-indigo-50 rounded-lg">
                                         <Database className="w-5 h-5 text-indigo-600" />
                                     </div>
-                                    <div>
-                                        <div className="font-bold text-slate-700 truncate max-w-[150px]">{receptorFile?.name || "Unknown"}</div>
+                                    <div className="min-w-0">
+                                        <div className="font-bold text-slate-700 truncate">{receptorFile?.name || "Unknown"}</div>
                                         <div className="text-xs text-slate-500">Protein Structure</div>
                                     </div>
                                 </div>
@@ -328,15 +330,15 @@ export default function BatchDockingPage() {
 
                     {/* Success Overlay Trigger */}
                     {processingStage === 'complete' && (
-                        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10 animate-fade-in">
-                            <div className="bg-white p-8 rounded-2xl shadow-2xl border border-emerald-100 max-w-lg w-full text-center">
+                        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10 animate-fade-in px-4">
+                            <div className="bg-white p-8 rounded-2xl shadow-2xl border border-emerald-100 w-full text-center">
                                 <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-slow">
                                     <Check className="w-10 h-10 text-emerald-600" />
                                 </div>
                                 <h3 className="text-2xl font-bold text-slate-900 mb-2">Experiment Deployed!</h3>
-                                <p className="text-slate-500 mb-6">Your docking batch has been successfully queued on the high-performance cluster.</p>
+                                <p className="text-slate-500 mb-6 text-sm">Your docking batch has been successfully queued on the high-performance cluster.</p>
 
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-8 font-mono text-sm text-slate-600">
+                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-8 font-mono text-sm text-slate-600 break-all">
                                     Batch ID: <span className="text-slate-900 font-bold select-all">{batchId}</span>
                                 </div>
 
@@ -352,8 +354,8 @@ export default function BatchDockingPage() {
                     )}
                 </div>
 
-                {/* BOTTOM HALF: Live Terminal */}
-                <div className="h-1/2 bg-slate-950 p-6 font-mono text-sm overflow-hidden flex flex-col">
+                {/* RIGHT HALF: Live Terminal */}
+                <div className="w-full md:w-7/12 h-1/2 md:h-full bg-slate-950 p-6 font-mono text-sm overflow-hidden flex flex-col border-l border-slate-800">
                     <div className="flex items-center justify-between mb-4 border-b border-slate-800 pb-2">
                         <div className="flex items-center gap-2 text-emerald-400">
                             <Terminal size={18} />
