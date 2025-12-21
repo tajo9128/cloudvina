@@ -333,7 +333,7 @@ export default function BatchResultsPage() {
             <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
 
                 {/* LEFT: Data Table with Heatmap */}
-                <div className="w-full h-1/2 md:h-full md:w-1/3 md:min-w-[350px] border-b md:border-b-0 md:border-r border-slate-200 bg-white flex flex-col">
+                <div className="w-full h-1/2 md:h-full md:w-1/3 md:min-w-[400px] border-b md:border-b-0 md:border-r border-slate-200 bg-white flex flex-col">
                     <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
                         <h3 className="font-bold text-slate-700 text-sm uppercase tracking-wider">Results Table</h3>
                         <div className="text-xs text-slate-500">Sorted by Affinity</div>
@@ -343,7 +343,8 @@ export default function BatchResultsPage() {
                             <thead className="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 z-10 shadow-sm">
                                 <tr>
                                     <th onClick={() => handleSort('ligand_filename')} className="px-4 py-3 cursor-pointer hover:bg-slate-100">Ligand</th>
-                                    <th onClick={() => handleSort('binding_affinity')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right">Affinity (kcal/mol)</th>
+                                    <th onClick={() => handleSort('binding_affinity')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right">Affinity</th>
+                                    <th className="px-4 py-3 text-center">Files</th>
                                     <th className="px-4 py-3 text-center">Feedback</th>
                                 </tr>
                             </thead>
@@ -362,6 +363,22 @@ export default function BatchResultsPage() {
                                             <span className={getAffinityColor(getAffinity(job))}>
                                                 {getAffinity(job) !== null ? getAffinity(job).toFixed(1) : '-'}
                                             </span>
+                                        </td>
+                                        <td className="px-4 py-3 text-center flex justify-center gap-2">
+                                            <button
+                                                onClick={(e) => handleDownload(e, job, 'log')}
+                                                className="p-1 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded"
+                                                title="View Log"
+                                            >
+                                                <FileCode size={14} />
+                                            </button>
+                                            <button
+                                                onClick={(e) => handleDownload(e, job, 'config')}
+                                                className="p-1 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded"
+                                                title="View Config"
+                                            >
+                                                <Zap size={14} />
+                                            </button>
                                         </td>
                                         <td className="px-4 py-3 text-center flex justify-center gap-2">
                                             <button

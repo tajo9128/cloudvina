@@ -72,20 +72,33 @@ def generate_batch_pdf(batch_id: str, jobs_data: list, batch_meta: dict) -> io.B
     elements.append(Paragraph(f"<b>Receptor:</b> {jobs_data[0].get('receptor_filename', 'Unknown') if jobs_data else 'N/A'}", styles['Normal']))
     elements.append(Spacer(1, 24))
     
+    # --- Configuration ---
+    elements.append(Paragraph("Configuration", styles['SectionHeader']))
+    grid = batch_meta.get('grid_params', {})
+    config_text = [
+        f"<b>Engine:</b> {batch_meta.get('engine', 'Consensus')}",
+        f"<b>Grid Center:</b> ({grid.get('center_x', 0)}, {grid.get('center_y', 0)}, {grid.get('center_z', 0)})",
+        f"<b>Grid Size:</b> ({grid.get('size_x', 20)}, {grid.get('size_y', 20)}, {grid.get('size_z', 20)})"
+    ]
+    elements.append(Paragraph("<br/>".join(config_text), styles['Normal']))
+    elements.append(Spacer(1, 24))
+
     # --- Executive Summary ---
     elements.append(Paragraph("Executive Summary", styles['SectionHeader']))
     
     # Calculate Stats
     total_jobs = len(jobs_data)
     succeeded = [j for j in jobs_data if j.get('status') == 'SUCCEEDED']
-    failed = [j for j in jobs_data if j.get('status') == 'FAILED']
     
     affinities = []
     for j in succeeded:
         try:
-            aff = float(j.get('binding_affinity', 0))
-            if aff < 0: # Sanity check for Vina scores
-                affinities.append(aff)
+            # Handle float conversions robustly
+            val = j.get('binding_affinity')
+            if val is not None:
+                aff = float(val)
+                if aff < 0: # Sanity check
+                    affinities.append(aff)
         except:
             pass
             
@@ -100,7 +113,7 @@ def generate_batch_pdf(batch_id: str, jobs_data: list, batch_meta: dict) -> io.B
         ["Metric", "Value"],
         ["Total Compounds", str(total_jobs)],
         ["Successful Docks", str(len(succeeded))],
-        ["Best Affinity", f"{best_affinity} kcal/mol" if isinstance(best_affinity, float) else best_affinity],
+        ["Best Affinity", f"{best_affinity:.2f} kcal/mol" if isinstance(best_affinity, float) else best_affinity],
         ["Average Affinity", f"{avg_affinity:.2f} kcal/mol" if isinstance(avg_affinity, float) else avg_affinity],
         ["High Affinity Hits (<-9.0)", f"{len(hits)} ({hit_rate:.1f}%)"]
     ]
@@ -122,7 +135,7 @@ def generate_batch_pdf(batch_id: str, jobs_data: list, batch_meta: dict) -> io.B
     if affinities:
         plt.figure(figsize=(6, 4))
         plt.hist(affinities, bins=15, color='#6366f1', alpha=0.7, rwidth=0.85)
-        plt.title('Binding Affinity Distribution')
+        plt.title(f'Binding Affinity Distribution ({batch_meta.get("engine", "Consensus")})')
         plt.xlabel('Affinity (kcal/mol)')
         plt.ylabel('Count')
         plt.grid(axis='y', alpha=0.5)

@@ -95,323 +95,215 @@ export default function BatchDockingPage() {
 
                 const res = await fetch(`${API_URL}/jobs/batch/submit-csv`, {
                     method: 'POST',
-                    headers: { 'Authorization': `Bearer ${session.access_token}` },
-                    body: formData
-                })
-                setUploadProgress(80)
-                if (!res.ok) {
-                    const err = await res.json()
-                    throw new Error(err.detail || 'CSV batch submission failed')
-                }
-                const result = await res.json()
-                setUploadProgress(100)
-                // alert(`Batch Processing Started!\n✅ ${result.jobs_created} jobs running.`)
-                navigate(`/dock/batch/${result.batch_id}`)
+                    setError('Please upload a receptor and at least one ligand.')
+            return
+        }
 
-            } else {
-                // FILES FLOW
-                const createRes = await fetch(`${API_URL}/jobs/batch/submit`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${session.access_token}`
-                    },
-                    body: JSON.stringify({
-                        receptor_filename: receptorFile.name,
-                        ligand_filenames: ligandFiles.map(f => f.name)
-                    })
-                })
+        setLoading(true)
+        setError(null)
 
-                if (!createRes.ok) {
-                    const err = await createRes.json()
-                    throw new Error(err.detail || 'Failed to create batch')
-                }
-
-                const { batch_id, upload_urls } = await createRes.json()
-                setBatchId(batch_id)
-
-                // Upload Receptor
-                await uploadFile(upload_urls.receptor_url, receptorFile)
-                setUploadProgress(10)
-
-                // Upload Ligands
-                const totalLigands = ligandFiles.length
-                let uploadedCount = 0
-                const urlMap = {}
-                upload_urls.ligands.forEach(l => urlMap[l.filename] = l.url)
-
-                for (const file of ligandFiles) {
-                    const url = urlMap[file.name]
-                    if (url) {
-                        await uploadFile(url, file)
-                        uploadedCount++
-                        setUploadProgress(10 + Math.floor((uploadedCount / totalLigands) * 80))
-                    }
-                }
-
-                // Simulate/Show Prep Steps
-                const steps = ['Protein Prepared', 'Water Removal', 'Ligand Prepared', 'Config Generated', 'Grid Ready']
-                for (let i = 0; i < steps.length; i++) {
-                    setPreparationStep(i + 1)
-                    await new Promise(r => setTimeout(r, 800))
-                }
-
-                const startRes = await fetch(`${API_URL}/jobs/batch/${batch_id}/start`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${session.access_token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        grid_params: {
-                            grid_center_x: parseFloat(gridParams.center_x),
-                            grid_center_y: parseFloat(gridParams.center_y),
-                            grid_center_z: parseFloat(gridParams.center_z),
-                            grid_size_x: parseFloat(gridParams.size_x),
-                            grid_size_y: parseFloat(gridParams.size_y),
-                            grid_size_z: parseFloat(gridParams.size_z)
+        try {
+                    // 1. Create Batch (Files Mode)
+                    const { data: { session } } = await supabase.auth.getSession()
+                    const initRes = await fetch(`${API_URL}/jobs/batch/submit`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
                         },
-                        engine: engine
+                        body: JSON.stringify({
+                            receptor_filename: receptorFile.name,
+                            ligand_filenames: ligandFiles.map(f => f.name)
+                        })
                     })
-                })
 
-                if (!startRes.ok) {
-                    const text = await startRes.text()
-                    throw new Error(`Server Error: ${text.substring(0, 100)}`)
+                    if (!initRes.ok) throw new Error('Failed to initialize batch')
+                    const initData = await initRes.json()
+                    const newBatchId = initData.batch_id
+                    setBatchId(newBatchId)
+
+                    // 2. Upload Files
+                    setUploadProgress(10)
+
+                    // Upload Receptor
+                    await fetch(initData.upload_urls.receptor_url, {
+                        method: 'PUT',
+                        body: receptorFile
+                    })
+                    setUploadProgress(30)
+
+                    // Upload Ligands (Parallel)
+                    let completed = 0
+                    const total = ligandFiles.length
+
+                    // Batch requests for stability
+                    const CHUNK_SIZE = 5
+                    const ligandUrlMap = initData.upload_urls.ligands.reduce((acc, curr) => ({ ...acc, [curr.filename]: curr.url }), {})
+
+                    for (let i = 0; i < total; i += CHUNK_SIZE) {
+                        const chunk = ligandFiles.slice(i, i + CHUNK_SIZE)
+                        await Promise.all(chunk.map(async file => {
+                            const url = ligandUrlMap[file.name]
+                            if (url) {
+                                await fetch(url, { method: 'PUT', body: file })
+                            }
+                            completed++
+                            setUploadProgress(30 + Math.round((completed / total) * 60))
+                        }))
+                    }
+
+                    // 3. Start Batch (Engine: Consensus Default)
+                    const startRes = await fetch(`${API_URL}/jobs/batch/${newBatchId}/start`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${session.access_token}`
+                        },
+                        body: JSON.stringify({
+                            grid_params: {
+                                center_x: 0, center_y: 0, center_z: 0,
+                                size_x: 20, size_y: 20, size_z: 20
+                            },
+                            engine: 'consensus' // FORCE CONSENSUS
+                        })
+                    })
+
+                    if (!startRes.ok) throw new Error('Failed to start batch processing')
+
+                    trackEvent('batch_docking:started', { batch_id: newBatchId, engine: 'consensus' })
+
+                    // Redirect
+                    navigate(`/dock/batch/${newBatchId}`)
+
+                } catch (err) {
+                    console.error(err)
+                    setError(err.message)
+                } finally {
+                    setLoading(false)
                 }
-
-                setUploadProgress(100)
-                setLoading(false)
-                navigate(`/dock/batch/${batch_id}`)
             }
 
-        } catch (err) {
-            console.error(err)
-            setError(err.message)
-            setLoading(false)
-        }
-    }
+            const handleCsvSubmit = async () => {
+                if (!receptorFile || !csvFile) {
+                    setError('Please upload a receptor and a CSV file.')
+                    return
+                }
 
-    return (
-        <div className="min-h-screen bg-slate-50 pb-20">
-            {/* HERO SECTION */}
-            <div className="bg-gradient-to-br from-indigo-900 via-indigo-800 to-purple-900 pt-24 pb-12 md:pt-32 md:pb-20 text-white relative overflow-hidden">
-                <div className="absolute inset-0 bg-[url('/assets/images/grid.svg')] opacity-10"></div>
-                <div className="container mx-auto px-4 relative z-10 text-center">
-                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 border border-white/20 text-indigo-100 text-sm font-semibold mb-6 backdrop-blur-sm">
-                        <FlaskConical className="w-4 h-4" />
-                        <span>High-Throughput Virtual Screening</span>
-                    </div>
-                    <h1 className="text-4xl md:text-5xl font-bold mb-4 tracking-tight">
-                        Launch Your Docking Campaign
-                    </h1>
-                    <p className="text-indigo-200 text-lg max-w-2xl mx-auto">
-                        Screen thousands of compounds against your target protein using our consensus AI scoring engine.
-                        Drag, drop, and discover.
-                    </p>
-                </div>
-            </div>
+                setLoading(true)
+                setError(null)
+                setUploadProgress(10)
 
-            <main className="container mx-auto px-4 -mt-6 md:-mt-10 relative z-20">
-                <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl border border-slate-200 overflow-hidden">
+                try {
+                    const formData = new FormData()
+                    formData.append('receptor_file', receptorFile)
+                    formData.append('csv_file', csvFile)
+                    // Use defaults for grid
+                    formData.append('grid_center_x', 0)
+                    formData.append('grid_center_y', 0)
+                    formData.append('grid_center_z', 0)
+                    formData.append('grid_size_x', 20)
+                    formData.append('grid_size_y', 20)
+                    formData.append('grid_size_z', 20)
+                    formData.append('engine', 'consensus') // FORCE CONSENSUS
 
-                    {/* PROGRESS HEADER */}
-                    <div className="bg-slate-50 border-b border-slate-200 px-4 py-4 md:px-8">
-                        <div className="flex flex-wrap gap-2 justify-center md:justify-between text-sm font-medium text-slate-500">
-                            <div className="flex items-center gap-2 text-primary-600">
-                                <span className="w-6 h-6 rounded-full bg-primary-100 flex items-center justify-center text-xs font-bold">1</span>
-                                Target
+                    const { data: { session } } = await supabase.auth.getSession()
+                    const res = await fetch(`${API_URL}/jobs/batch/submit-csv`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${session.access_token}`
+                        },
+                        body: formData
+                    })
+
+                    setUploadProgress(100)
+
+                    if (!res.ok) {
+                        const errorData = await res.json()
+                        throw new Error(errorData.detail || 'CSV Batch Submission Failed')
+                    }
+
+                    const data = await res.json()
+                    trackEvent('batch_docking:csv_started', { batch_id: data.batch_id, engine: 'consensus' })
+                    navigate(`/dock/batch/${data.batch_id}`)
+
+                } catch (err) {
+                    console.error(err)
+                    setError(err.message)
+                } finally {
+                    setLoading(false)
+                }
+            }
+
+            return (
+                <div className="min-h-screen bg-slate-50 pb-24">
+                    {/* Header */}
+                    <div className="bg-white border-b border-slate-200 sticky top-0 z-30">
+                        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                <Link to="/dashboard" className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
+                                    <ArrowRight className="w-5 h-5 rotate-180" />
+                                </Link>
+                                <h1 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+                                    <FlaskConical className="w-5 h-5 text-indigo-600" />
+                                    New Docking Experiment
+                                </h1>
                             </div>
-                            <ArrowRight className="w-4 h-4 text-slate-300" />
-                            <div className={`flex items-center gap-2 ${receptorFile ? 'text-primary-600' : ''}`}>
-                                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${receptorFile ? 'bg-primary-100' : 'bg-slate-200'}`}>2</span>
-                                Ligands
-                            </div>
-                            <ArrowRight className="w-4 h-4 text-slate-300" />
-                            <div className={`flex items-center gap-2 ${ligandFiles.length > 0 || csvFile ? 'text-primary-600' : ''}`}>
-                                <span className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${ligandFiles.length > 0 || csvFile ? 'bg-primary-100' : 'bg-slate-200'}`}>3</span>
-                                Launch
+                            <div className="flex bg-slate-100 p-1 rounded-lg">
+                                <button
+                                    onClick={() => setUploadMode('files')}
+                                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${uploadMode === 'files' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    Files
+                                </button>
+                                <button
+                                    onClick={() => setUploadMode('csv')}
+                                    className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all ${uploadMode === 'csv' ? 'bg-white text-indigo-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'}`}
+                                >
+                                    CSV (SMILES)
+                                </button>
                             </div>
                         </div>
                     </div>
 
-                    <form onSubmit={uploadMode === 'csv' ? handleCSVSubmit : handleSubmit} className="p-8 space-y-8">
+                    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
 
-                        {/* 1. RECEPTOR UPLOAD */}
-                        <section>
-                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                <Database className="w-5 h-5 text-indigo-500" /> Target Protein
-                            </h3>
-                            <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${receptorFile ? 'border-indigo-500 bg-indigo-50' : 'border-slate-300 hover:border-indigo-400 hover:bg-slate-50'}`}>
-                                <input
-                                    type="file"
-                                    id="receptor-upload"
-                                    accept=".pdb,.pdbqt"
-                                    onChange={(e) => setReceptorFile(e.target.files[0])}
-                                    className="hidden"
-                                />
-                                <label htmlFor="receptor-upload" className="cursor-pointer block">
-                                    {receptorFile ? (
-                                        <div className="text-indigo-700">
-                                            <CheckCircle2 className="w-12 h-12 mx-auto mb-2 text-green-500" />
-                                            <div className="font-bold text-lg">{receptorFile.name}</div>
-                                            <div className="text-sm opacity-75">Click to change file</div>
+                        {/* 1. Receptor Upload */}
+                        <div className="mb-8 animate-fade-in-up" style={{ animationDelay: '0ms' }}>
+                            <div className="flex items-center gap-4 mb-4">
+                                <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">1</div>
+                                <h2 className="text-lg font-bold text-slate-900">Step 1: Target Receptor</h2>
+                            </div>
+
+                            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm hover:border-indigo-300 transition-colors relative group">
+                                {!receptorFile ? (
+                                    <div className="flex flex-col items-center justify-center py-8">
+                                        <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                                            <Database className="w-8 h-8 text-indigo-500" />
                                         </div>
-                                    ) : (
-                                        <div>
-                                            <Upload className="w-12 h-12 mx-auto mb-2 text-slate-400" />
-                                            <span className="block font-semibold text-slate-700">Drop PDB/PDBQT file here</span>
-                                            <span className="text-sm text-slate-500">or click to browse</span>
-                                        </div>
-                                    )}
-                                </label>
-                            </div>
-                            <div className="flex gap-4 mt-2 px-1">
-                                <div className="flex items-center gap-2 text-sm text-slate-600">
-                                    <CheckCircle2 className="w-4 h-4 text-green-500" /> Auto-Remove solvent
-                                </div>
-                                <div className="flex items-center gap-2 text-sm text-slate-600">
-                                    <CheckCircle2 className="w-4 h-4 text-green-500" /> Add polar hydrogens
-                                </div>
-                            </div>
-                        </section>
-
-                        <hr className="border-slate-100" />
-
-                        {/* 2. LIGAND UPLOAD */}
-                        <section>
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                    <FileText className="w-5 h-5 text-emerald-500" /> Ligand Library
-                                </h3>
-                                <div className="flex bg-slate-100 p-1 rounded-lg text-sm">
-                                    <button
-                                        type="button"
-                                        onClick={() => setUploadMode('files')}
-                                        className={`px-3 py-1 rounded-md transition-all ${uploadMode === 'files' ? 'bg-white shadow text-slate-900 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
-                                    >
-                                        Files
-                                    </button>
-                                    <button
-                                        type="button"
-                                        onClick={() => setUploadMode('csv')}
-                                        className={`px-3 py-1 rounded-md transition-all ${uploadMode === 'csv' ? 'bg-white shadow text-slate-900 font-medium' : 'text-slate-500 hover:text-slate-700'}`}
-                                    >
-                                        SMILES (CSV)
-                                    </button>
-                                </div>
-                            </div>
-
-                            {uploadMode === 'files' ? (
-                                <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${ligandFiles.length > 0 ? 'border-emerald-500 bg-emerald-50' : 'border-slate-300 hover:border-emerald-400 hover:bg-slate-50'}`}>
-                                    <input
-                                        type="file"
-                                        id="ligand-upload"
-                                        multiple
-                                        accept=".pdbqt,.sdf,.mol2"
-                                        onChange={handleLigandChange}
-                                        className="hidden"
-                                    />
-                                    <label htmlFor="ligand-upload" className="cursor-pointer block">
-                                        {ligandFiles.length > 0 ? (
-                                            <div className="text-emerald-700">
-                                                <div className="text-3xl font-bold mb-1">{ligandFiles.length}</div>
-                                                <div className="font-medium">Files Selected</div>
-                                                <div className="text-sm opacity-75 mt-1">Click to add more</div>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <Database className="w-12 h-12 mx-auto mb-2 text-slate-400" />
-                                                <span className="block font-semibold text-slate-700">Drop SDF/PDBQT/MOL2 files</span>
-                                                <span className="text-sm text-slate-500">Up to 100 files supported</span>
-                                            </div>
-                                        )}
-                                    </label>
-                                </div>
-                            ) : (
-                                <div className={`border-2 border-dashed rounded-xl p-8 text-center transition-all ${csvFile ? 'border-emerald-500 bg-emerald-50' : 'border-slate-300 hover:border-emerald-400 hover:bg-slate-50'}`}>
-                                    <input
-                                        type="file"
-                                        id="csv-upload"
-                                        accept=".csv"
-                                        onChange={(e) => setCsvFile(e.target.files[0])}
-                                        className="hidden"
-                                    />
-                                    <label htmlFor="csv-upload" className="cursor-pointer block">
-                                        {csvFile ? (
-                                            <div className="text-emerald-700">
-                                                <FileText className="w-12 h-12 mx-auto mb-2 text-emerald-500" />
-                                                <div className="font-bold">{csvFile.name}</div>
-                                                <div className="text-sm opacity-75">Click to change</div>
-                                            </div>
-                                        ) : (
-                                            <div>
-                                                <FileText className="w-12 h-12 mx-auto mb-2 text-slate-400" />
-                                                <span className="block font-semibold text-slate-700">Upload CSV with 'smiles' column</span>
-                                            </div>
-                                        )}
-                                    </label>
-                                </div>
-                            )}
-                        </section>
-
-                        <hr className="border-slate-100" />
-
-                        {/* 3. ENGINE SELECTION */}
-                        <section>
-                            <h3 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-2">
-                                <Cpu className="w-5 h-5 text-purple-500" /> Docking Engine
-                            </h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setEngine('consensus')}
-                                    className={`relative p-4 rounded-xl border-2 text-left transition-all ${engine === 'consensus' ? 'border-purple-500 bg-purple-50' : 'border-slate-200 hover:border-purple-200'}`}
-                                >
-                                    {engine === 'consensus' && <div className="absolute top-2 right-2 text-purple-600"><CheckCircle2 className="w-5 h-5" /></div>}
-                                    <div className="font-bold text-slate-900 mb-1">Consensus (Recommended)</div>
-                                    <div className="text-sm text-slate-500">Runs Vina + Gnina (CNN) together for highest accuracy.</div>
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setEngine('vina')}
-                                    className={`relative p-4 rounded-xl border-2 text-left transition-all ${engine === 'vina' ? 'border-purple-500 bg-purple-50' : 'border-slate-200 hover:border-purple-200'}`}
-                                >
-                                    {engine === 'vina' && <div className="absolute top-2 right-2 text-purple-600"><CheckCircle2 className="w-5 h-5" /></div>}
-                                    <div className="font-bold text-slate-900 mb-1">AutoDock Vina</div>
-                                    <div className="text-sm text-slate-500">Standard for speed and reliability.</div>
-                                </button>
-                            </div>
-                        </section>
-
-                        {/* SUBMIT BUTTON */}
-                        <div className="pt-4">
-                            {error && (
-                                <div className="mb-4 p-4 bg-red-50 text-red-700 rounded-xl flex items-center gap-3 border border-red-100">
-                                    <AlertCircle className="w-5 h-5" /> {error}
-                                </div>
-                            )}
-
-                            {(loading || preparationStep > 0) ? (
-                                <div className="space-y-4">
-                                    <PreparationProgress currentStep={preparationStep || 1} />
-                                    <button disabled className="w-full py-4 rounded-xl font-bold text-lg bg-slate-100 text-slate-400 cursor-not-allowed">
-                                        Processing...
-                                    </button>
-                                </div>
-                            ) : (
-                                <button
-                                    type="submit"
+                                        <h3 className="text-lg font-medium text-slate-900 mb-2">Upload PDB Structure</h3>
+                                        <p className="text-slate-500 text-center max-w-sm mb-6">
+                                            Drag and drop your prepared receptor file here. Supported formats: .pdb, .pdbqt
+                                        </p>
+                                        <label className="btn-primary cursor-pointer">
+                                            Select Receptor
+                                            <input
+                                                type="file"
+                                                className="hidden"
+                                                accept=".pdb,.pdbqt"
+                                                onChange={(e) => setReceptorFile(e.target.files[0])}
+                                            />
+                                        </label>
+                                    </div>
                                     className="w-full py-4 rounded-xl font-bold text-lg text-white shadow-xl shadow-indigo-200 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-2 group"
                                 >
-                                    <Play className="w-5 h-5 fill-current group-hover:scale-110 transition-transform" />
-                                    Launch Virtual Screening
-                                </button>
+                                <Play className="w-5 h-5 fill-current group-hover:scale-110 transition-transform" />
+                                Launch Virtual Screening
+                            </button>
                             )}
                         </div>
                     </form>
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     )
 }
