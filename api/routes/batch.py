@@ -576,10 +576,11 @@ async def get_batch_details(
                     obj = s3.get_object(Bucket=S3_BUCKET, Key=results_key)
                     results_data = json.loads(obj['Body'].read().decode('utf-8'))
                     
-                    if 'best_affinity' in results_data:
-                        job['binding_affinity'] = results_data['best_affinity']
+                    score = results_data.get('best_affinity') or results_data.get('vina_score') or results_data.get('docking_score')
+                    if score:
+                        job['binding_affinity'] = score
                         # Also update DB for future requests
-                        auth_client.table('jobs').update({'binding_affinity': results_data['best_affinity']}).eq('id', job['id']).execute()
+                        auth_client.table('jobs').update({'binding_affinity': score}).eq('id', job['id']).execute()
                 except Exception as s3_err:
                     # If results.json missing, try to parse from docking_results if it exists
                     if job.get('docking_results'):
