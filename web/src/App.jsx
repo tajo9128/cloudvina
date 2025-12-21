@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, Outlet, useLocation, useParams } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { useState, useEffect } from 'react'
 import { supabase } from './supabaseClient'
@@ -145,14 +145,15 @@ function AppRoutes() {
                     path="/dock/batch"
                     element={session ? <BatchDockingPage /> : <Navigate to="/login" />}
                 />
+                {/* Fix: Redirect direct /batch/ links to /dock/batch/ properly using inline component */}
+                <Route
+                    path="/batch/:batchId"
+                    element={<RedirectToNewBatchUrl />}
+                />
+
                 <Route
                     path="/dock/batch/:batchId"
                     element={session ? <BatchResultsPage /> : <Navigate to="/login" />}
-                />
-                {/* Fix: Redirect direct /batch/ links to /dock/batch/ */}
-                <Route
-                    path="/batch/:batchId"
-                    element={<Navigate to="/dock/batch/:batchId" replace />}
                 />
                 {/* Note: Navigate's :batchId param substitution relies on matching param name in path? 
                     Actually, react-router Navigate with params needs a relative path or smart component.
@@ -214,6 +215,12 @@ function AppRoutes() {
             </Route>
         </Routes>
     )
+}
+
+// Helper for dynamic redirects
+function RedirectToNewBatchUrl() {
+    const { batchId } = useParams()
+    return <Navigate to={`/dock/batch/${batchId}`} replace />
 }
 
 function App() {
