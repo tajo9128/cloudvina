@@ -22,17 +22,31 @@ export default function MoleculeViewer({
     const [currentStyle, setCurrentStyle] = useState('standard') // 'standard', 'greenPink', 'cartoon', 'stick'
     const [showSurface, setShowSurface] = useState(false)
 
+    // 1. Initialize Viewer ONCE
     useEffect(() => {
-        if (!pdbqtData || !containerRef.current) return
+        if (!containerRef.current) return
 
-        if (viewerRef.current) {
-            viewerRef.current.clear()
-        }
+        // Prevent duplicate initialization
+        if (viewerRef.current) return
 
         const viewer = $3Dmol.createViewer(containerRef.current, {
             backgroundColor: 'white'
         })
+        viewerRef.current = viewer
 
+        return () => {
+            // Cleanup if needed (3Dmol doesn't have a strict destroy, but we clear ref)
+            viewerRef.current = null
+        }
+    }, [])
+
+    // 2. Update Models & Styles
+    useEffect(() => {
+        const viewer = viewerRef.current
+        if (!viewer) return
+
+        // Clear previous state
+        viewer.clear()
 
         // Helper to check if string looks like PDBQT/PDB
         const isValidPDB = (str) => str && (str.includes('ATOM') || str.includes('HETATM') || str.includes('REMARK'))
@@ -40,70 +54,49 @@ export default function MoleculeViewer({
         // Add Receptor (Protein)
         if (receptorData && isValidPDB(receptorData)) {
             viewer.addModel(receptorData, 'pdbqt')
+            // Style receptor
+            if (currentStyle === 'greenPink') {
+                viewer.setStyle({ model: 0 }, { cartoon: { color: '#84cc16' } })
+            } else if (currentStyle === 'cartoon' || currentStyle === 'standard') {
+                viewer.setStyle({ model: 0 }, { cartoon: { color: 'spectrum' } })
+            } else if (currentStyle === 'stick') {
+                viewer.setStyle({ model: 0 }, { stick: { radius: 0.15, colorscheme: 'Jmol', opacity: 0.4 } })
+            }
         }
 
         // Add Ligand
         if (pdbqtData && isValidPDB(pdbqtData)) {
             viewer.addModel(pdbqtData, 'pdbqt')
-        }
-
-        // Apply style based on state
-        viewer.removeAllSurfaces()
-
-        // Base Selection Logic
-        const proteinSel = { hetflag: false }
-        const ligandSel = { hetflag: true }
-
-        // --- STYLES ---
-        switch (currentStyle) {
-            case 'greenPink':
-                viewer.setStyle({}, { cartoon: { color: '#84cc16' } }) // Green Protein
-                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'magentaCarbon', radius: 0.25 } })
-                break;
-            case 'cartoon':
-                viewer.setStyle({ hetflag: false }, { cartoon: { color: 'spectrum' } })
-                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'greenCarbon', radius: 0.25 } })
-                break;
-            case 'stick':
-                viewer.setStyle({}, { stick: { radius: 0.15, colorscheme: 'Jmol' } })
-                break;
-            case 'standard':
-            default:
-                viewer.setStyle({ hetflag: false }, { cartoon: { color: 'spectrum' } })
-                viewer.setStyle({ hetflag: true }, { stick: { colorscheme: 'greenCarbon', radius: 0.25 } })
-                break;
+            // Style ligand (always stick/sphere mix for visibility)
+            if (currentStyle === 'greenPink') {
+                viewer.setStyle({ model: -1 }, { stick: { colorscheme: 'magentaCarbon', radius: 0.25 } })
+            } else {
+                viewer.setStyle({ model: -1 }, { stick: { colorscheme: 'greenCarbon', radius: 0.25 } })
+            }
         }
 
         // --- SURFACE ---
         if (showSurface) {
-            viewer.addSurface($3Dmol.SurfaceType.VDW, {
-                opacity: 0.7,
-                color: 'white'
-            }, { hetflag: false })
+            // Surface is expensive, handle carefully
+            try {
+                viewer.addSurface($3Dmol.SurfaceType.VDW, {
+                    opacity: 0.7,
+                    color: 'white'
+                }, { hetflag: false })
+            } catch (e) { console.warn("Surface generation error", e) }
         }
 
         // --- LABELS ---
         if (showLabels) {
-            // Label residues
             viewer.addPropertyLabels("resn", { hetflag: false }, {
-                fontColor: 'black',
-                font: 'sans-serif',
-                fontSize: 10,
-                showBackground: false,
-                alignment: 'center'
+                fontColor: 'black', font: 'sans-serif', fontSize: 10, showBackground: false, alignment: 'center'
             })
-            // Label ligand atoms? maybe too messy. Just label ligand residue name
             viewer.addPropertyLabels("resn", { hetflag: true }, {
-                fontColor: 'red',
-                font: 'sans-serif',
-                fontSize: 12,
-                showBackground: true,
-                backgroundColor: 'white'
+                fontColor: 'red', font: 'sans-serif', fontSize: 12, showBackground: true, backgroundColor: 'white'
             })
         }
 
         // --- INTERACTIONS ---
-        // Re-implementing interaction drawing logic
         if (showHBonds && interactions?.hydrogen_bonds) {
             interactions.hydrogen_bonds.forEach(bond => {
                 let resNum = null;
@@ -112,7 +105,7 @@ export default function MoleculeViewer({
                 if (match) resNum = parseInt(match[1]);
 
                 let pAtoms = viewer.selectedAtoms({ resi: resNum, atom: bond.protein_atom });
-                if (pAtoms.length === 0 && resNum) pAtoms = viewer.selectedAtoms({ resi: resNum }); // Relax
+                if (pAtoms.length === 0 && resNum) pAtoms = viewer.selectedAtoms({ resi: resNum });
 
                 let lAtoms = viewer.selectedAtoms({ hetflag: true, atom: bond.ligand_atom });
 
@@ -122,17 +115,14 @@ export default function MoleculeViewer({
                         end: { x: lAtoms[0].x, y: lAtoms[0].y, z: lAtoms[0].z },
                         radius: 0.15, color: 'yellow', dashed: true
                     });
-                    if (resNum) viewer.addStyle({ resi: resNum }, { stick: { colorscheme: 'chainHetatm', radius: 0.2 } });
                 }
             })
         }
 
-
         viewer.zoomTo();
         viewer.render();
-        viewerRef.current = viewer;
 
-    }, [pdbqtData, receptorData, width, height, currentStyle, showSurface, showLabels, showHBonds, interactions, showCavities]) // Re-run effect on state change
+    }, [pdbqtData, receptorData, currentStyle, showSurface, showLabels, showHBonds, interactions])
 
     // Spin Effect
     useEffect(() => {
