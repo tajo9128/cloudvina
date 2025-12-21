@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from datetime import datetime
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter
-from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak
+from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image, PageBreak, Preformatted
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_CENTER, TA_LEFT
@@ -40,17 +40,16 @@ def generate_structure_image(smiles: str) -> io.BytesIO:
     except Exception:
         return None
 
-def generate_batch_pdf(batch_id: str, jobs_data: list, batch_meta: dict) -> io.BytesIO:
+def generate_batch_pdf(batch_id: str, jobs_data: list, batch_meta: dict, s3_client=None, bucket_name=None) -> io.BytesIO:
     """
     Generates a PDF report for a docking batch.
     
     Args:
         batch_id: ID of the batch
-        jobs_data: List of dictionaries containing job details (affinity, smiles, etc.)
-        batch_meta: Dictionary with batch metadata (created_at, total jobs)
-        
-    Returns:
-        io.BytesIO object containing the PDF
+        jobs_data: List of dictionaries containing job details
+        batch_meta: Dictionary with batch metadata
+        s3_client: Optional boto3 client for fetching logs
+        bucket_name: Optional S3 bucket name
     """
     buffer = io.BytesIO()
     doc = SimpleDocTemplate(buffer, pagesize=letter, rightMargin=72, leftMargin=72, topMargin=72, bottomMargin=18)
@@ -59,6 +58,7 @@ def generate_batch_pdf(batch_id: str, jobs_data: list, batch_meta: dict) -> io.B
     styles.add(ParagraphStyle(name='CenterTitle', parent=styles['Heading1'], alignment=TA_CENTER, spaceAfter=20))
     styles.add(ParagraphStyle(name='SectionHeader', parent=styles['Heading2'], spaceBefore=15, spaceAfter=10))
     styles.add(ParagraphStyle(name='NormalSmall', parent=styles['Normal'], fontSize=9))
+    styles.add(ParagraphStyle(name='Mono', parent=styles['Normal'], fontName='Courier', fontSize=7, leading=8, spaceAfter=5))
 
     elements = []
     
@@ -227,6 +227,34 @@ def generate_batch_pdf(batch_id: str, jobs_data: list, batch_meta: dict) -> io.B
         elements.append(t)
         elements.append(Spacer(1, 12))
         
+    # --- Detailed Logs (Top 5) ---
+    if s3_client and bucket_name:
+        elements.append(PageBreak())
+        elements.append(Paragraph("Detailed Execution Logs (Top 5 Candidates)", styles['SectionHeader']))
+        elements.append(Paragraph("Full Vina and Gnina output tables for verification.", styles['Normal']))
+        elements.append(Spacer(1, 12))
+
+        for i, job in enumerate(ranked_jobs[:5]):
+            try:
+                # Header
+                elements.append(Paragraph(f"#{i+1}: {job.get('ligand_filename', 'Unknown')} (ID: {job['id']})", styles['Heading3']))
+                
+                # Fetch Log
+                log_key = f"jobs/{job['id']}/log.txt"
+                try:
+                    obj = s3_client.get_object(Bucket=bucket_name, Key=log_key)
+                    log_text = obj['Body'].read().decode('utf-8')
+                    # Sanitize
+                    log_text = log_text.replace('\r', '') 
+                except:
+                    log_text = "[Log file not found in S3]"
+
+                # Add to PDF
+                elements.append(Preformatted(log_text, styles['Mono']))
+                elements.append(Spacer(1, 20))
+            except Exception as e:
+                print(f"Error fetching log for PDF: {e}")
+
     # Build
     doc.build(elements)
     buffer.seek(0)

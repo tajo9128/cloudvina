@@ -376,7 +376,9 @@ export default function BatchResultsPage() {
                                     <th className="px-4 py-3 text-xs w-[100px]">ID</th>
                                     <th className="px-4 py-3">Status</th>
                                     <th onClick={() => handleSort('ligand_filename')} className="px-4 py-3 cursor-pointer hover:bg-slate-100">Ligand</th>
-                                    <th onClick={() => handleSort('binding_affinity')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right">Affinity</th>
+                                    <th onClick={() => handleSort('vina_score')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right text-[10px]">Vina</th>
+                                    <th onClick={() => handleSort('docking_score')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right text-[10px]">Gnina</th>
+                                    <th onClick={() => handleSort('binding_affinity')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right text-[10px]">Consensus</th>
                                     <th className="px-4 py-3 text-center">Files</th>
                                     <th className="px-4 py-3 text-center">Feedback</th>
                                 </tr>
@@ -402,11 +404,17 @@ export default function BatchResultsPage() {
                                         <td className="px-4 py-3 font-medium text-slate-900 truncate max-w-[150px]" title={job.ligand_filename}>
                                             {(job.ligand_filename || 'Unknown').replace('.pdbqt', '')}
                                         </td>
+                                        <td className="px-4 py-3 text-right font-mono text-xs">
+                                            {job.vina_score ? <span className="text-blue-600">{job.vina_score.toFixed(2)}</span> : <span className="text-slate-300">-</span>}
+                                        </td>
+                                        <td className="px-4 py-3 text-right font-mono text-xs">
+                                            {job.docking_score ? <span className="text-purple-600">{job.docking_score.toFixed(2)}</span> : <span className="text-slate-300">-</span>}
+                                        </td>
                                         <td className="px-4 py-3 text-right font-mono font-bold">
                                             {(() => {
                                                 const aff = getAffinity(job);
                                                 if (aff !== null && aff !== 0) {
-                                                    return <span className={getAffinityColor(aff)}>{aff.toFixed(1)}</span>
+                                                    return <span className={getAffinityColor(aff)}>{aff.toFixed(2)}</span>
                                                 }
                                                 if (job.status === 'SUCCEEDED') return <span className="text-red-500 text-xs">Error</span>
                                                 return <span className="text-slate-300">-</span>

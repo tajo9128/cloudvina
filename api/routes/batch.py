@@ -880,9 +880,8 @@ async def get_batch_report_pdf(
             }
         }
 
-        # 3. Generate PDF
-        # This returns a BytesIO buffer
-        pdf_buffer = generate_batch_pdf(batch_id, jobs, batch_meta)
+        # 3. Generate PDF (with S3 access for logs)
+        pdf_buffer = generate_batch_pdf(batch_id, jobs, batch_meta, s3_client=s3_client, bucket_name=S3_BUCKET)
         
         # 4. Return as File Download
         return StreamingResponse(
