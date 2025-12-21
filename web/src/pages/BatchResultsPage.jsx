@@ -164,6 +164,30 @@ export default function BatchResultsPage() {
         }
     }, [activeTab, firstJobId])
 
+    // [NEW] Universal Download Handler
+    const handleDownload = async (e, job, type) => {
+        e.stopPropagation() // Prevent row selection
+        try {
+            const { data: { session } } = await supabase.auth.getSession()
+            if (!session) return
+
+            const res = await fetch(`${API_URL}/jobs/${job.id}/files/${type}`, {
+                headers: { 'Authorization': `Bearer ${session.access_token}` }
+            })
+
+            if (!res.ok) throw new Error('Failed to get download URL')
+
+            const data = await res.json()
+            if (data.url) {
+                // Open in new tab (presigned S3 URL)
+                window.open(data.url, '_blank')
+            }
+        } catch (err) {
+            console.error(err)
+            alert('Failed to download file. It might not exist yet.')
+        }
+    }
+
     const handleFeedback = async (e, job, rating) => {
         e.stopPropagation() // Prevent row selection
 
@@ -366,6 +390,13 @@ export default function BatchResultsPage() {
                                         </td>
                                         <td className="px-4 py-3 text-center flex justify-center gap-2">
                                             <button
+                                                onClick={(e) => handleDownload(e, job, 'output')}
+                                                className="p-1 hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 rounded"
+                                                title="Download Docked PDBQT"
+                                            >
+                                                <Download size={14} />
+                                            </button>
+                                            <button
                                                 onClick={(e) => handleDownload(e, job, 'log')}
                                                 className="p-1 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded"
                                                 title="View Log"
@@ -423,16 +454,7 @@ export default function BatchResultsPage() {
                         </div>
 
                         {/* Only show Viewer Controls if in Structure Mode */}
-                        {activeTab === 'structure' && (
-                            <div className="flex gap-2 pointer-events-auto">
-                                <button className="p-2 bg-white shadow rounded-lg hover:bg-slate-50 text-slate-600" title="Reset View">
-                                    <span>⛶</span>
-                                </button>
-                                <button className="p-2 bg-white shadow rounded-lg hover:bg-slate-50 text-slate-600" title="Style Toggle">
-                                    <span>👁️</span>
-                                </button>
-                            </div>
-                        )}
+                        {/* Viewer Controls moved inside MoleculeViewer component */}
                     </div>
 
                     {/* Content Container */}
