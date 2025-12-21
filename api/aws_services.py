@@ -2,6 +2,7 @@
 AWS services integration (S3 and Batch)
 """
 import boto3
+from botocore.config import Config
 from botocore.exceptions import ClientError
 import os
 from typing import Tuple
@@ -12,9 +13,16 @@ S3_BUCKET = os.getenv("S3_BUCKET", "cloudvina-jobs-use1-1763775915")
 BATCH_JOB_QUEUE = os.getenv("BATCH_JOB_QUEUE", "cloudvina-fargate-queue")
 BATCH_JOB_DEFINITION = os.getenv("BATCH_JOB_DEFINITION", "biodockify-all-fixes")  # FIXED: Correct job definition name
 
-# Initialize clients
-s3_client = boto3.client('s3', region_name=AWS_REGION)
-batch_client = boto3.client('batch', region_name=AWS_REGION)
+# Boto3 timeout configuration to prevent indefinite hangs
+boto_config = Config(
+    connect_timeout=10,  # 10 seconds to establish connection
+    read_timeout=30,     # 30 seconds to read response
+    retries={'max_attempts': 2}  # Retry failed requests twice
+)
+
+# Initialize clients with timeout configuration
+s3_client = boto3.client('s3', region_name=AWS_REGION, config=boto_config)
+batch_client = boto3.client('batch', region_name=AWS_REGION, config=boto_config)
 
 
 def generate_presigned_upload_urls(job_id: str, receptor_filename: str, ligand_filename: str) -> Tuple[str, str, str, str]:
