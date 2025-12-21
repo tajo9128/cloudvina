@@ -128,12 +128,43 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
                 # Try sanitization off
                 mol = Chem.MolFromMolBlock(content, removeHs=False, sanitize=False)
         elif ext in ['mol2']:
-             mol = Chem.MolFromMol2Block(content, removeHs=False)
-             if not mol:
-                 mol = Chem.MolFromMol2Block(content, removeHs=False, sanitize=False)
+            mol = Chem.MolFromMol2Block(content, removeHs=False)
+            if not mol:
+                mol = Chem.MolFromMol2Block(content, removeHs=False, sanitize=False)
 
+        # --- FALLBACK: If RDKit failed, try OpenBabel via file_converter ---
         if not mol:
-             return None, f"Could not parse molecule format: {ext}"
+            logger.info(f"RDKit parsing failed for {filename}, trying OpenBabel fallback...")
+            try:
+                import tempfile
+                import os
+                from services.file_converter import convert_format
+                
+                # Write content to temp file
+                suffix = f".{ext}" if not filename.endswith(f".{ext}") else ""
+                with tempfile.NamedTemporaryFile(suffix=f"{suffix}", delete=False, mode='w', encoding='utf-8') as tmp:
+                    tmp.write(content)
+                    tmp_path = tmp.name
+                    
+                # Convert to PDBQT
+                pdbqt_path = convert_format(tmp_path, 'pdbqt')
+                
+                # Read result
+                with open(pdbqt_path, 'r', encoding='utf-8') as f:
+                    pdbqt_string = f.read()
+                    
+                # Cleanup
+                try:
+                    os.remove(tmp_path)
+                    os.remove(pdbqt_path)
+                except:
+                    pass
+                    
+                return pdbqt_string, None
+                
+            except Exception as fallback_err:
+                 logger.error(f"Fallback conversion failed: {fallback_err}")
+                 return None, f"Could not parse molecule format: {ext} (RDKit & Obabel failed)"
 
         # 2. Add Hydrogens (3D requires them, usually)
         mol = Chem.AddHs(mol, addCoords=True)
