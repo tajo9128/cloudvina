@@ -213,14 +213,14 @@ export default function BatchDockingPage() {
                                 </div>
                                 <h3 className="text-lg font-medium text-slate-900 mb-2">Upload PDB Structure</h3>
                                 <p className="text-slate-500 text-center max-w-sm mb-6">
-                                    Drag and drop your prepared receptor file here. Supported formats: .pdb, .pdbqt
+                                    Drag and drop your prepared receptor file here. Supported formats: .pdb, .pdbqt, .mol2, .cif, .gro, .prmtop, .psf, .xyz
                                 </p>
                                 <label className="btn-primary cursor-pointer">
                                     Select Receptor
                                     <input
                                         type="file"
                                         className="hidden"
-                                        accept=".pdb,.pdbqt"
+                                        accept=".pdb,.pdbqt,.mol2,.cif,.gro,.prmtop,.psf,.xyz,.ent"
                                         onChange={(e) => setReceptorFile(e.target.files[0])}
                                     />
                                 </label>
@@ -265,7 +265,7 @@ export default function BatchDockingPage() {
                                             <FileText className="w-8 h-8 text-purple-500" />
                                         </div>
                                         <p className="text-slate-500 text-center max-w-sm mb-6">
-                                            Upload multiple ligand files for batch screening. Supported: .pdbqt, .sdf, .mol2
+                                            Upload multiple ligand files for batch screening. Supported: .pdbqt, .sdf, .mol2, .mol, .pdb, .xyz
                                         </p>
                                         <label className="btn-secondary cursor-pointer">
                                             Select Files
@@ -273,7 +273,7 @@ export default function BatchDockingPage() {
                                                 type="file"
                                                 multiple
                                                 className="hidden"
-                                                accept=".pdbqt,.sdf,.mol2"
+                                                accept=".pdbqt,.sdf,.mol2,.mol,.pdb,.xyz"
                                                 onChange={(e) => setLigandFiles(Array.from(e.target.files))}
                                             />
                                         </label>

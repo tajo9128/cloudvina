@@ -216,7 +216,38 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                  return content, None
             
         if not mol:
-             return None, f"Could not parse receptor format: {ext}"
+             # --- FALLBACK: If RDKit failed, try OpenBabel via file_converter ---
+             logger.info(f"RDKit parsing failed for receptor {filename}, trying OpenBabel fallback...")
+             try:
+                 import tempfile
+                 import os
+                 from services.file_converter import convert_format
+                 
+                 # Write content to temp file
+                 suffix = f".{ext}" if not filename.endswith(f".{ext}") else ""
+                 with tempfile.NamedTemporaryFile(suffix=f"{suffix}", delete=False, mode='w', encoding='utf-8') as tmp:
+                     tmp.write(content)
+                     tmp_path = tmp.name
+ 
+                 # Convert to PDBQT directly
+                 pdbqt_path = convert_format(tmp_path, 'pdbqt')
+ 
+                 # Read result
+                 with open(pdbqt_path, 'r', encoding='utf-8') as f:
+                     pdbqt_string = f.read()
+                     
+                 # Cleanup
+                 try:
+                     os.remove(tmp_path)
+                     os.remove(pdbqt_path)
+                 except:
+                     pass
+                     
+                 return pdbqt_string, None
+                 
+             except Exception as fallback_err:
+                 # If fallback fails, return specific error
+                 return None, f"Could not parse receptor format: {ext} (RDKit & Obabel failed: {fallback_err})"
 
         # Check for 3D coordinates
         if mol.GetNumConformers() == 0:
@@ -280,7 +311,7 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
         return rigid_pdbqt, None
         
     except Exception as e:
-        return None, f"Receptor conversion failed: {str(e)}"
+        return None, f"Receptor conversion failed 2: {str(e)}"
 
 
 def pdbqt_to_pdb(pdbqt_content: str) -> Tuple[Optional[str], Optional[str]]:
