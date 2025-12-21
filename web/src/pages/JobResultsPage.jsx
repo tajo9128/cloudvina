@@ -303,7 +303,7 @@ export default function JobResultsPage() {
                                 <div className="flex items-center gap-3 mb-1">
                                     <h1 className="text-2xl font-bold text-slate-900">Job Details</h1>
                                     <span className="px-3 py-1 rounded-full text-xs font-bold bg-slate-200 text-slate-600 font-mono">
-                                        {job.job_id.slice(0, 8)}
+                                        {job.id.slice(0, 8)}
                                     </span>
                                 </div>
                                 <p className="text-slate-500 text-sm">Created on {new Date(job.created_at).toLocaleString()}</p>
