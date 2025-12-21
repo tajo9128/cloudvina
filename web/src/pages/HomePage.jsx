@@ -1,6 +1,13 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import SEOHelmet from '../components/SEOHelmet'
+import {
+    PlayCircle, Zap, Activity, CheckCircle, Clock,
+    ArrowRight, Github, Info, Download,
+    Box, Cpu, FileCode, FlaskConical, LineChart, Cloud,
+    GraduationCap, Factory, Search, Database, CreditCard
+} from 'lucide-react'
+import CountUp from '../components/CountUp'
 
 export default function HomePage() {
     const [isVisible, setIsVisible] = useState(false)
@@ -382,7 +389,7 @@ export default function HomePage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
                         <div className="text-center">
                             <div className="w-16 h-16 mx-auto bg-blue-500/20 rounded-2xl flex items-center justify-center text-blue-400 mb-6">
-                                <Brain size={32} />
+                                <Activity size={32} />
                             </div>
                             <h3 className="text-xl font-bold mb-3">Pharma R&D</h3>
                             <p className="text-slate-400">Optimize lead candidates with specialized Blood-Brain Barrier (BBB) permeability filtering.</p>
