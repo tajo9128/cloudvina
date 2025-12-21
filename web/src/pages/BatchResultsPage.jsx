@@ -208,9 +208,15 @@ export default function BatchResultsPage() {
         setSortConfig({ key, direction })
     }
 
+    // Helper to get affinity from various potential fields
+    const getAffinity = (job) => {
+        return job.binding_affinity ?? job.vina_score ?? job.docking_score ?? null
+    }
+
     const sortedJobs = batchData?.jobs ? [...batchData.jobs].sort((a, b) => {
-        const valA = a[sortConfig.key]
-        const valB = b[sortConfig.key]
+        const valA = sortConfig.key === 'binding_affinity' ? getAffinity(a) : a[sortConfig.key]
+        const valB = sortConfig.key === 'binding_affinity' ? getAffinity(b) : b[sortConfig.key]
+
         if (valA === null) return 1
         if (valB === null) return -1
         if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1
@@ -352,8 +358,9 @@ export default function BatchResultsPage() {
                                             {job.ligand_filename.replace('.pdbqt', '')}
                                             {job.status !== 'SUCCEEDED' && <span className="ml-2 text-[10px] bg-slate-100 px-1 rounded text-slate-500">{job.status}</span>}
                                         </td>
-                                        <td className="px-4 py-3 text-right font-mono">
-                                            <span className={getAffinityColor(job.binding_affinity)}>
+                                        <td className="px-4 py-3 text-right font-mono font-bold">
+                                            <span className={getAffinityColor(getAffinity(job))}>
+                                                {getAffinity(job) !== null ? getAffinity(job).toFixed(1) : '-'}
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 text-center flex justify-center gap-2">
