@@ -1,53 +1,20 @@
-import mixpanel from 'mixpanel-browser';
+// Analytics Service - DISABLED by User Request
+// This file now exports dummy functions to prevent import errors
 
-// Initialize Mixpanel
 export const initAnalytics = () => {
-    try {
-        // Replace with actual token from env or config
-        // For now, we wrap in try-catch to prevent crash if not installed/configured
-        if (import.meta.env.VITE_MIXPANEL_TOKEN) {
-            mixpanel.init(import.meta.env.VITE_MIXPANEL_TOKEN, {
-                debug: import.meta.env.DEV,
-                track_pageview: true,
-                persistence: 'localStorage'
-            });
-        } else {
-            console.warn('Mixpanel Token not found (VITE_MIXPANEL_TOKEN)');
-        }
-    } catch (error) {
-        console.error('Analytics Init Failed (Safe Fail):', error);
-    }
-};
+    console.log("Analytics disabled")
+}
 
-// Track Event (Safe)
-export const trackEvent = (eventName, properties = {}) => {
-    try {
-        if (import.meta.env.VITE_MIXPANEL_TOKEN) {
-            mixpanel.track(eventName, {
-                ...properties,
-                timestamp: new Date().toISOString(),
-                // detailed context
-            });
-        } else {
-            // Dev / Fallback Logging
-            if (import.meta.env.DEV) {
-                console.log(`[Analytics] ${eventName}`, properties);
-            }
-        }
-    } catch (error) {
-        // Silent fail to protect user experience
-        console.warn('Analytics Track Failed (Safe Fail):', error);
-    }
-};
+export const trackEvent = (eventName, props = {}) => {
+    // console.log("Analytics event skipped:", eventName, props)
+}
 
-// Identify User (Safe)
-export const identifyUser = (userId, userTraits = {}) => {
-    try {
-        if (import.meta.env.VITE_MIXPANEL_TOKEN) {
-            mixpanel.identify(userId);
-            mixpanel.people.set(userTraits);
-        }
-    } catch (error) {
-        console.warn('Analytics Identify Failed (Safe Fail):', error);
-    }
-};
+export const identifyUser = (userId, traits = {}) => {
+    // console.log("Analytics identify skipped:", userId)
+}
+
+export default {
+    init: initAnalytics,
+    track: trackEvent,
+    identify: identifyUser
+}

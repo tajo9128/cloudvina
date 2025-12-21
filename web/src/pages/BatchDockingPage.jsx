@@ -257,125 +257,72 @@ export default function BatchDockingPage() {
     // --- SPLIT VIEW RENDERING (SIDE-BY-SIDE) ---
     if (processingStage !== 'idle' || batchId) {
         return (
-            <div className="h-screen flex flex-col md:flex-row bg-slate-900 overflow-hidden">
+            <div className="h-screen bg-slate-50 overflow-y-auto">
+                <div className="max-w-3xl mx-auto px-4 py-12">
+                    <h2 className="text-2xl font-bold text-slate-800 mb-8 flex items-center justify-center gap-3">
+                        <Activity className="text-indigo-600 animate-pulse w-8 h-8" />
+                        Active Experiment Status
+                    </h2>
 
-                {/* LEFT HALF: Context / Summary */}
-                <div className="w-full md:w-5/12 h-1/2 md:h-full bg-slate-50 border-r border-slate-700 p-8 overflow-y-auto relative flex-shrink-0">
-                    <div className="max-w-xl mx-auto">
-                        <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
-                            <Activity className="text-indigo-600 animate-pulse" />
-                            Active Experiment Context
-                        </h2>
-
-                        {/* Vertical Stack for Side Panel */}
-                        <div className="flex flex-col gap-4">
-                            {/* Card 1: Receptor */}
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Receptor Target</div>
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-indigo-50 rounded-lg">
-                                        <Database className="w-5 h-5 text-indigo-600" />
-                                    </div>
-                                    <div className="min-w-0">
-                                        <div className="font-bold text-slate-700 truncate">{receptorFile?.name || "Unknown"}</div>
-                                        <div className="text-xs text-slate-500">Protein Structure</div>
-                                    </div>
-                                </div>
+                    {/* Progress Cards Stack */}
+                    <div className="flex flex-col gap-4 mb-8">
+                        {/* Card 1: Receptor */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                            <div className="p-3 bg-indigo-50 rounded-xl">
+                                <Database className="w-6 h-6 text-indigo-600" />
                             </div>
-
-                            {/* Card 2: Ligands */}
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Ligand Library</div>
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-emerald-50 rounded-lg">
-                                        <FlaskConical className="w-5 h-5 text-emerald-600" />
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-slate-700">
-                                            {uploadMode === 'files' ? `${ligandFiles.length} Compounds` : csvFile?.name || "CSV Upload"}
-                                        </div>
-                                        <div className="text-xs text-slate-500">Input Source</div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* Card 3: Engine */}
-                            <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">Docking Engine</div>
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-violet-50 rounded-lg">
-                                        <Cpu className="w-5 h-5 text-violet-600" />
-                                    </div>
-                                    <div>
-                                        <div className="font-bold text-slate-700">Consensus Mode</div>
-                                        <div className="text-xs text-slate-500">Vina + Gnina (AI)</div>
-                                    </div>
-                                </div>
+                            <div className="flex-1">
+                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Receptor Target</div>
+                                <div className="font-bold text-slate-700 text-lg truncate">{receptorFile?.name || "Unknown"}</div>
                             </div>
                         </div>
 
-                        {/* Progress Bar (Global) */}
-                        <div className="mt-8">
-                            <div className="flex justify-between text-xs text-slate-500 mb-2">
-                                <span>Experiment Progress</span>
-                                <span>{processingStage === 'complete' ? '100% - Ready' : `${processingStage === 'uploading' ? Math.round(uploadProgress / 2) : 50 + Math.round(uploadProgress / 2)}%`}</span>
+                        {/* Card 2: Ligands */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                            <div className="p-3 bg-emerald-50 rounded-xl">
+                                <FlaskConical className="w-6 h-6 text-emerald-600" />
                             </div>
-                            <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden">
-                                <div
-                                    className={`h-full transition-all duration-500 ease-out ${processingStage === 'complete' ? 'bg-emerald-500' : 'bg-indigo-600 query-loading'}`}
-                                    style={{ width: processingStage === 'complete' ? '100%' : `${processingStage === 'uploading' ? uploadProgress / 2 : 50 + uploadProgress / 2}%` }}
-                                />
+                            <div className="flex-1">
+                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Library Size</div>
+                                <div className="font-bold text-slate-700 text-lg">{uploadMode === 'files' ? `${ligandFiles.length} Compounds` : csvFile?.name || "CSV Upload"}</div>
                             </div>
                         </div>
-                        {/* FINAL BATCH ID DISPLAY */}
-                        {processingStage === 'complete' && (
-                            <div className="mt-12 bg-white p-6 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center animate-fade-in-up">
-                                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Deployed Batch ID</div>
-                                <div className="text-3xl font-mono font-bold text-slate-900 bg-slate-50 px-6 py-3 rounded-xl border border-slate-200 select-all mb-6">
-                                    {batchId}
-                                </div>
-                                <button
-                                    onClick={() => navigate(`/batch/${batchId}`)}
-                                    className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-all shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-1"
-                                >
-                                    <span>View Live Results</span>
-                                    <ArrowRight size={20} />
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
 
-                {/* RIGHT HALF: Live Deep Dive Console */}
-                <div className="w-full md:w-7/12 h-1/2 md:h-full bg-slate-900 border-l border-slate-800 p-8 flex flex-col relative overflow-hidden">
-                    {/* Background Pattern */}
-                    <div className="absolute inset-0 opacity-10 bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:16px_16px]"></div>
-
-                    {/* Console Header */}
-                    <div className="relative z-10 mb-6 flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-slate-800 rounded-lg border border-slate-700">
-                                <Terminal className="w-5 h-5 text-emerald-400" />
+                        {/* Card 3: Engine */}
+                        <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 flex items-center gap-4">
+                            <div className="p-3 bg-violet-50 rounded-xl">
+                                <Cpu className="w-6 h-6 text-violet-600" />
                             </div>
-                            <div>
-                                <h3 className="text-slate-100 font-bold font-mono">BioDockify CLI</h3>
-                                <div className="flex items-center gap-2 text-xs text-slate-500">
-                                    <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                                    SYSTEM ACTIVE
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex gap-2">
-                            <div className="px-3 py-1 bg-slate-800 rounded border border-slate-700 text-xs text-slate-400 font-mono">
-                                {logs.length} events
+                            <div className="flex-1">
+                                <div className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Docking Engine</div>
+                                <div className="font-bold text-slate-700 text-lg">Consensus Mode (Vina + Gnina)</div>
                             </div>
                         </div>
                     </div>
 
-                    {/* Console Content Area */}
-                    <div className="flex-1 bg-black/50 rounded-xl border border-slate-700/50 backdrop-blur-sm p-4 overflow-y-auto font-mono text-sm relative custom-scrollbar">
-                        {(processingStage === 'processing' || processingStage === 'complete') && (
-                            <div className="mb-8">
+                    {/* Main Progress Bar */}
+                    <div className="bg-white p-8 rounded-3xl shadow-lg border border-indigo-50 mb-8">
+                        <div className="flex justify-between text-sm font-bold text-slate-500 mb-3">
+                            <span>Experiment Progress</span>
+                            <span className="text-indigo-600">{processingStage === 'complete' ? '100% - Ready' : `${processingStage === 'uploading' ? Math.round(uploadProgress / 2) : 50 + Math.round(uploadProgress / 2)}%`}</span>
+                        </div>
+                        <div className="h-4 w-full bg-slate-100 rounded-full overflow-hidden mb-2">
+                            <div
+                                className={`h-full transition-all duration-500 ease-out ${processingStage === 'complete' ? 'bg-emerald-500' : 'bg-indigo-600 query-loading'}`}
+                                style={{ width: processingStage === 'complete' ? '100%' : `${processingStage === 'uploading' ? uploadProgress / 2 : 50 + uploadProgress / 2}%` }}
+                            />
+                        </div>
+                        <div className="text-center text-slate-400 text-xs mt-2 italic">
+                            {processingStage === 'uploading' && "Securely uploading files to AWS S3..."}
+                            {processingStage === 'processing' && "Queuing jobs on AWS Batch..."}
+                            {processingStage === 'complete' && "All jobs successfully deployed."}
+                        </div>
+                    </div>
+
+                    {/* Detailed Stage Progress (PreparationProgress) */}
+                    {(processingStage === 'processing' || processingStage === 'complete') && (
+                        <div className="mb-0">
+                            <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200">
                                 <PreparationProgress currentStep={
                                     processingStage === 'complete' ? 6 :
                                         (prepStatus.grid === 100 ? 5 :
@@ -384,29 +331,26 @@ export default function BatchDockingPage() {
                                                     prepStatus.ligand > 0 ? 2 : 1)
                                 } />
                             </div>
-                        )}
-
-                        <div className="space-y-2">
-                            {logs.map((log, i) => (
-                                <div key={i} className={`flex gap-3 animate-fade-in ${getLogColor(log.type)}`}>
-                                    <span className="text-slate-600 select-none">[{log.time}]</span>
-                                    <span className="break-all">
-                                        {log.type === 'success' && '✓ '}
-                                        {log.type === 'error' && '✗ '}
-                                        {log.type === 'warning' && '⚠ '}
-                                        {log.msg}
-                                    </span>
-                                </div>
-                            ))}
-                            {processingStage === 'processing' && (
-                                <div className="flex gap-3 text-slate-500 animate-pulse">
-                                    <span className="text-slate-600">[{new Date().toLocaleTimeString('en-US', { hour12: false })}]</span>
-                                    <span>_</span>
-                                </div>
-                            )}
-                            <div ref={terminalEndRef} />
                         </div>
-                    </div>
+                    )}
+
+                    {/* SUCCESS ACTION CARD */}
+                    {processingStage === 'complete' && (
+                        <div className="mt-8 bg-gradient-to-br from-indigo-600 to-violet-700 p-8 rounded-3xl shadow-xl text-white text-center animate-fade-in-up">
+                            <div className="text-indigo-200 text-sm font-bold uppercase tracking-widest mb-2">Deployed Batch ID</div>
+                            <div className="text-3xl font-mono font-bold bg-white/10 backdrop-blur px-6 py-3 rounded-xl border border-white/20 select-all mb-8 inline-block">
+                                {batchId}
+                            </div>
+                            <button
+                                onClick={() => navigate(`/batch/${batchId}`)}
+                                className="w-full py-4 bg-white text-indigo-700 font-bold text-lg rounded-xl hover:bg-slate-100 transition-all shadow-lg flex items-center justify-center gap-3 transform hover:-translate-y-1"
+                            >
+                                <span>View Live Results</span>
+                                <ArrowRight size={24} />
+                            </button>
+                        </div>
+                    )}
+
                 </div>
             </div>
         )

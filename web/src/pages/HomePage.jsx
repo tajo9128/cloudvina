@@ -36,7 +36,7 @@ export default function HomePage() {
                         <div className="max-w-2xl mb-12 lg:mb-0">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 border border-indigo-700/50 text-indigo-300 text-[10px] font-bold uppercase tracking-wider mb-8 animate-fade-in">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                Major Release v2.0.0: Privacy-First Consensus Docking
+                                Major Release v6.0.0: Privacy-First Consensus Docking
                             </div>
 
                             <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
@@ -266,8 +266,8 @@ export default function HomePage() {
                         <div className="relative">
                             <div className="absolute inset-0 bg-blue-600 blur-[80px] opacity-10 rounded-full"></div>
                             <img
-                                src="/assets/images/hero-molecular.png"
-                                alt="Molecular Analysis Interface"
+                                src="/assets/images/bridging-gap.png"
+                                alt="BioDockify Bridging Research and Discovery"
                                 className="relative w-full h-auto rounded-3xl shadow-2xl border border-slate-200 transform hover:scale-[1.02] transition-transform duration-500"
                                 onError={(e) => {
                                     e.target.onerror = null;
