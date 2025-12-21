@@ -573,12 +573,7 @@ async def get_batch_details(
         if not jobs:
              raise HTTPException(status_code=404, detail="Batch not found")
 
-        # 1.5. Lazy Repair: Fetch missing binding_affinity from S3 for SUCCEEDED jobs
-        # This handles cases where the docking container failed to update Supabase
-        import boto3
-        import json
-        s3 = boto3.client('s3', region_name=AWS_REGION)
-        
+
         # 1.5. Status Sync & Lazy Repair
         # Since we might not have a real AWS Batch event listener, we poll/sync here.
         # Also, for DEMO/SIMULATION: If job is stuck in SUBMITTED > 30s, auto-complete it.
