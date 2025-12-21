@@ -605,7 +605,16 @@ async def get_batch_details(
                 current_time = datetime.now(timezone.utc)
                 
                 for job in pending_jobs:
-                    created_at = datetime.fromisoformat(job['created_at'].replace('Z', '+00:00'))
+                    # Ensure created_at is timezone-aware
+                    created_at_str = job['created_at']
+                    if created_at_str.endswith('Z'):
+                        created_at_str = created_at_str[:-1] + '+00:00'
+                    created_at = datetime.fromisoformat(created_at_str)
+                    
+                    # If still naive, make it UTC
+                    if created_at.tzinfo is None:
+                        created_at = created_at.replace(tzinfo=timezone.utc)
+                    
                     age = (current_time - created_at).total_seconds()
                     
                     # If job is > 10 seconds old in Simulation Mode, finish it.
