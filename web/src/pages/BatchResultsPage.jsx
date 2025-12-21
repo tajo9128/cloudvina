@@ -466,7 +466,7 @@ export default function BatchResultsPage() {
                     </div>
                 </div>
 
-                {/* RIGHT: Visualization Panel (3D + ADMET) */}
+                {/* RIGHT: Visualization Panel (3D + ADMET + Downloads) */}
                 <div className="flex-1 bg-slate-100 relative flex flex-col">
                     {/* Tab Bar */}
                     <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-start pointer-events-none">
@@ -476,6 +476,12 @@ export default function BatchResultsPage() {
                                 className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors ${activeTab === 'structure' ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-slate-50 text-slate-500'}`}
                             >
                                 <span>📈</span> 3D Structure
+                            </button>
+                            <button
+                                onClick={() => setActiveTab('downloads')}
+                                className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors ${activeTab === 'downloads' ? 'bg-green-100 text-green-700' : 'hover:bg-slate-50 text-slate-500'}`}
+                            >
+                                <span>📥</span> Downloads
                             </button>
                             <button
                                 onClick={() => setActiveTab('admet')}
@@ -663,6 +669,106 @@ export default function BatchResultsPage() {
                                     ) : (
                                         <div className="text-center text-slate-400 mt-20">
                                             Select a ligand to analyze.
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* VIEW 3: Downloads */}
+                        {activeTab === 'downloads' && (
+                            <div className="w-full h-full bg-slate-50 pt-24 pb-8 px-8 overflow-y-auto">
+                                <div className="max-w-2xl mx-auto">
+                                    {firstJobSelected ? (
+                                        <div>
+                                            <div className="text-center mb-8">
+                                                <h2 className="text-2xl font-bold text-slate-800 mb-2">Output Files</h2>
+                                                <p className="text-slate-500">{firstJobName || 'Selected Compound'}</p>
+                                            </div>
+
+                                            <div className="grid gap-4">
+                                                {/* Vina Output */}
+                                                <button
+                                                    onClick={(e) => handleDownload(e, firstJobSelected, 'output')}
+                                                    className="flex items-center justify-between p-6 bg-white rounded-xl border-2 border-slate-200 hover:border-blue-500 hover:shadow-lg transition-all group"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center group-hover:bg-blue-500 transition-colors">
+                                                            <span className="text-2xl group-hover:scale-110 transition-transform">🧬</span>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <div className="font-bold text-slate-900">Vina Output</div>
+                                                            <div className="text-sm text-slate-500">Docked poses (.pdbqt)</div>
+                                                        </div>
+                                                    </div>
+                                                    <Download className="w-5 h-5 text-slate-400 group-hover:text-blue-600" />
+                                                </button>
+
+                                                {/* Gnina Output */}
+                                                <button
+                                                    onClick={(e) => handleDownload(e, firstJobSelected, 'output')}
+                                                    className="flex items-center justify-between p-6 bg-white rounded-xl border-2 border-slate-200 hover:border-purple-500 hover:shadow-lg transition-all group"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center group-hover:bg-purple-500 transition-colors">
+                                                            <span className="text-2xl group-hover:scale-110 transition-transform">🧠</span>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <div className="font-bold text-slate-900">Gnina Output</div>
+                                                            <div className="text-sm text-slate-500">CNN-scored poses (.pdbqt)</div>
+                                                        </div>
+                                                    </div>
+                                                    <Download className="w-5 h-5 text-slate-400 group-hover:text-purple-600" />
+                                                </button>
+
+                                                {/* Config File */}
+                                                <button
+                                                    onClick={(e) => handleDownload(e, firstJobSelected, 'config')}
+                                                    className="flex items-center justify-between p-6 bg-white rounded-xl border-2 border-slate-200 hover:border-amber-500 hover:shadow-lg transition-all group"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 bg-amber-100 rounded-xl flex items-center justify-center group-hover:bg-amber-500 transition-colors">
+                                                            <span className="text-2xl group-hover:scale-110 transition-transform">⚙️</span>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <div className="font-bold text-slate-900">Configuration File</div>
+                                                            <div className="text-sm text-slate-500">Grid parameters (.txt)</div>
+                                                        </div>
+                                                    </div>
+                                                    <Download className="w-5 h-5 text-slate-400 group-hover:text-amber-600" />
+                                                </button>
+
+                                                {/* Execution Log */}
+                                                <button
+                                                    onClick={(e) => handleDownload(e, firstJobSelected, 'log')}
+                                                    className="flex items-center justify-between p-6 bg-white rounded-xl border-2 border-slate-200 hover:border-green-500 hover:shadow-lg transition-all group"
+                                                >
+                                                    <div className="flex items-center gap-4">
+                                                        <div className="w-12 h-12 bg-green-100 rounded-xl flex items-center justify-center group-hover:bg-green-500 transition-colors">
+                                                            <span className="text-2xl group-hover:scale-110 transition-transform">📋</span>
+                                                        </div>
+                                                        <div className="text-left">
+                                                            <div className="font-bold text-slate-900">Execution Log</div>
+                                                            <div className="text-sm text-slate-500">Full Vina+Gnina output (.txt)</div>
+                                                        </div>
+                                                    </div>
+                                                    <Download className="w-5 h-5 text-slate-400 group-hover:text-green-600" />
+                                                </button>
+                                            </div>
+
+                                            <div className="mt-8 p-4 bg-blue-50 rounded-xl border border-blue-100">
+                                                <div className="flex items-start gap-3">
+                                                    <span className="text-2xl">💡</span>
+                                                    <div className="text-sm text-blue-900">
+                                                        <strong>Tip:</strong> The execution log contains detailed output from both AutoDock Vina and Gnina CNN scoring, including all poses and affinities.
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col items-center justify-center py-20 text-slate-400">
+                                            <span className="text-6xl mb-4 opacity-50">📥</span>
+                                            <p className="text-lg font-medium">Select a ligand from the table to download files</p>
                                         </div>
                                     )}
                                 </div>
