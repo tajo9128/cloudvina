@@ -243,8 +243,8 @@ export default function PreparationProgress({ currentStep, batchId }) {
                         </div>
                     </div>
 
-                    {/* View Live Result Button */}
-                    {jobStatus && (
+                    {/* View Live Result Button - Only show when ALL jobs completed successfully */}
+                    {jobStatus === 'SUCCEEDED' && jobsCompleted === jobsTotal && jobsTotal > 0 && (
                         <button
                             onClick={() => navigate(`/dock/batch/${batchId}`)}
                             className="w-full flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white font-bold rounded-xl shadow-lg transition-all hover:scale-105"
