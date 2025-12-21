@@ -259,7 +259,7 @@ export default function BatchResultsPage() {
         if (!batchData?.jobs) return
         const headers = ['Ligand Name', 'Status', 'Binding Affinity (kcal/mol)', 'Job ID']
         const rows = batchData.jobs.map(job => [
-            job.ligand_filename.replace('.pdbqt', ''),
+            (job.ligand_filename || 'unknown.pdbqt').replace('.pdbqt', ''),
             job.status,
             job.binding_affinity || 'N/A',
             job.id
@@ -400,7 +400,7 @@ export default function BatchResultsPage() {
                                             </span>
                                         </td>
                                         <td className="px-4 py-3 font-medium text-slate-900 truncate max-w-[150px]" title={job.ligand_filename}>
-                                            {job.ligand_filename.replace('.pdbqt', '')}
+                                            {(job.ligand_filename || 'Unknown').replace('.pdbqt', '')}
                                         </td>
                                         <td className="px-4 py-3 text-right font-mono font-bold">
                                             {(() => {
@@ -549,7 +549,7 @@ export default function BatchResultsPage() {
                                                             <span>⚡</span> AI Ranking Explanation
                                                         </h3>
                                                         <p className="text-slate-800 font-medium leading-relaxed relative z-10">
-                                                            {batchData.jobs.find(j => j.id === firstJobId).ai_explanation}
+                                                            {batchData.jobs.find(j => j.id === firstJobId)?.ai_explanation || "No explanation available."}
                                                         </p>
                                                     </div>
                                                 )}
@@ -616,7 +616,7 @@ export default function BatchResultsPage() {
                                                                     </span>
                                                                 </div>
                                                                 <div className="grid grid-cols-3 gap-2">
-                                                                    {admetData.cyp.isoforms && Object.entries(admetData.cyp.isoforms).map(([isoform, data]) => (
+                                                                    {admetData.cyp?.isoforms && Object.entries(admetData.cyp.isoforms).map(([isoform, data]) => (
                                                                         <div key={isoform} className="text-center p-1.5 bg-slate-50 rounded border border-slate-100">
                                                                             <div className="text-[10px] text-slate-500 font-medium">{isoform}</div>
                                                                             <div className={`text-xs font-bold ${data.inhibition_risk === 'High' ? 'text-red-500' : 'text-slate-700'}`}>
@@ -636,7 +636,7 @@ export default function BatchResultsPage() {
                                                     <h4 className="text-indigo-900 font-bold text-sm mb-2">Deep Dive Analysis</h4>
                                                     <p className="text-indigo-700 text-xs mb-3">Open this compound in specialized toxicology tools:</p>
                                                     <div className="flex flex-wrap gap-2">
-                                                        {Object.values(admetData.admet_links).slice(0, 3).map((link, i) => (
+                                                        {Object.values(admetData.admet_links || {}).slice(0, 3).map((link, i) => (
                                                             <a
                                                                 key={i}
                                                                 href={link.url}

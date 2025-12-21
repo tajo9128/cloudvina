@@ -327,19 +327,27 @@ export default function BatchDockingPage() {
                                 />
                             </div>
                         </div>
-                    </div>
-
-                    className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-all shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-1"
+                        {/* FINAL BATCH ID DISPLAY */}
+                        {processingStage === 'complete' && (
+                            <div className="mt-12 bg-white p-6 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center animate-fade-in-up">
+                                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Deployed Batch ID</div>
+                                <div className="text-3xl font-mono font-bold text-slate-900 bg-slate-50 px-6 py-3 rounded-xl border border-slate-200 select-all mb-6">
+                                    {batchId}
+                                </div>
+                                <button
+                                    onClick={() => navigate(`/batch/${batchId}`)}
+                                    className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-all shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-1"
                                 >
-                    <span>View Live Results</span>
-                    <ArrowRight size={20} />
-                </button>
+                                    <span>View Live Results</span>
+                                    <ArrowRight size={20} />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
             </div>
         )
     }
-                    </div >
-                </div >
-            </div >
         )
 }
 
