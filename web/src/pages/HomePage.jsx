@@ -4,7 +4,7 @@ import SEOHelmet from '../components/SEOHelmet'
 import {
     Activity, GraduationCap, Factory, FlaskConical, Stethoscope,
     ArrowRight, CheckCircle2, Zap, Search, Globe, ShieldCheck, Layers,
-    Brain, Package, BarChart3, TrendingUp, FileText, CheckCircle
+    Brain, Package, BarChart3, TrendingUp, FileText, CheckCircle, Play, Server
 } from 'lucide-react'
 
 export default function HomePage() {
@@ -23,49 +23,78 @@ export default function HomePage() {
                 canonical="https://biodockify.com/"
             />
 
-            {/* 1. MODERN HERO SECTION */}
-            <section className="relative h-screen min-h-[700px] flex items-center justify-center overflow-hidden">
-                {/* Background Image with Overlay */}
-                <div className="absolute inset-0 z-0">
-                    <img
-                        src="/assets/images/hero-molecular.png"
-                        alt="Molecular Research"
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src = "https://images.unsplash.com/photo-1614935151651-0bea6508db6b?auto=format&fit=crop&q=80&w=2500";
-                        }}
-                    />
-                    <div className="absolute inset-0 bg-slate-900/70 backdrop-blur-[2px]"></div>
-                    <div className="absolute inset-0 bg-gradient-to-t from-[#0B1121] via-transparent to-transparent"></div>
-                </div>
+            {/* 1. CLOUD-NATIVE HERO SECTION (Restored) */}
+            <section className="relative bg-slate-900 overflow-hidden pt-20 pb-32 lg:pt-32 lg:pb-40">
+                {/* Background Glows */}
+                <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-indigo-600/20 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3"></div>
+                <div className="absolute bottom-0 left-0 w-[600px] h-[600px] bg-emerald-600/10 rounded-full blur-[120px] translate-y-1/2 -translate-x-1/3"></div>
 
-                <div className="container mx-auto px-4 z-10 text-center">
-                    <div className="animate-fade-in-up max-w-5xl mx-auto">
-                        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 text-indigo-300 text-sm font-bold uppercase tracking-wider mb-8 backdrop-blur-md">
-                            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            The Future of Molecular Research
+                <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="lg:grid lg:grid-cols-2 gap-16 items-center">
+
+                        {/* LEFT: Text Content */}
+                        <div className="max-w-2xl mb-12 lg:mb-0">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 border border-indigo-700/50 text-indigo-300 text-[10px] font-bold uppercase tracking-wider mb-8 animate-fade-in">
+                                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                                Major Release v2.0.0: Privacy-First Consensus Docking
+                            </div>
+
+                            <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
+                                Cloud-Native, <br />
+                                <span className="text-indigo-400">End-to-End</span> <br />
+                                Drug Discovery.
+                            </h1>
+
+                            <p className="text-lg text-slate-400 mb-10 leading-relaxed max-w-lg">
+                                Accelerate your pipeline from Virtual Screening to Lead Optimization with our high-performance cloud infrastructure.
+                                Scalable, secure, and ready for production.
+                            </p>
+
+                            <div className="flex flex-wrap gap-4">
+                                <Link to="/dock/new" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold rounded-xl shadow-lg shadow-indigo-900/20 transition-all hover:-translate-y-0.5">
+                                    <Play size={20} fill="currentColor" />
+                                    <span>Start Free Trial</span>
+                                </Link>
+                                <Link to="/contact" className="inline-flex items-center justify-center gap-2 px-8 py-4 bg-slate-800/50 hover:bg-slate-800 text-white font-semibold rounded-xl border border-slate-700 transition-all group">
+                                    <span>Contact Sales</span>
+                                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                                </Link>
+                            </div>
                         </div>
 
-                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white mb-8 leading-tight tracking-tight drop-shadow-2xl">
-                            Accelerating <br />
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-300 to-emerald-300">Drug Discovery</span>
-                        </h1>
+                        {/* RIGHT: Visual */}
+                        <div className="relative animate-fade-in-up delay-200">
+                            <div className="relative rounded-3xl overflow-hidden border border-slate-700/50 shadow-2xl bg-slate-800/50 backdrop-blur-sm group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
 
-                        <p className="text-xl md:text-2xl text-slate-200 mb-12 leading-relaxed max-w-3xl mx-auto font-light drop-shadow-lg">
-                            An intelligent, cloud-native platform designed to simplify and accelerate modern pharmaceutical research.
-                            From target identification to FDA-compliant submission.
-                        </p>
+                                {/* Floating Badge */}
+                                <div className="absolute top-8 left-8 z-20 bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-700 shadow-xl flex items-center gap-4 max-w-[240px]">
+                                    <div className="p-2 bg-emerald-500/20 rounded-lg">
+                                        <Server size={24} className="text-emerald-400" />
+                                    </div>
+                                    <div>
+                                        <div className="text-[10px] text-slate-400 uppercase tracking-wider font-bold">Secure Storage</div>
+                                        <div className="text-sm font-bold text-white">Encrypted & Compliant</div>
+                                    </div>
+                                </div>
 
-                        <div className="flex flex-col sm:flex-row justify-center gap-6">
-                            <Link to="/dock/new" className="inline-flex items-center justify-center gap-3 px-10 py-5 bg-indigo-600 hover:bg-indigo-500 text-white text-lg font-bold rounded-2xl transition-all shadow-[0_0_40px_rgba(79,70,229,0.4)] hover:shadow-[0_0_60px_rgba(79,70,229,0.6)] transform hover:-translate-y-1">
-                                <span>Start Discovery</span>
-                                <ArrowRight size={24} />
-                            </Link>
-                            <Link to="/contact" className="inline-flex items-center justify-center gap-3 px-10 py-5 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-lg font-semibold rounded-2xl backdrop-blur-md transition-all">
-                                <span>Talk to Us</span>
-                            </Link>
+                                <img
+                                    src="/assets/images/hero-molecular.png"
+                                    alt="BioDockify Interface"
+                                    className="w-full h-auto transform transition-transform duration-700 hover:scale-105"
+                                    onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = "https://images.unsplash.com/photo-1614935151651-0bea6508db6b?auto=format&fit=crop&q=80&w=1200";
+                                    }}
+                                />
+
+                                {/* Overlay Text on Image (Bottom Right) */}
+                                <div className="absolute bottom-0 right-0 p-8 text-right bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent w-full">
+                                    <div className="text-2xl font-bold text-white tracking-widest uppercase opacity-80">Biotech Innovations</div>
+                                </div>
+                            </div>
                         </div>
+
                     </div>
                 </div>
             </section>
