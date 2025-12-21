@@ -329,361 +329,216 @@ export default function BatchDockingPage() {
                         </div>
                     </div>
 
-                    {/* Success Overlay Trigger */}
-                    {processingStage === 'complete' && (
-                        <div className="absolute inset-0 bg-white/60 backdrop-blur-sm flex items-center justify-center z-10 animate-fade-in px-4">
-                            <div className="bg-white p-8 rounded-2xl shadow-2xl border border-emerald-100 w-full text-center">
-                                <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-slow">
-                                    <Check className="w-10 h-10 text-emerald-600" />
-                                </div>
-                                <h3 className="text-2xl font-bold text-slate-900 mb-2">Experiment Deployed!</h3>
-                                <p className="text-slate-500 mb-6 text-sm">Your docking batch has been successfully queued on the high-performance cluster.</p>
-
-                                <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 mb-8 font-mono text-sm text-slate-600 break-all">
-                                    Batch ID: <span className="text-slate-900 font-bold select-all">{batchId}</span>
-                                </div>
-
-                                <button
-                                    onClick={() => navigate(`/batch/${batchId}`)}
-                                    className="w-full py-4 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all shadow-lg flex items-center justify-center gap-2"
+                    className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-all shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-1"
                                 >
-                                    <span>View Live Results</span>
-                                    <ArrowRight size={20} />
-                                </button>
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* RIGHT HALF: Visual Progress Tracker */}
-                <div className="w-full md:w-7/12 h-1/2 md:h-full bg-slate-50 p-8 flex flex-col justify-center border-l border-slate-200 relative overflow-hidden">
-
-                    {/* Background Pattern */}
-                    <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#4f46e5_1px,transparent_1px)] [background-size:16px_16px]"></div>
-
-                    <div className="max-w-md mx-auto w-full relative z-10">
-                        <h2 className="text-2xl font-bold text-slate-900 mb-8 text-center">Batch Deployment Status</h2>
-
-                        <div className="space-y-8 relative">
-                            {/* Vertical Line */}
-                            <div className="absolute left-[19px] top-4 bottom-4 w-0.5 bg-slate-200 -z-10"></div>
-
-                            {/* Step 1: Uploads */}
-                            <div className="flex gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors duration-500 ${uploadProgress === 100
-                                    ? 'bg-emerald-100 border-emerald-500 text-emerald-600'
-                                    : 'bg-white border-indigo-600 text-indigo-600'
-                                    }`}>
-                                    {uploadProgress === 100 ? <CheckCircle2 size={20} /> : <span className="text-xs font-bold text-indigo-600">{uploadProgress}%</span>}
-                                </div>
-                                <div>
-                                    <h3 className={`font-bold ${uploadProgress === 100 ? 'text-slate-900' : 'text-indigo-600 animate-pulse'}`}>Submission Initiated</h3>
-                                    <p className="text-sm text-slate-500">Securely uploading {uploadMode === 'files' ? ligandFiles.length : 'CSV'} payload to S3 bucket.</p>
-                                </div>
-                            </div>
-
-                            {/* Step 2: Structure Preparation (Detailed) */}
-                            <div className="flex gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors duration-500 ${processingStage === 'processing' || processingStage === 'complete'
-                                    ? 'bg-emerald-100 border-emerald-500 text-emerald-600'
-                                    : 'bg-white border-slate-200 text-slate-300'
-                                    }`}>
-                                    {processingStage === 'complete' ? <CheckCircle2 size={20} /> : processingStage === 'processing' ? <FlaskConical size={20} className="animate-bounce" /> : <div className="w-2 h-2 bg-slate-200 rounded-full"></div>}
-                                </div>
-                                <div className="flex-1">
-                                    <h3 className={`font-bold ${processingStage === 'processing' || processingStage === 'complete' ? 'text-slate-900' : 'text-slate-400'
-                                        }`}>Structure Preparation</h3>
-
-                                    {/* Sub-Progress Bars for Protein/Ligand/Grid */}
-                                    {(processingStage === 'processing' || processingStage === 'complete') && (
-                                        <div className="mt-3 space-y-3 animate-fade-in-down">
-
-                                            {/* Protein Prep */}
-                                            <div>
-                                                <div className="flex justify-between text-xs mb-1">
-                                                    <span className={prepStatus.receptor === 100 ? "text-emerald-600 font-bold" : "text-slate-500"}>Receptor Optimization</span>
-                                                    <span className="text-slate-400">{prepStatus.receptor}%</span>
-                                                </div>
-                                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${prepStatus.receptor}%` }}></div>
-                                                </div>
-                                            </div>
-
-                                            {/* Ligand Prep */}
-                                            <div>
-                                                <div className="flex justify-between text-xs mb-1">
-                                                    <span className={prepStatus.ligand === 100 ? "text-emerald-600 font-bold" : "text-slate-500"}>Ligand Minimization</span>
-                                                    <span className="text-slate-400">{prepStatus.ligand}%</span>
-                                                </div>
-                                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${prepStatus.ligand}%` }}></div>
-                                                </div>
-                                            </div>
-
-                                            {/* Grid Gen */}
-                                            <div>
-                                                <div className="flex justify-between text-xs mb-1">
-                                                    <span className={prepStatus.grid === 100 ? "text-emerald-600 font-bold" : "text-slate-500"}>Affinity Grid Generation</span>
-                                                    <span className="text-slate-400">{prepStatus.grid}%</span>
-                                                </div>
-                                                <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                    <div className="h-full bg-indigo-500 transition-all duration-300" style={{ width: `${prepStatus.grid}%` }}></div>
-                                                </div>
-                                            </div>
-
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-
-                            {/* Step 3: Queue Allocation */}
-                            <div className="flex gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors duration-500 ${processingStage === 'processing'
-                                    ? 'bg-amber-50 border-amber-500 text-amber-600 animate-pulse'
-                                    : processingStage === 'complete' ? 'bg-emerald-100 border-emerald-500 text-emerald-600' : 'bg-white border-slate-200 text-slate-300'
-                                    }`}>
-                                    {processingStage === 'complete' ? <CheckCircle2 size={20} /> : processingStage === 'processing' ? <Server size={20} /> : <div className="w-2 h-2 bg-slate-200 rounded-full"></div>}
-                                </div>
-                                <div>
-                                    <h3 className={`font-bold ${processingStage === 'processing' ? 'text-amber-600' : processingStage === 'complete' ? 'text-slate-900' : 'text-slate-400'
-                                        }`}>Queue Allocation (Runnable)</h3>
-                                    <p className="text-sm text-slate-500">Provisioning spot instances on AWS Batch (g4dn.xlarge).</p>
-                                </div>
-                            </div>
-
-                            {/* Step 4: Execution */}
-                            <div className="flex gap-4">
-                                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 border-2 transition-colors duration-500 ${processingStage === 'complete'
-                                    ? 'bg-blue-100 border-blue-500 text-blue-600'
-                                    : 'bg-white border-slate-200 text-slate-300'
-                                    }`}>
-                                    {processingStage === 'complete' ? <Activity size={20} /> : <div className="w-2 h-2 bg-slate-200 rounded-full"></div>}
-                                </div>
-                                <div>
-                                    <h3 className={`font-bold ${processingStage === 'complete' ? 'text-blue-600' : 'text-slate-400'}`}>Execution Started (Running)</h3>
-                                    <p className="text-sm text-slate-500">Consensus docking job is now active.</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* FINAL BATCH ID DISPLAY */}
-                        {processingStage === 'complete' && (
-                            <div className="mt-12 bg-white p-6 rounded-2xl shadow-xl border border-indigo-100 flex flex-col items-center animate-fade-in-up">
-                                <div className="text-xs font-bold text-slate-500 uppercase tracking-widest mb-2">Deployed Batch ID</div>
-                                <div className="text-3xl font-mono font-bold text-slate-900 bg-slate-50 px-6 py-3 rounded-xl border border-slate-200 select-all mb-6">
-                                    {batchId}
-                                </div>
-                                <button
-                                    onClick={() => navigate(`/batch/${batchId}`)}
-                                    className="w-full py-4 bg-indigo-600 text-white font-bold rounded-xl hover:bg-indigo-500 transition-all shadow-lg flex items-center justify-center gap-2 transform hover:-translate-y-1"
-                                >
-                                    <span>Monitoring Dashboard</span>
-                                    <ArrowRight size={20} />
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
+                    <span>View Live Results</span>
+                    <ArrowRight size={20} />
+                </button>
             </div>
         )
     }
+                    </div >
+                </div >
+            </div >
+        )
+}
 
-    // --- DEFAULT INPUT VIEW (When Idle) ---
-    return (
-        <div className="min-h-screen bg-white">
-            <div className="max-w-4xl mx-auto px-4 py-12">
+// --- DEFAULT INPUT VIEW (When Idle) ---
+return (
+    <div className="min-h-screen bg-white">
+        <div className="max-w-4xl mx-auto px-4 py-12">
 
-                {/* Header */}
-                <div className="mb-12">
-                    <Link to="/dashboard" className="text-slate-400 hover:text-slate-600 flex items-center gap-2 mb-4 transition-colors">
-                        <ArrowRight className="rotate-180 w-4 h-4" /> Back to Dashboard
-                    </Link>
-                    <h1 className="text-4xl font-bold text-slate-900 mb-3">New Experiment</h1>
-                    <p className="text-slate-500 text-lg">Configure your high-throughput virtual screening campaign.</p>
+            {/* Header */}
+            <div className="mb-12">
+                <Link to="/dashboard" className="text-slate-400 hover:text-slate-600 flex items-center gap-2 mb-4 transition-colors">
+                    <ArrowRight className="rotate-180 w-4 h-4" /> Back to Dashboard
+                </Link>
+                <h1 className="text-4xl font-bold text-slate-900 mb-3">New Experiment</h1>
+                <p className="text-slate-500 text-lg">Configure your high-throughput virtual screening campaign.</p>
+            </div>
+
+            {/* 1. Receptor Upload */}
+            <div className="mb-8">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">1</div>
+                    <h2 className="text-lg font-bold text-slate-900">Target Receptor</h2>
                 </div>
 
-                {/* 1. Receptor Upload */}
-                <div className="mb-8">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">1</div>
-                        <h2 className="text-lg font-bold text-slate-900">Target Receptor</h2>
+                <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 hover:bg-slate-50/50 transition-colors cursor-pointer group relative">
+                    {!receptorFile ? (
+                        <>
+                            <input
+                                type="file"
+                                className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                accept=".pdb,.pdbqt,.mol2,.cif,.gro,.prmtop,.psf,.xyz"
+                                onChange={(e) => setReceptorFile(e.target.files[0])}
+                            />
+                            <div className="text-center pointer-events-none">
+                                <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                                    <Database className="w-8 h-8 text-indigo-500" />
+                                </div>
+                                <p className="font-bold text-slate-700">Drop Receptor File Here</p>
+                                <p className="text-sm text-slate-400 mt-2">.pdb, .pdbqt, .mol2, .cif (Max 50MB)</p>
+                            </div>
+                        </>
+                    ) : (
+                        <div className="flex items-center justify-between bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+                            <div className="flex items-center gap-3">
+                                <div className="p-2 bg-indigo-100 rounded text-indigo-600">
+                                    <FileText size={20} />
+                                </div>
+                                <span className="font-bold text-indigo-900">{receptorFile.name}</span>
+                            </div>
+                            <button onClick={() => setReceptorFile(null)} className="text-indigo-400 hover:text-indigo-600">✕</button>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* 2. Ligand Upload */}
+            <div className="mb-8">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-4">
+                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">2</div>
+                        <h2 className="text-lg font-bold text-slate-900">Ligand Library</h2>
                     </div>
 
-                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 hover:bg-slate-50/50 transition-colors cursor-pointer group relative">
-                        {!receptorFile ? (
+                    {/* Mode Toggle */}
+                    <div className="flex bg-slate-100 p-1 rounded-lg">
+                        <button
+                            onClick={() => { setUploadMode('files'); setCsvFile(null); }}
+                            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${uploadMode === 'files' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500'}`}
+                        >
+                            Multi-File Upload
+                        </button>
+                        <button
+                            onClick={() => { setUploadMode('csv'); setLigandFiles([]); }}
+                            className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${uploadMode === 'csv' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500'}`}
+                        >
+                            CSV Import
+                        </button>
+                    </div>
+                </div>
+
+                <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 hover:bg-slate-50/50 transition-colors relative min-h-[200px] flex flex-col justify-center">
+                    {uploadMode === 'files' ? (
+                        ligandFiles.length === 0 ? (
+                            <>
+                                <input
+                                    type="file"
+                                    multiple
+                                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                                    accept=".pdbqt,.sdf,.mol2,.mol,.pdb,.xyz"
+                                    onChange={(e) => setLigandFiles(Array.from(e.target.files))}
+                                />
+                                <div className="text-center pointer-events-none">
+                                    <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <Upload className="w-8 h-8 text-emerald-500" />
+                                    </div>
+                                    <p className="font-bold text-slate-700">Drop Ligand Files Here</p>
+                                    <p className="text-sm text-slate-400 mt-2">.pdbqt, .sdf, .mol2 supported</p>
+                                </div>
+                            </>
+                        ) : (
+                            <div>
+                                <div className="flex justify-between items-center mb-4">
+                                    <span className="font-bold text-slate-700">{ligandFiles.length} files selected</span>
+                                    <button onClick={() => setLigandFiles([])} className="text-red-500 text-sm hover:underline">Clear All</button>
+                                </div>
+                                <div className="max-h-[200px] overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    {ligandFiles.map((f, i) => (
+                                        <div key={i} className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-2 rounded border border-slate-100">
+                                            <FileText size={14} className="text-slate-400" />
+                                            <span className="truncate">{f.name}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        )
+                    ) : (
+                        // CSV MODE
+                        !csvFile ? (
                             <>
                                 <input
                                     type="file"
                                     className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                    accept=".pdb,.pdbqt,.mol2,.cif,.gro,.prmtop,.psf,.xyz"
-                                    onChange={(e) => setReceptorFile(e.target.files[0])}
+                                    accept=".csv"
+                                    onChange={(e) => setCsvFile(e.target.files[0])}
                                 />
                                 <div className="text-center pointer-events-none">
-                                    <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                                        <Database className="w-8 h-8 text-indigo-500" />
+                                    <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
+                                        <FileText className="w-8 h-8 text-blue-500" />
                                     </div>
-                                    <p className="font-bold text-slate-700">Drop Receptor File Here</p>
-                                    <p className="text-sm text-slate-400 mt-2">.pdb, .pdbqt, .mol2, .cif (Max 50MB)</p>
+                                    <p className="font-bold text-slate-700">Drop CSV File Here</p>
+                                    <p className="text-sm text-slate-400 mt-2">Must contain 'smiles' column</p>
                                 </div>
                             </>
                         ) : (
-                            <div className="flex items-center justify-between bg-indigo-50/50 p-4 rounded-xl border border-indigo-100">
+                            <div className="flex items-center justify-between bg-blue-50/50 p-4 rounded-xl border border-blue-100">
                                 <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-indigo-100 rounded text-indigo-600">
+                                    <div className="p-2 bg-blue-100 rounded text-blue-600">
                                         <FileText size={20} />
                                     </div>
-                                    <span className="font-bold text-indigo-900">{receptorFile.name}</span>
+                                    <span className="font-bold text-blue-900">{csvFile.name}</span>
                                 </div>
-                                <button onClick={() => setReceptorFile(null)} className="text-indigo-400 hover:text-indigo-600">✕</button>
+                                <button onClick={() => setCsvFile(null)} className="text-blue-400 hover:text-blue-600">✕</button>
                             </div>
-                        )}
-                    </div>
-                </div>
-
-                {/* 2. Ligand Upload */}
-                <div className="mb-8">
-                    <div className="flex items-center justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                            <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">2</div>
-                            <h2 className="text-lg font-bold text-slate-900">Ligand Library</h2>
-                        </div>
-
-                        {/* Mode Toggle */}
-                        <div className="flex bg-slate-100 p-1 rounded-lg">
-                            <button
-                                onClick={() => { setUploadMode('files'); setCsvFile(null); }}
-                                className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${uploadMode === 'files' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500'}`}
-                            >
-                                Multi-File Upload
-                            </button>
-                            <button
-                                onClick={() => { setUploadMode('csv'); setLigandFiles([]); }}
-                                className={`px-4 py-1.5 text-sm font-bold rounded-md transition-all ${uploadMode === 'csv' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500'}`}
-                            >
-                                CSV Import
-                            </button>
-                        </div>
-                    </div>
-
-                    <div className="border-2 border-dashed border-slate-200 rounded-2xl p-8 hover:bg-slate-50/50 transition-colors relative min-h-[200px] flex flex-col justify-center">
-                        {uploadMode === 'files' ? (
-                            ligandFiles.length === 0 ? (
-                                <>
-                                    <input
-                                        type="file"
-                                        multiple
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        accept=".pdbqt,.sdf,.mol2,.mol,.pdb,.xyz"
-                                        onChange={(e) => setLigandFiles(Array.from(e.target.files))}
-                                    />
-                                    <div className="text-center pointer-events-none">
-                                        <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <Upload className="w-8 h-8 text-emerald-500" />
-                                        </div>
-                                        <p className="font-bold text-slate-700">Drop Ligand Files Here</p>
-                                        <p className="text-sm text-slate-400 mt-2">.pdbqt, .sdf, .mol2 supported</p>
-                                    </div>
-                                </>
-                            ) : (
-                                <div>
-                                    <div className="flex justify-between items-center mb-4">
-                                        <span className="font-bold text-slate-700">{ligandFiles.length} files selected</span>
-                                        <button onClick={() => setLigandFiles([])} className="text-red-500 text-sm hover:underline">Clear All</button>
-                                    </div>
-                                    <div className="max-h-[200px] overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-2">
-                                        {ligandFiles.map((f, i) => (
-                                            <div key={i} className="flex items-center gap-2 text-sm text-slate-600 bg-slate-50 px-3 py-2 rounded border border-slate-100">
-                                                <FileText size={14} className="text-slate-400" />
-                                                <span className="truncate">{f.name}</span>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )
-                        ) : (
-                            // CSV MODE
-                            !csvFile ? (
-                                <>
-                                    <input
-                                        type="file"
-                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        accept=".csv"
-                                        onChange={(e) => setCsvFile(e.target.files[0])}
-                                    />
-                                    <div className="text-center pointer-events-none">
-                                        <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                                            <FileText className="w-8 h-8 text-blue-500" />
-                                        </div>
-                                        <p className="font-bold text-slate-700">Drop CSV File Here</p>
-                                        <p className="text-sm text-slate-400 mt-2">Must contain 'smiles' column</p>
-                                    </div>
-                                </>
-                            ) : (
-                                <div className="flex items-center justify-between bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                                    <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-blue-100 rounded text-blue-600">
-                                            <FileText size={20} />
-                                        </div>
-                                        <span className="font-bold text-blue-900">{csvFile.name}</span>
-                                    </div>
-                                    <button onClick={() => setCsvFile(null)} className="text-blue-400 hover:text-blue-600">✕</button>
-                                </div>
-                            )
-                        )}
-                    </div>
-                </div>
-
-                {/* 3. Engine Selection (Visual Only - Consensus Enforced) */}
-                <div className="mb-8">
-                    <div className="flex items-center gap-4 mb-4">
-                        <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">3</div>
-                        <h2 className="text-lg font-bold text-slate-900">Processing Engine</h2>
-                    </div>
-
-                    <div className="p-6 bg-gradient-to-br from-indigo-50 to-white rounded-2xl border-2 border-indigo-500 shadow-sm flex gap-4">
-                        <div className="p-3 bg-white rounded-xl shadow-sm h-fit">
-                            <Cpu className="w-8 h-8 text-indigo-600" />
-                        </div>
-                        <div>
-                            <div className="flex items-center gap-2 mb-1">
-                                <h3 className="font-bold text-slate-900">BioDockify Consensus Protocol</h3>
-                                <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase rounded-full">Recommended</span>
-                            </div>
-                            <p className="text-sm text-slate-600 leading-relaxed mb-3">
-                                Automatically runs <strong>AutoDock Vina</strong> (Physics-based) and <strong>Gnina</strong> (Deep Learning) in parallel.
-                                Results are aggregated to minimize false positives.
-                            </p>
-                            <div className="flex gap-2">
-                                <span className="text-xs px-2 py-1 bg-white border border-slate-200 rounded font-mono text-slate-500">Vina 1.2.3</span>
-                                <span className="text-xs px-2 py-1 bg-white border border-slate-200 rounded font-mono text-slate-500">Gnina CNN</span>
-                            </div>
-                        </div>
-                        <div className="ml-auto flex items-center">
-                            <CheckCircle2 className="w-6 h-6 text-indigo-600" />
-                        </div>
-                    </div>
-                </div>
-
-                {/* Submit */}
-                <div className="flex justify-end pt-8 border-t border-slate-100">
-                    {error && (
-                        <div className="mr-auto flex items-center gap-2 text-red-600 bg-red-50 px-4 py-2 rounded-lg">
-                            <AlertCircle className="w-5 h-5" />
-                            <span className="text-sm font-medium">{error}</span>
-                        </div>
+                        )
                     )}
+                </div>
+            </div>
 
-                    <button
-                        onClick={uploadMode === 'files' ? handleFilesSubmit : handleCsvSubmit}
-                        disabled={loading}
-                        className="btn-primary px-8 py-4 text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-3 disabled:opacity-50 disabled:transform-none"
-                    >
-                        <span>Start Experiment</span>
-                        <Play size={20} fill="currentColor" />
-                    </button>
+            {/* 3. Engine Selection (Visual Only - Consensus Enforced) */}
+            <div className="mb-8">
+                <div className="flex items-center gap-4 mb-4">
+                    <div className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">3</div>
+                    <h2 className="text-lg font-bold text-slate-900">Processing Engine</h2>
                 </div>
 
+                <div className="p-6 bg-gradient-to-br from-indigo-50 to-white rounded-2xl border-2 border-indigo-500 shadow-sm flex gap-4">
+                    <div className="p-3 bg-white rounded-xl shadow-sm h-fit">
+                        <Cpu className="w-8 h-8 text-indigo-600" />
+                    </div>
+                    <div>
+                        <div className="flex items-center gap-2 mb-1">
+                            <h3 className="font-bold text-slate-900">BioDockify Consensus Protocol</h3>
+                            <span className="px-2 py-0.5 bg-indigo-100 text-indigo-700 text-[10px] font-bold uppercase rounded-full">Recommended</span>
+                        </div>
+                        <p className="text-sm text-slate-600 leading-relaxed mb-3">
+                            Automatically runs <strong>AutoDock Vina</strong> (Physics-based) and <strong>Gnina</strong> (Deep Learning) in parallel.
+                            Results are aggregated to minimize false positives.
+                        </p>
+                        <div className="flex gap-2">
+                            <span className="text-xs px-2 py-1 bg-white border border-slate-200 rounded font-mono text-slate-500">Vina 1.2.3</span>
+                            <span className="text-xs px-2 py-1 bg-white border border-slate-200 rounded font-mono text-slate-500">Gnina CNN</span>
+                        </div>
+                    </div>
+                    <div className="ml-auto flex items-center">
+                        <CheckCircle2 className="w-6 h-6 text-indigo-600" />
+                    </div>
+                </div>
             </div>
+
+            {/* Submit */}
+            <div className="flex justify-end pt-8 border-t border-slate-100">
+                {error && (
+                    <div className="mr-auto flex items-center gap-2 text-red-600 bg-red-50 px-4 py-2 rounded-lg">
+                        <AlertCircle className="w-5 h-5" />
+                        <span className="text-sm font-medium">{error}</span>
+                    </div>
+                )}
+
+                <button
+                    onClick={uploadMode === 'files' ? handleFilesSubmit : handleCsvSubmit}
+                    disabled={loading}
+                    className="btn-primary px-8 py-4 text-lg shadow-xl hover:shadow-2xl hover:-translate-y-1 transition-all flex items-center gap-3 disabled:opacity-50 disabled:transform-none"
+                >
+                    <span>Start Experiment</span>
+                    <Play size={20} fill="currentColor" />
+                </button>
+            </div>
+
         </div>
-    )
+    </div>
+)
 }
