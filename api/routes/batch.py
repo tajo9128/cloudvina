@@ -302,7 +302,7 @@ async def start_batch(
 
         # FDA Audit Log
         if auth_client and current_user:
-             await fda_service.log_audit_event(auth_client, current_user.id, 'BATCH_STARTED', batch_id, {'jobs': started_count, 'engine': engine})
+             await fda_service.log_audit_event(auth_client, current_user.id, 'BATCH_STARTED', 'batch', batch_id, {'jobs': started_count, 'engine': engine})
 
         return {
             "batch_id": batch_id,
@@ -534,7 +534,7 @@ async def submit_csv_batch(
         
         # FDA Audit Log
         if auth_client and current_user:
-             await fda_service.log_audit_event(auth_client, current_user['id'], 'BATCH_SUBMITTED_CSV', batch_id, {'jobs': len(jobs_created), 'engine': engine})
+             await fda_service.log_audit_event(auth_client, current_user['id'], 'BATCH_SUBMITTED_CSV', 'batch', batch_id, {'jobs': len(jobs_created), 'engine': engine})
 
         return {
             "batch_id": batch_id,

@@ -13,6 +13,7 @@ class FDAService:
         supabase_client: Client,
         user_id: str,
         action: str,
+        resource_type: str,
         resource_id: Optional[str] = None,
         details: Optional[Dict[str, Any]] = None,
         ip_address: Optional[str] = None,
@@ -22,9 +23,17 @@ class FDAService:
         Logs a critical system event to the immutable fda_audit_logs table.
         """
         try:
+            # USE SERVICE ROLE: FDA Logs are system-mandated. Bypassing RLS ensures reliability.
+            # We import here to avoid circular dependencies if auth.py imports services
+            from auth import get_service_client
+            
+            # Create a service role client specifically for this op
+            service_client = get_service_client()
+            
             payload = {
                 "user_id": user_id,
                 "action": action,
+                "resource_type": resource_type,
                 "resource_id": resource_id,
                 "details": details or {},
                 "ip_address": ip_address,
@@ -32,8 +41,9 @@ class FDAService:
                 # created_at is handled by DB default
             }
 
-            # Execute Insert
-            supabase_client.table("fda_audit_logs").insert(payload).execute()
+            # Execute Insert with SERVICE ROLE
+            service_client.table("fda_audit_logs").insert(payload).execute()
+            print(f"DEBUG: FDA Log {action} recorded for {user_id}")
             return True
         except Exception as e:
             # Critical Log Failure - In a strict environment, this might halt execution.

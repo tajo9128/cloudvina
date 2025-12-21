@@ -63,6 +63,51 @@ app.add_middleware(
     secret_key=os.getenv("SECRET_KEY", "your-secret-key-change-in-production")
 )
 
+# ============================================================================
+# WebSocket Connection Manager
+# ============================================================================
+from fastapi import WebSocket, WebSocketDisconnect
+
+class ConnectionManager:
+    def __init__(self):
+        self.active_connections: Dict[str, List[WebSocket]] = {}
+
+    async def connect(self, websocket: WebSocket, job_id: str):
+        await websocket.accept()
+        if job_id not in self.active_connections:
+            self.active_connections[job_id] = []
+        self.active_connections[job_id].append(websocket)
+
+    def disconnect(self, websocket: WebSocket, job_id: str):
+        if job_id in self.active_connections:
+            self.active_connections[job_id].remove(websocket)
+            if not self.active_connections[job_id]:
+                del self.active_connections[job_id]
+
+    async def broadcast(self, message: str, job_id: str):
+        if job_id in self.active_connections:
+            for connection in self.active_connections[job_id]:
+                try:
+                    await connection.send_text(message)
+                except Exception:
+                    # Handle broken pipe
+                    pass
+
+manager = ConnectionManager()
+
+@app.websocket("/ws/jobs/{job_id}")
+async def websocket_job_progress(websocket: WebSocket, job_id: str):
+    await manager.connect(websocket, job_id)
+    try:
+        while True:
+            # Keep connection alive, maybe wait for client ping?
+            # Or just wait until client disconnects
+            data = await websocket.receive_text()
+            # Echo or handle client messages if needed
+            
+    except WebSocketDisconnect:
+        manager.disconnect(websocket, job_id)
+
 # CORS middleware for frontend
 app.add_middleware(
     CORSMiddleware,

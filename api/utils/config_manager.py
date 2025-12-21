@@ -12,6 +12,8 @@ DEFAULT_CONFIG = {
         "binding_energy": {"enabled": True, "maintenance_mode": False},
         "lead_ranking": {"enabled": True, "maintenance_mode": False},
         "admet_prediction": {"enabled": True, "maintenance_mode": False},
+        "target_prediction": {"enabled": True, "maintenance_mode": False},
+        "benchmarking": {"enabled": True, "maintenance_mode": False},
         "reporting": {"enabled": True, "maintenance_mode": False}
     },
     "pricing": {

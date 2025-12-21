@@ -78,8 +78,8 @@ const TargetPredictionPage = () => {
                             type="submit"
                             disabled={loading}
                             className={`w-full py-4 rounded-xl font-bold text-lg shadow-lg transition-all transform hover:-translate-y-0.5 ${loading
-                                    ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
-                                    : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-blue-500/25'
+                                ? 'bg-slate-700 text-slate-400 cursor-not-allowed'
+                                : 'bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:shadow-blue-500/25'
                                 }`}
                         >
                             {loading ? (
@@ -116,7 +116,19 @@ const TargetPredictionPage = () => {
                                     <div key={idx} className="bg-slate-800/40 border border-slate-700/50 rounded-xl p-6 hover:border-blue-500/30 transition-colors flex items-center justify-between">
                                         <div>
                                             <h3 className="text-lg font-bold text-white">{target.target}</h3>
-                                            <p className="text-slate-400 text-sm">Create Date: {target.common_name} • UniProt: <a href={`https://www.uniprot.org/uniprot/${target.uniprot_id}`} target="_blank" rel="noreferrer" className="text-blue-400 hover:underline">{target.uniprot_id}</a></p>
+                                            <p className="text-slate-400 text-sm">
+                                                Organism: {target.common_name} • ID: {' '}
+                                                <a
+                                                    href={target.uniprot_id.startsWith('CHEMBL')
+                                                        ? `https://www.ebi.ac.uk/chembl/target_report_card/${target.uniprot_id}`
+                                                        : `https://www.uniprot.org/uniprot/${target.uniprot_id}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="text-blue-400 hover:underline"
+                                                >
+                                                    {target.uniprot_id}
+                                                </a>
+                                            </p>
                                         </div>
                                         <div className="flex flex-col items-end">
                                             <div className="text-2xl font-bold text-green-400">

@@ -18,6 +18,8 @@ const PhaseCard = ({ id, phase, config, onToggle, onUpdateLimit }) => {
         binding_energy: Activity,
         lead_ranking: Settings,
         admet_prediction: FileText,
+        target_prediction: CheckCircle,
+        benchmarking: BarChart2,
         reporting: FileText
     };
     const Icon = icons[id] || Settings;
@@ -136,7 +138,7 @@ const PhasesControl = () => {
         <div className="p-6 md:p-8 max-w-[1920px] mx-auto space-y-6">
             <header className="mb-8">
                 <h1 className="text-3xl font-bold text-white mb-2">Phase Control</h1>
-                <p className="text-slate-400">Manage availability and quotas for all 7 pipeline phases.</p>
+                <p className="text-slate-400">Manage availability and quotas for all 9 pipeline phases.</p>
             </header>
 
             {loading ? (

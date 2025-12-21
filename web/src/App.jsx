@@ -149,6 +149,21 @@ function AppRoutes() {
                     path="/dock/batch/:batchId"
                     element={session ? <BatchResultsPage /> : <Navigate to="/login" />}
                 />
+                {/* Fix: Redirect direct /batch/ links to /dock/batch/ */}
+                <Route
+                    path="/batch/:batchId"
+                    element={<Navigate to="/dock/batch/:batchId" replace />}
+                />
+                {/* Note: Navigate's :batchId param substitution relies on matching param name in path? 
+                    Actually, react-router Navigate with params needs a relative path or smart component.
+                    Better to just use an inline component that reads params and redirects. 
+                    Or simply map /batch/:batchId to the component if we want to support it directly.
+                    Let's just map it to BatchResultsPage directly to be safe and fast.
+                */}
+                <Route
+                    path="/batch/:batchId"
+                    element={session ? <BatchResultsPage /> : <Navigate to="/login" />}
+                />
                 <Route
                     path="/dock/:jobId"
                     element={session ? <JobResultsPage /> : <Navigate to="/login" />}
