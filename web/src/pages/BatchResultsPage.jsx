@@ -559,49 +559,55 @@ export default function BatchResultsPage() {
                                                     <h3 className="font-bold text-slate-600 mb-4 uppercase tracking-wider text-sm">Toxicity Alerts</h3>
                                                     <div className="space-y-3">
                                                         {/* hERG */}
-                                                        <div className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="p-2 bg-white rounded shadow-sm">❤️</div>
-                                                                <div>
-                                                                    <div className="font-bold text-slate-700 text-sm">hERG Liability</div>
-                                                                    <div className="text-xs text-slate-400">Cardiotoxicity Risk</div>
+                                                        {admetData?.herg && (
+                                                            <div className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="p-2 bg-white rounded shadow-sm">❤️</div>
+                                                                    <div>
+                                                                        <div className="font-bold text-slate-700 text-sm">hERG Liability</div>
+                                                                        <div className="text-xs text-slate-400">Cardiotoxicity Risk</div>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${admetData.herg.risk_level === 'Low' ? 'bg-green-100 text-green-700' :
-                                                                admetData.herg.risk_level === 'Moderate' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
-                                                                }`}>
-                                                                {admetData.herg.risk_level}
-                                                            </span>
-                                                        </div>
-
-                                                        {/* AMES */}
-                                                        <div className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50">
-                                                            <div className="flex items-center gap-3">
-                                                                <div className="p-2 bg-white rounded shadow-sm">🧬</div>
-                                                                <div>
-                                                                    <div className="font-bold text-slate-700 text-sm">AMES Mutagenicity</div>
-                                                                    <div className="text-xs text-slate-400">Genotoxicity Risk</div>
-                                                                </div>
-                                                            </div>
-                                                            <span className={`px-3 py-1 rounded-full text-xs font-bold ${admetData.ames.prediction === 'Negative' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
-                                                                }`}>
-                                                                {admetData.ames.prediction}
-                                                            </span>
-                                                        </div>
-
-                                                        {/* PAINS */}
-                                                        {admetData.pains.passed ? (
-                                                            <div className="flex items-center gap-2 text-xs text-green-600 font-medium px-2">
-                                                                <span>🛡️</span> No PAINS alerts detected
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex items-center gap-2 text-xs text-red-600 font-medium px-2 bg-red-50 p-2 rounded">
-                                                                <span>⚠️</span> PAINS Alert: {admetData.pains.alerts.join(", ")}
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${admetData.herg.risk_level === 'Low' ? 'bg-green-100 text-green-700' :
+                                                                    admetData.herg.risk_level === 'Moderate' ? 'bg-yellow-100 text-yellow-700' : 'bg-red-100 text-red-700'
+                                                                    }`}>
+                                                                    {admetData.herg.risk_level || 'Unknown'}
+                                                                </span>
                                                             </div>
                                                         )}
 
+                                                        {/* AMES */}
+                                                        {admetData?.ames && (
+                                                            <div className="flex items-center justify-between p-3 rounded-lg border border-slate-100 bg-slate-50">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className="p-2 bg-white rounded shadow-sm">🧬</div>
+                                                                    <div>
+                                                                        <div className="font-bold text-slate-700 text-sm">AMES Mutagenicity</div>
+                                                                        <div className="text-xs text-slate-400">Genotoxicity Risk</div>
+                                                                    </div>
+                                                                </div>
+                                                                <span className={`px-3 py-1 rounded-full text-xs font-bold ${admetData.ames.prediction === 'Negative' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                                                                    }`}>
+                                                                    {admetData.ames.prediction || 'Unknown'}
+                                                                </span>
+                                                            </div>
+                                                        )}
+
+                                                        {/* PAINS */}
+                                                        {admetData?.pains && (
+                                                            admetData.pains.passed ? (
+                                                                <div className="flex items-center gap-2 text-xs text-green-600 font-medium px-2">
+                                                                    <span>🛡️</span> No PAINS alerts detected
+                                                                </div>
+                                                            ) : (
+                                                                <div className="flex items-center gap-2 text-xs text-red-600 font-medium px-2 bg-red-50 p-2 rounded">
+                                                                    <span>⚠️</span> PAINS Alert: {admetData.pains.alerts?.join(", ") || "Risk Detected"}
+                                                                </div>
+                                                            )
+                                                        )}
+
                                                         {/* CYP/DDI Risk (New) */}
-                                                        {admetData.cyp && (
+                                                        {admetData?.cyp && (
                                                             <div className="mt-4 pt-4 border-t border-slate-100">
                                                                 <div className="flex items-center justify-between mb-2">
                                                                     <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">Metabolic Liability (DDI)</div>
@@ -610,7 +616,7 @@ export default function BatchResultsPage() {
                                                                     </span>
                                                                 </div>
                                                                 <div className="grid grid-cols-3 gap-2">
-                                                                    {Object.entries(admetData.cyp.isoforms).map(([isoform, data]) => (
+                                                                    {admetData.cyp.isoforms && Object.entries(admetData.cyp.isoforms).map(([isoform, data]) => (
                                                                         <div key={isoform} className="text-center p-1.5 bg-slate-50 rounded border border-slate-100">
                                                                             <div className="text-[10px] text-slate-500 font-medium">{isoform}</div>
                                                                             <div className={`text-xs font-bold ${data.inhibition_risk === 'High' ? 'text-red-500' : 'text-slate-700'}`}>
