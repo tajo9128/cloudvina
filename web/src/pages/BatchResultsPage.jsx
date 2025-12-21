@@ -237,7 +237,7 @@ export default function BatchResultsPage() {
         return job.binding_affinity ?? job.vina_score ?? job.docking_score ?? null
     }
 
-    const sortedJobs = batchData?.jobs ? [...batchData.jobs].sort((a, b) => {
+    const sortedJobs = batchData?.jobs ? [...batchData.jobs].filter(j => j).sort((a, b) => {
         const valA = sortConfig.key === 'binding_affinity' ? getAffinity(a) : a[sortConfig.key]
         const valB = sortConfig.key === 'binding_affinity' ? getAffinity(b) : b[sortConfig.key]
 
