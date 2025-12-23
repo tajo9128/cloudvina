@@ -10,7 +10,9 @@ export default function MoleculeViewer({
     title = "3D Structure",
     interactions = null,
     cavities = null,
-    bindingAffinity = null
+    bindingAffinity = null,
+    receptorType = 'pdbqt',
+    ligandType = 'pdbqt'
 }) {
     const viewerRef = useRef(null)
     const containerRef = useRef(null)
@@ -53,7 +55,7 @@ export default function MoleculeViewer({
 
         // Add Receptor (Protein)
         if (receptorData && isValidPDB(receptorData)) {
-            viewer.addModel(receptorData, 'pdbqt')
+            viewer.addModel(receptorData, receptorType)
             // Style receptor
             if (currentStyle === 'greenPink') {
                 viewer.setStyle({ model: 0 }, { cartoon: { color: '#84cc16' } })
@@ -66,7 +68,7 @@ export default function MoleculeViewer({
 
         // Add Ligand
         if (pdbqtData && isValidPDB(pdbqtData)) {
-            viewer.addModel(pdbqtData, 'pdbqt')
+            viewer.addModel(pdbqtData, ligandType)
             // Style ligand (always stick/sphere mix for visibility)
             if (currentStyle === 'greenPink') {
                 viewer.setStyle({ model: -1 }, { stick: { colorscheme: 'magentaCarbon', radius: 0.25 } })
