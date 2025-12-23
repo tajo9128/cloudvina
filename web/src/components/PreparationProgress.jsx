@@ -50,7 +50,7 @@ export default function PreparationProgress({ currentStep, batchId }) {
                 const { data: { session } } = await supabase.auth.getSession()
                 if (!session) return
 
-                const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://api.biodockify.com'}/jobs/batch/${batchId}`, {
+                const response = await fetch(`${import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com'}/jobs/batch/${batchId}`, {
                     headers: { 'Authorization': `Bearer ${session.access_token}` }
                 })
 
