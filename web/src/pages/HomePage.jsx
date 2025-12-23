@@ -6,6 +6,9 @@ import {
     ArrowRight, CheckCircle2, Zap, Search, Globe, ShieldCheck, Layers,
     Brain, Package, BarChart3, TrendingUp, FileText, CheckCircle, Play, Server
 } from 'lucide-react'
+import heroImage from '../assets/images/hero-molecular-v36.png'
+import bridgingGapImage from '../assets/images/bridging-gap-v36.png'
+import SEOHelmet from '../components/SEOHelmet'
 
 export default function HomePage() {
     const [isVisible, setIsVisible] = useState(false)
@@ -79,10 +82,11 @@ export default function HomePage() {
                                 </div>
 
                                 <img
-                                    src="/assets/images/hero-molecular-v36.png"
+                                    src={heroImage}
                                     alt="BioDockify Interface"
                                     className="w-full h-auto transform transition-transform duration-700 hover:scale-105"
                                     onError={(e) => {
+                                        console.error("Hero image failed to load, falling back to placeholder");
                                         e.target.onerror = null;
                                         e.target.src = "https://images.unsplash.com/photo-1614935151651-0bea6508db6b?auto=format&fit=crop&q=80&w=1200";
                                     }}
@@ -266,7 +270,7 @@ export default function HomePage() {
                         <div className="relative">
                             <div className="absolute inset-0 bg-blue-600 blur-[80px] opacity-10 rounded-full"></div>
                             <img
-                                src="/assets/images/bridging-gap-v36.png"
+                                src={bridgingGapImage}
                                 alt="BioDockify Bridging Research and Discovery"
                                 className="relative w-full h-auto rounded-3xl shadow-2xl border border-slate-200 transform hover:scale-[1.02] transition-transform duration-500"
                                 onError={(e) => {
