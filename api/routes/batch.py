@@ -626,11 +626,10 @@ async def get_batch_details(
                         gnina_val = vina_val - (random.random() * 0.5) # Slightly better usually
                         
                         # Update DB
+                        # Fix: Removed docking_score/vina_score writes (PGRST204 error)
                         auth_client.table('jobs').update({
                             'status': 'SUCCEEDED',
                             'binding_affinity': gnina_val, # Use best (Gnina)
-                            'docking_score': gnina_val,    # Gnina
-                            'vina_score': vina_val,        # Vina
                             'completed_at': current_time.isoformat()
                         }).eq('id', job['id']).execute()
                         
