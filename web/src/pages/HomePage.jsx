@@ -3,8 +3,8 @@ import { Link } from 'react-router-dom'
 import SEOHelmet from '../components/SEOHelmet'
 import {
     Activity, GraduationCap, Factory, FlaskConical, Stethoscope,
-    ArrowRight, CheckCircle2, Zap, Search, Globe, ShieldCheck, Layers,
-    Brain, Package, BarChart3, TrendingUp, FileText, CheckCircle, Play, Server
+    ArrowRight, CheckCircle2, Zap, Search, Globe, ShieldCheck,
+    CheckCircle, Play, Server
 } from 'lucide-react'
 
 export default function HomePage() {
@@ -100,131 +100,141 @@ export default function HomePage() {
                 </div>
             </section>
 
-            {/* 2. 9-PHASE DISCOVERY ENGINE (WORKFLOW) */}
+            {/* 2. THE 3 PILLARS OF DISCOVERY */}
             <section id="workflow" className="py-32 bg-slate-50 relative overflow-hidden">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                    <div className="text-center mb-24">
-                        <h2 className="text-sm font-bold text-indigo-600 tracking-[0.2em] uppercase mb-4">The Enterprise Workflow</h2>
-                        <h3 className="text-4xl md:text-6xl font-bold text-slate-900 mb-6">9-Phase Discovery Engine</h3>
-                        <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-                            Automate the complex biology so your team can focus on the discovery.
-                            A complete pipeline from target identification to FDA-compliant submission.
+                {/* Background Decor */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+                    <div className="absolute top-1/4 left-0 w-[800px] h-[800px] bg-indigo-200/20 rounded-full blur-[120px] -translate-x-1/2"></div>
+                    <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-emerald-200/20 rounded-full blur-[100px] translate-x-1/3"></div>
+                </div>
+
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+                    <div className="text-center mb-20">
+                        <h2 className="text-sm font-bold text-indigo-600 tracking-[0.2em] uppercase mb-4">Complete 9-Phase Pipeline</h2>
+                        <h3 className="text-4xl md:text-5xl font-bold text-slate-900 mb-6">Three Pillars of Discovery</h3>
+                        <p className="text-lg text-slate-600 max-w-4xl mx-auto leading-relaxed">
+                            We have consolidated the entire discovery lifecycle into three integrated workspaces:
+                            <span className="block mt-4 text-slate-500 font-medium border-t border-b border-slate-200 py-4 bg-white/50">
+                                1. Target ID &nbsp;•&nbsp; 2. Docking &nbsp;•&nbsp; 3. MD Simulation &nbsp;•&nbsp; 4. Trajectory Analysis &nbsp;•&nbsp; 5. Binding Energy <br className="hidden md:block" />
+                                6. Lead Ranking &nbsp;•&nbsp; 7. ADMET Profiling &nbsp;•&nbsp; 8. Benchmarking &nbsp;•&nbsp; 9. Reporting
+                            </span>
                         </p>
                     </div>
 
-                    <div className="relative">
-                        {/* Vertical Timeline Line */}
-                        <div className="hidden lg:block absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-px bg-gradient-to-b from-slate-200 via-indigo-200 to-slate-200"></div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 gap-6">
+                        {/* PILLAR 1: AI VIRTUAL SCREENING (CNS Ensemble B) */}
+                        <PillarCard
+                            number="01"
+                            title="AI Virtual Screening"
+                            subtitle="Fine Tuned AI Ensemble"
+                            description="Multi-encoder deep learning for CNS targets. Fused ChemBERTa (SMILES) + GNN (Structure) + ProteinCNN architecture trained on Google Colab L4 GPU for affinity prediction."
+                            features={[
+                                "ChemBERTa 768-dim Molecular Embeddings",
+                                "GNN (GAT) Structure-Aware Features",
+                                "DeepDTA pKd Affinity Prediction",
+                                "Blood-Brain Barrier (BBB) Classification",
+                                "Plant Alkaloid Phytochemical Library"
+                            ]}
+                            icon={<Zap className="w-8 h-8 text-white" />}
+                            color="indigo"
+                            link="https://ai.biodockify.com"
+                            linkText="Launch Screening"
+                        />
 
-                        <div className="space-y-4 lg:space-y-24">
-                            {/* 1. Target Identification */}
-                            <TimelineItem
-                                number="1"
-                                title="Target Identification"
-                                subtitle="AI-Driven Target Prediction"
-                                description="Upload a FASTA sequence or PDB ID. Our AI models predict bindability and druggability scores before you start."
-                                tags={["Deep Learning", "Binding Site Detection", "Hotspot Analysis"]}
-                                status="completed"
-                                side="left"
-                                icon={<Brain size={24} />}
-                            />
+                        {/* PILLAR 2: HIGH-THROUGHPUT DOCKING */}
+                        <PillarCard
+                            number="02"
+                            title="High-Throughput Docking"
+                            subtitle="Consensus Dual-Engine"
+                            description="Massive-scale validation with parallel AutoDock Vina and Gnina execution. Secure batch processing with real-time protein preparation and automated grid calculation."
+                            features={[
+                                "Consensus Scoring (Vina + Gnina)",
+                                "Automated Protein Prep Pipeline",
+                                "Parallel Cloud Execution (5 cores)",
+                                "PDBQT Conversion & Grid Generation",
+                                "Real-Time Terminal & Progress Logs"
+                            ]}
+                            icon={<Server className="w-8 h-8 text-white" />}
+                            color="blue"
+                            link="/dock/new"
+                            linkText="Start Docking"
+                        />
 
-                            {/* 2. High-Throughput Docking */}
-                            <TimelineItem
-                                number="2"
-                                title="High-Throughput Docking"
-                                subtitle="AutoDock Vina Implementation"
-                                description="Parallelized virtual screening of multi-ligand libraries. Generates ranked binding poses and affinity scores instantly."
-                                tags={["Cloud Scaling", "PDBQT Automation", "Blind Docking"]}
-                                status="completed"
-                                side="right"
-                                icon={<Package size={24} />}
-                            />
+                        {/* PILLAR 3: DYNAMICS ENGINE */}
+                        <PillarCard
+                            number="03"
+                            title="Molecular Dynamics"
+                            subtitle="Phases 3-5: Physics Engine"
+                            description="Full-atomistic MD simulations with Amber14/OpenMM force fields. Calculate binding free energies via MM-PBSA and validate protein-ligand stability under explicit solvation."
+                            features={[
+                                "Amber14 Force Fields (ff14SB)",
+                                "Explicit Solvent MD (TIP3P Water)",
+                                "Production Runs (10-100 ns)",
+                                "Trajectory RMSD/RMSF Analysis",
+                                "MM-PBSA Free Energy Calculation"
+                            ]}
+                            icon={<Activity className="w-8 h-8 text-white" />}
+                            color="amber"
+                            link="/dock/new"
+                            linkText="Run Simulation"
+                        />
 
-                            {/* 3. Molecular Dynamics */}
-                            <TimelineItem
-                                number="3"
-                                title="Molecular Dynamics"
-                                subtitle="OpenMM Production Runs"
-                                description="Full-atomistic simulations on dedicated GPU instances. Validate ligand stability with energy minimization and equilibration."
-                                tags={["Explicit Solvent", "Amber14", "GPU Clusters"]}
-                                status="completed"
-                                side="left"
-                                icon={<Zap size={24} />}
-                            />
+                        {/* PILLAR 4: LEAD DISCOVERY */}
+                        <PillarCard
+                            number="04"
+                            title="Lead Discovery Workspace"
+                            subtitle="Phases 6-7: Multi-Parameter"
+                            description="Consensus-based lead ranking integrating docking scores, MD stability, and AI predictions. Full ADMET toxicity profiling with Lipinski rule validation."
+                            features={[
+                                "Consensus Ranking (Docking + MD + AI)",
+                                "ADMET: hERG, Ames, CYP450 Inhibition",
+                                "Lipinski Rule of 5 Compliance",
+                                "BBB Penetration Prediction",
+                                "Synthetic Accessibility Score (SAScore)"
+                            ]}
+                            icon={<Search className="w-8 h-8 text-white" />}
+                            color="violet"
+                            link="/leads"
+                            linkText="Explore Workspace"
+                        />
 
-                            {/* 4. Trajectory Analysis */}
-                            <TimelineItem
-                                number="4"
-                                title="Trajectory Analysis"
-                                subtitle="MDAnalysis Integration"
-                                description="Quantify RMSD stability, RMSF flexibility, and Radius of Gyration. Identify true binders vs. sticky artifacts."
-                                tags={["RMSD/RMSF", "H-Bond Lifetime", "Clustering"]}
-                                status="completed"
-                                side="right"
-                                icon={<BarChart3 size={24} />}
-                            />
+                        {/* PILLAR 5: PLATFORM ASSURANCE */}
+                        <PillarCard
+                            number="05"
+                            title="Platform Assurance"
+                            subtitle="Phases 8-9: Regulatory QA"
+                            description="Continuous model benchmarking against experimental truth. Generate FDA 21 CFR Part 11 compliant audit logs and automated validation reports."
+                            features={[
+                                "R² & RMSE Accuracy Benchmarking",
+                                "Experimental vs Predicted Correlation",
+                                "PDBbind / BindingDB Validation Sets",
+                                "FDA 21 CFR Part 11 Audit Trails",
+                                "Automated PDF Report Generation"
+                            ]}
+                            icon={<ShieldCheck className="w-8 h-8 text-white" />}
+                            color="emerald"
+                            link="/tools/benchmarking"
+                            linkText="Run Validation"
+                        />
 
-                            {/* 5. Binding Free Energy */}
-                            <TimelineItem
-                                number="5"
-                                title="Binding Free Energy"
-                                subtitle="MM-PBSA / MM-GBSA"
-                                description="Calculate rigorous binding free energies (ΔG) including solvation effects. More accurate ranking than simple docking scores."
-                                tags={["Advanced Scoring", "Implicit Solvent", "Entropy Estimation"]}
-                                status="completed"
-                                side="left"
-                                icon={<FlaskConical size={24} />}
-                            />
-
-                            {/* 6. Lead Ranking */}
-                            <TimelineItem
-                                number="6"
-                                title="Lead Ranking"
-                                subtitle="Consensus Scoring"
-                                description="Normalize scores from Docking, MD, and GBSA. Filter false positives with a robust consensus algorithm."
-                                tags={["Weighted Scoring", "Rank Aggregation", "Outlier Removal"]}
-                                status="completed"
-                                side="right"
-                                icon={<Search size={24} />}
-                            />
-
-                            {/* 7. ADMET Profiling */}
-                            <TimelineItem
-                                number="7"
-                                title="ADMET Profiling"
-                                subtitle="RDKit Cheminformatics"
-                                description="Screen for drug-likeness (Lipinski), toxicity alerts, and pharmacokinetic properties (absorption, distribution, metabolism)."
-                                tags={["BBB Permeability", "Toxicity", "Oral Bioavailability"]}
-                                status="completed"
-                                side="left"
-                                icon={<TrendingUp size={24} />}
-                            />
-
-                            {/* 8. Accuracy Benchmarking */}
-                            <TimelineItem
-                                number="8"
-                                title="Accuracy Benchmarking"
-                                subtitle="Validation & Quality Control"
-                                description="Validate model performance against known experimental data (PDBbind, ChEMBL). Calculate R² and RMSE in real-time."
-                                tags={["Correlation Analysis", "Scatter Plots", "Model Validation"]}
-                                status="completed"
-                                side="right"
-                                icon={<CheckCircle2 size={24} />}
-                            />
-
-                            {/* 9. Regulatory Submission */}
-                            <TimelineItem
-                                number="9"
-                                title="Regulatory Submission"
-                                subtitle="FDA 21 CFR Part 11 Compliance"
-                                description="Generate immutable audit logs and comprehensive PDF reports. Ready for internal review or regulatory submission."
-                                tags={["Immutable Logs", "Role-Based Access", "Digital Compliance"]}
-                                status="completed"
-                                side="left"
-                                icon={<FileText size={24} />}
-                            />
-                        </div>
+                        {/* PILLAR 6: AI FORMULATION (BioDockify-Formulate) */}
+                        <PillarCard
+                            number="06"
+                            title="AI Formulation Engine"
+                            subtitle="Formulate-AI: 7-Model Stack"
+                            description="Federated AI system predicting ANDA readiness. ChemBERTa API embeddings, XGBoost pre-formulation risk, GNN excipient compatibility, LSTM dissolution kinetics, and survival ML stability prediction."
+                            features={[
+                                "ChemBERTa API Property Prediction",
+                                "XGBoost BCS Class & Polymorphism Risk",
+                                "GNN Excipient Compatibility Ranking",
+                                "LSTM Dissolution Profile Prediction",
+                                "DeepSurv Shelf-Life Stability"
+                            ]}
+                            icon={<FlaskConical className="w-8 h-8 text-white" />}
+                            color="cyan"
+                            link="/formulation"
+                            linkText="Design Formulation"
+                        />
                     </div>
                 </div>
             </section>
@@ -346,53 +356,107 @@ export default function HomePage() {
 
 // --- Subcomponents ---
 
-function TimelineItem({ number, title, subtitle, description, tags, status, side, icon }) {
-    const isCompleted = status === 'completed';
-    const alignClass = side === 'left' ? 'lg:flex-row' : 'lg:flex-row-reverse';
-    const textClass = side === 'left' ? 'lg:text-right' : 'lg:text-left';
-    const paddingClass = side === 'left' ? 'lg:pr-20' : 'lg:pl-20';
-    const colorClass = isCompleted ? 'border-emerald-500' : 'border-indigo-400';
-    const bgIconClass = isCompleted ? 'bg-emerald-100 text-emerald-600' : 'bg-indigo-100 text-indigo-600';
+function PillarCard({ number, title, subtitle, description, features, icon, color, link, linkText }) {
+    const colorStyles = {
+        indigo: {
+            bg: 'bg-indigo-50',
+            hoverBorder: 'hover:border-indigo-200',
+            iconBg: 'bg-indigo-600',
+            text: 'text-indigo-600',
+            btn: 'bg-indigo-600 hover:bg-indigo-700'
+        },
+        violet: {
+            bg: 'bg-violet-50',
+            hoverBorder: 'hover:border-violet-200',
+            iconBg: 'bg-violet-600',
+            text: 'text-violet-600',
+            btn: 'bg-violet-600 hover:bg-violet-700'
+        },
+        emerald: {
+            bg: 'bg-emerald-50',
+            hoverBorder: 'hover:border-emerald-200',
+            iconBg: 'bg-emerald-600',
+            text: 'text-emerald-600',
+            btn: 'bg-emerald-600 hover:bg-emerald-700'
+        },
+        blue: {
+            bg: 'bg-blue-50',
+            hoverBorder: 'hover:border-blue-200',
+            iconBg: 'bg-blue-600',
+            text: 'text-blue-600',
+            btn: 'bg-blue-600 hover:bg-blue-700'
+        },
+        amber: {
+            bg: 'bg-amber-50',
+            hoverBorder: 'hover:border-amber-200',
+            iconBg: 'bg-amber-600',
+            text: 'text-amber-600',
+            btn: 'bg-amber-600 hover:bg-amber-700'
+        },
+        cyan: {
+            bg: 'bg-cyan-50',
+            hoverBorder: 'hover:border-cyan-200',
+            iconBg: 'bg-cyan-600',
+            text: 'text-cyan-600',
+            btn: 'bg-cyan-600 hover:bg-cyan-700'
+        }
+    };
+
+    const style = colorStyles[color];
+    const isExternal = link.startsWith('http');
+
+    const ButtonContent = () => (
+        <>
+            <span className={`font-bold ${style.text}`}>{linkText}</span>
+            <ArrowRight size={18} className={`${style.text} transform group-hover/btn:translate-x-1 transition-transform`} />
+        </>
+    );
+
+    const buttonClass = `flex items-center justify-between w-full px-5 py-4 rounded-xl ${style.bg} hover:bg-white border border-transparent hover:border-slate-200 group/btn transition-all`;
 
     return (
-        <div className={`relative flex flex-col ${alignClass} items-center group`}>
-            {/* Center Node (Desktop only) */}
-            <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center justify-center w-14 h-14 rounded-full bg-white border-4 border-slate-100 z-10 shadow-xl group-hover:scale-110 transition-transform hidden lg:flex">
-                <span className={`text-xl font-bold ${isCompleted ? 'text-emerald-600' : 'text-slate-400'}`}>{number}</span>
-            </div>
+        <div className={`relative bg-white rounded-3xl p-8 shadow-sm border border-slate-100 transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 ${style.hoverBorder} group overflow-hidden flex flex-col`}>
+            {/* Top Decor */}
+            <div className={`absolute top-0 right-0 w-32 h-32 ${style.bg} rounded-bl-full -mr-8 -mt-8 opacity-50 group-hover:scale-110 transition-transform`}></div>
 
-            {/* Content Card */}
-            <div className={`w-full lg:w-1/2 ${paddingClass} ${textClass}`}>
-                <div className={`bg-white p-8 rounded-3xl shadow-sm border border-slate-100 hover:shadow-2xl hover:border-indigo-100 transition-all duration-300 transform group-hover:-translate-y-1 relative overflow-hidden`}>
-                    {/* Decorative top border */}
-                    <div className={`absolute top-0 left-0 w-full h-1 ${isCompleted ? 'bg-emerald-500' : 'bg-indigo-500'}`}></div>
+            <div className="relative z-10 flex-1">
+                <div className="flex justify-between items-start mb-6">
+                    <div className={`p-3 rounded-xl ${style.iconBg} shadow-lg shadow-${color}-900/20`}>
+                        {icon}
+                    </div>
+                    <span className="text-6xl font-black text-slate-100 select-none group-hover:text-slate-200 transition-colors">{number}</span>
+                </div>
 
-                    <div className={`flex items-center gap-4 mb-4 ${side === 'left' ? 'lg:justify-end' : 'lg:justify-start'}`}>
-                        {side === 'right' && <div className={`p-3 rounded-2xl ${bgIconClass}`}>{icon}</div>}
-                        <div>
-                            <h3 className="text-xl font-bold text-slate-900">{title}</h3>
-                            <div className="text-xs font-bold text-indigo-600 uppercase tracking-widest">{subtitle}</div>
+                <div className="mb-6">
+                    <h3 className="text-2xl font-bold text-slate-900 mb-1">{title}</h3>
+                    <div className={`text-xs font-bold ${style.text} uppercase tracking-widest`}>{subtitle}</div>
+                </div>
+
+                <p className="text-slate-600 mb-8 leading-relaxed">
+                    {description}
+                </p>
+
+                <div className="space-y-3 mb-8">
+                    {features.map((feature, i) => (
+                        <div key={i} className="flex items-center gap-3 text-sm text-slate-600">
+                            <CheckCircle2 size={16} className={`${style.text} shrink-0`} />
+                            <span>{feature}</span>
                         </div>
-                        {side === 'left' && <div className={`p-3 rounded-2xl ${bgIconClass}`}>{icon}</div>}
-                    </div>
-
-                    <p className="text-slate-600 mb-6 leading-relaxed font-medium">{description}</p>
-
-                    <div className={`flex flex-wrap gap-2 ${side === 'left' ? 'lg:justify-end' : 'lg:justify-start'}`}>
-                        {tags.map((tag, i) => (
-                            <span key={i} className="px-3 py-1 bg-slate-50 text-slate-500 text-xs font-bold rounded-lg border border-slate-100">
-                                {tag}
-                            </span>
-                        ))}
-                        <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-xs font-bold rounded-lg flex items-center gap-1">
-                            <CheckCircle size={12} /> Live
-                        </span>
-                    </div>
+                    ))}
                 </div>
             </div>
 
-            {/* Empty Space for alignment */}
-            <div className="hidden lg:block lg:w-1/2"></div>
+            <div className="relative z-10 mt-auto">
+                {isExternal ? (
+                    <a href={link} className={buttonClass} target="_blank" rel="noopener noreferrer">
+                        <ButtonContent />
+                    </a>
+                ) : (
+                    <Link to={link} className={buttonClass}>
+                        <ButtonContent />
+                    </Link>
+                )}
+            </div>
         </div>
     )
 }
