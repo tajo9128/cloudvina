@@ -1,40 +1,19 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import SEOHelmet from '../components/SEOHelmet'
-import MoleculeViewer from '../components/MoleculeViewer'
 import {
     Activity, GraduationCap, Factory, FlaskConical, Stethoscope,
     ArrowRight, CheckCircle2, Zap, Search, Globe, ShieldCheck, Layers,
     Brain, Package, BarChart3, TrendingUp, FileText, CheckCircle, Play, Server
 } from 'lucide-react'
-// Images still imported as falback or background usage if needed, but primary view will be 3D
 import heroImage from '../assets/images/hero-molecular-v36.png'
 import bridgingGapImage from '../assets/images/bridging-gap-v36.png'
 
 export default function HomePage() {
     const [isVisible, setIsVisible] = useState(false)
-    const [demoPDB, setDemoPDB] = useState(null)
-    const [demoLigand, setDemoLigand] = useState(null)
 
     useEffect(() => {
         setIsVisible(true)
-
-        // Fetch a cool demo structure (e.g., 5R82 - Mpro Main Protease)
-        const fetchDemoStructure = async () => {
-            try {
-                // Try fetching a local asset or external PDB
-                // Using a public PDB for demo purposes (e.g. Mpro fragment)
-                const res = await fetch('https://files.rcsb.org/download/5R82.pdb')
-                if (res.ok) {
-                    const text = await res.text()
-                    setDemoPDB(text)
-                }
-            } catch (e) {
-                console.error("Failed to load demo PDB", e)
-            }
-        }
-
-        fetchDemoStructure()
     }, [])
 
     return (
@@ -85,10 +64,10 @@ export default function HomePage() {
                             </div>
                         </div>
 
-                        {/* RIGHT: Visual (3D Viewer) */}
-                        <div className="relative animate-fade-in-up delay-200 h-[500px]">
-                            <div className="relative w-full h-full rounded-3xl overflow-hidden border border-slate-700/50 shadow-2xl bg-slate-800/50 backdrop-blur-sm group">
-                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-emerald-500/10 pointer-events-none"></div>
+                        {/* RIGHT: Visual */}
+                        <div className="relative animate-fade-in-up delay-200">
+                            <div className="relative rounded-3xl overflow-hidden border border-slate-700/50 shadow-2xl bg-slate-800/50 backdrop-blur-sm group">
+                                <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
 
                                 {/* Floating Badge */}
                                 <div className="absolute top-8 left-8 z-20 bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-700 shadow-xl flex items-center gap-4 max-w-[240px]">
@@ -101,23 +80,20 @@ export default function HomePage() {
                                     </div>
                                 </div>
 
-                                {demoPDB ? (
-                                    <MoleculeViewer
-                                        receptorData={demoPDB}
-                                        receptorType="pdb"
-                                        title="Live Structure: SARS-CoV-2 Mpro"
-                                        width="100%"
-                                        height="100%"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-slate-500">
-                                        <span className="text-4xl animate-pulse">⚛️</span>
-                                    </div>
-                                )}
+                                <img
+                                    src={heroImage}
+                                    alt="BioDockify Interface"
+                                    className="w-full h-auto transform transition-transform duration-700 hover:scale-105"
+                                    onError={(e) => {
+                                        console.error("Hero image failed to load, falling back to placeholder");
+                                        e.target.onerror = null;
+                                        e.target.src = "https://images.unsplash.com/photo-1614935151651-0bea6508db6b?auto=format&fit=crop&q=80&w=1200";
+                                    }}
+                                />
 
                                 {/* Overlay Text on Image (Bottom Right) */}
-                                <div className="absolute bottom-0 right-0 p-8 text-right bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent w-full pointer-events-none">
-                                    <div className="text-2xl font-bold text-white tracking-widest uppercase opacity-80">Interactive 3D</div>
+                                <div className="absolute bottom-0 right-0 p-8 text-right bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent w-full">
+                                    <div className="text-2xl font-bold text-white tracking-widest uppercase opacity-80">Biotech Innovations</div>
                                 </div>
                             </div>
                         </div>
@@ -291,21 +267,17 @@ export default function HomePage() {
                             </div>
                         </div>
                         {/* 3D Visual for Section 3 */}
-                        <div className="relative h-[500px]">
+                        <div className="relative">
                             <div className="absolute inset-0 bg-blue-600 blur-[80px] opacity-10 rounded-full"></div>
-                            <div className="relative w-full h-full rounded-3xl shadow-2xl border border-slate-200 overflow-hidden bg-slate-50">
-                                {demoPDB ? (
-                                    <MoleculeViewer
-                                        receptorData={demoPDB}
-                                        receptorType="pdb"
-                                        title="Protein Structure Analysis"
-                                        width="100%"
-                                        height="100%"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center">Loading...</div>
-                                )}
-                            </div>
+                            <img
+                                src={bridgingGapImage}
+                                alt="BioDockify Bridging Research and Discovery"
+                                className="relative w-full h-auto rounded-3xl shadow-2xl border border-slate-200 transform hover:scale-[1.02] transition-transform duration-500"
+                                onError={(e) => {
+                                    e.target.onerror = null;
+                                    e.target.src = "https://placehold.co/800x600/f8fafc/e2e8f0?text=Analysis+Interface";
+                                }}
+                            />
                         </div>
                     </div>
                 </div>
