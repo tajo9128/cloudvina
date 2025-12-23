@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import MoleculeViewer from '../components/MoleculeViewer'
@@ -9,6 +9,7 @@ import { ChevronLeft, Download, Eye, Maximize2, RefreshCw, BarChart2, Star, Zap,
 
 export default function BatchResultsPage() {
     const { batchId } = useParams()
+    const navigate = useNavigate()
     const [batchData, setBatchData] = useState(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
@@ -481,7 +482,7 @@ export default function BatchResultsPage() {
                     </div>
 
                     {/* Action Button for Deep Analysis */}
-                    {firstJobSelected && (
+                    {firstJobId && (
                         <div className="absolute top-4 right-4 z-10">
                             <button
                                 onClick={() => navigate(`/jobs/${firstJobId}/analysis`)}
