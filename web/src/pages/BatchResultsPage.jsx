@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import MoleculeViewer from '../components/MoleculeViewer'
-import AdmetRadar from '../components/AdmetRadar' // [NEW] Import Radar
+
 import { trackEvent } from '../services/analytics' // Import Analytics
 import { ChevronLeft, Download, Eye, Maximize2, RefreshCw, BarChart2, Star, Zap, Activity, ShieldCheck, AlertTriangle, ThumbsUp, ThumbsDown, FileCode } from 'lucide-react'
 
@@ -15,19 +15,13 @@ export default function BatchResultsPage() {
     const [error, setError] = useState(null)
     const [sortConfig, setSortConfig] = useState({ key: 'binding_affinity', direction: 'ascending' })
 
-    // Workbench State
-    const [activeTab, setActiveTab] = useState('structure') // 'structure' | 'admet'
-
-    // Viewer State
+    // Viewer State (Phase 1 Only)
     const [firstJobPdbqt, setFirstJobPdbqt] = useState(null)
     const [firstJobReceptor, setFirstJobReceptor] = useState(null)
     const [firstJobId, setFirstJobId] = useState(null)
     const [firstJobName, setFirstJobName] = useState('')
 
-    // ADMET State
-    const [admetData, setAdmetData] = useState(null)
-    const [admetLoading, setAdmetLoading] = useState(false)
-    const [isSplitView, setIsSplitView] = useState(false)
+
 
     // Auto-Refresh
     useEffect(() => {
@@ -114,22 +108,7 @@ export default function BatchResultsPage() {
         }
     }
 
-    const fetchJobAdmet = async (jobId, token) => {
-        try {
-            setAdmetLoading(true)
-            setAdmetData(null)
-            const res = await fetch(`${API_URL}/jobs/${jobId}/admet`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            if (!res.ok) throw new Error("ADMET fetch failed")
-            const data = await res.json()
-            setAdmetData(data)
-        } catch (e) {
-            console.error("Failed to load ADMET data", e)
-        } finally {
-            setAdmetLoading(false)
-        }
-    }
+
 
     const handleJobSelect = async (job, tokenOverride = null) => {
         if (job.status !== 'SUCCEEDED') return
@@ -147,24 +126,9 @@ export default function BatchResultsPage() {
         // Parallel Fetch or Lazy based on Tab? 
         // Fetch structure always as it's the primary view
         fetchJobStructure(job.id, token)
-
-        // If on ADMET tab, fetch ADMET immediately
-        if (activeTab === 'admet') {
-            fetchJobAdmet(job.id, token)
-        } else {
-            // Clear old ADMET data so if they switch tabs it re-fetches relevant data
-            setAdmetData(null)
-        }
     }
 
-    // Effect to fetch ADMET when switching TO the tab if missing
-    useEffect(() => {
-        if (activeTab === 'admet' && firstJobId && !admetData && !admetLoading) {
-            supabase.auth.getSession().then(({ data: { session } }) => {
-                if (session) fetchJobAdmet(firstJobId, session.access_token)
-            })
-        }
-    }, [activeTab, firstJobId])
+
 
     // [NEW] Universal Download Handler
     const handleDownload = async (e, job, type) => {
