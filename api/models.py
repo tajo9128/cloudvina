@@ -103,3 +103,41 @@ class ActivityLog(Base):
     
     def __repr__(self):
         return f"<ActivityLog {self.action} at {self.created_at}>"
+
+class FDAAuditLog(Base):
+    """FDA 21 CFR Part 11 Audit Trail Table"""
+    __tablename__ = 'fda_audit_logs'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id = Column(UUID(as_uuid=True), ForeignKey('auth.users.id'), nullable=True)
+    action = Column(String, nullable=False)
+    resource_id = Column(String)
+    details = Column(JSONB, default={})
+    ip_address = Column(String) # Changed from INET to String for compatibility if needed, or keep INET
+    user_agent = Column(Text)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    signature = Column(String, nullable=True)
+    
+    user = relationship("User", foreign_keys=[user_id])
+
+class RBACRole(Base):
+    """RBAC Roles"""
+    __tablename__ = 'rbac_roles'
+    
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    code = Column(String, unique=True, nullable=False)
+    name = Column(String, nullable=False)
+    description = Column(String)
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+class RBACUserRole(Base):
+    """User-Role Mapping"""
+    __tablename__ = 'rbac_user_roles'
+    
+    user_id = Column(UUID(as_uuid=True), ForeignKey('auth.users.id'), primary_key=True)
+    role_id = Column(UUID(as_uuid=True), ForeignKey('rbac_roles.id'), primary_key=True)
+    assigned_at = Column(DateTime, default=datetime.utcnow)
+    assigned_by = Column(UUID(as_uuid=True))
+    
+    user = relationship("User", backref="rbac_roles")
+    role = relationship("RBACRole")
