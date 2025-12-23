@@ -89,6 +89,13 @@ export default function JobAnalysisPage() {
         // Re-using the mock generation for demo if missing
         const mockAdmet = {
             score: Math.floor(Math.random() * 30) + 70,
+            molecular_properties: {
+                molecular_weight: 420.5,
+                logp: 3.2,
+                hbd: 2,
+                hba: 5,
+                tpsa: 85.4
+            },
             lipinski: { violations: 0 },
             herg: { risk_level: 'Low' },
             ames: { prediction: 'Negative' },
