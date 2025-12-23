@@ -2,10 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
-import MoleculeViewer from '../components/MoleculeViewer'
-
-import { trackEvent } from '../services/analytics' // Import Analytics
-import { ChevronLeft, Download, Eye, Maximize2, RefreshCw, BarChart2, Star, Zap, Activity, ShieldCheck, AlertTriangle, ThumbsUp, ThumbsDown, FileCode } from 'lucide-react'
+import { trackEvent } from '../services/analytics'
+import { Download, FileCode, Zap, ArrowRight, LayoutGrid, List, Activity, CheckCircle2, XCircle, Clock, Filter, Search } from 'lucide-react'
 
 export default function BatchResultsPage() {
     const { batchId } = useParams()
@@ -14,44 +12,22 @@ export default function BatchResultsPage() {
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState(null)
     const [sortConfig, setSortConfig] = useState({ key: 'binding_affinity', direction: 'ascending' })
-
-    // Viewer State (Phase 1 Only)
-    const [firstJobPdbqt, setFirstJobPdbqt] = useState(null)
-    const [firstJobReceptor, setFirstJobReceptor] = useState(null)
-    const [firstJobId, setFirstJobId] = useState(null)
-    const [firstJobName, setFirstJobName] = useState('')
-
-
+    const [currentPage, setCurrentPage] = useState(1)
+    const itemsPerPage = 10
 
     // Auto-Refresh
     useEffect(() => {
         if (batchId) fetchBatchDetails(batchId)
     }, [batchId])
 
-    // [NEW] Real-time Updates via Supabase
+    // Real-time Updates
     useEffect(() => {
         if (!batchId) return
-
         const channel = supabase
             .channel(`realtime:batch:${batchId}`)
-            .on(
-                'postgres_changes',
-                {
-                    event: '*', // Listen for inserts/updates
-                    schema: 'public',
-                    table: 'jobs',
-                    filter: `batch_id=eq.${batchId}`
-                },
-                () => {
-                    // Refresh data instantly on any change
-                    fetchBatchDetails(batchId, true)
-                }
-            )
+            .on('postgres_changes', { event: '*', schema: 'public', table: 'jobs', filter: `batch_id=eq.${batchId}` }, () => fetchBatchDetails(batchId, true))
             .subscribe()
-
-        return () => {
-            supabase.removeChannel(channel)
-        }
+        return () => { supabase.removeChannel(channel) }
     }, [batchId])
 
     const fetchBatchDetails = async (id, background = false) => {
@@ -68,15 +44,6 @@ export default function BatchResultsPage() {
             const data = await response.json()
             setBatchData(data)
 
-            // Auto-select best hit if not selected yet
-            if (data.jobs && data.jobs.length > 0 && !firstJobId) {
-                const validJobs = data.jobs.filter(j => j.status === 'SUCCEEDED' && j.binding_affinity !== null)
-                if (validJobs.length > 0) {
-                    const bestJob = validJobs.sort((a, b) => a.binding_affinity - b.binding_affinity)[0]
-                    handleJobSelect(bestJob, session.access_token) // Use unified handler
-                }
-            }
-
         } catch (err) {
             console.error(err)
             if (!background) setError(err.message)
@@ -85,110 +52,21 @@ export default function BatchResultsPage() {
         }
     }
 
-    const fetchJobStructure = async (jobId, token) => {
-        try {
-            setFirstJobPdbqt(null) // Reset to show loading
-            const res = await fetch(`${API_URL}/jobs/${jobId}`, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            })
-            if (!res.ok) return
-            const jobData = await res.json()
-
-            if (jobData.download_urls?.output_vina || jobData.download_urls?.output) {
-                const url = jobData.download_urls.output_vina || jobData.download_urls.output
-                const pdbqtRes = await fetch(url)
-                setFirstJobPdbqt(await pdbqtRes.text())
-            }
-            if (jobData.download_urls?.receptor) {
-                const recRes = await fetch(jobData.download_urls.receptor)
-                setFirstJobReceptor(await recRes.text())
-            }
-        } catch (e) {
-            console.error("Failed to load 3D structure", e)
-        }
-    }
-
-
-
-    const handleJobSelect = async (job, tokenOverride = null) => {
-        if (job.status !== 'SUCCEEDED') return
-
-        let token = tokenOverride
-        if (!token) {
-            const { data: { session } } = await supabase.auth.getSession()
-            token = session?.access_token
-        }
-        if (!token) return
-
-        setFirstJobId(job.id)
-        setFirstJobName(job.ligand_filename)
-
-        // Parallel Fetch or Lazy based on Tab? 
-        // Fetch structure always as it's the primary view
-        fetchJobStructure(job.id, token)
-    }
-
-
-
-    // [NEW] Universal Download Handler
     const handleDownload = async (e, job, type) => {
-        e.stopPropagation() // Prevent row selection
+        e.stopPropagation()
         try {
             const { data: { session } } = await supabase.auth.getSession()
             if (!session) return
-
             const res = await fetch(`${API_URL}/jobs/${job.id}/files/${type}`, {
                 headers: { 'Authorization': `Bearer ${session.access_token}` }
             })
-
             if (!res.ok) throw new Error('Failed to get download URL')
-
             const data = await res.json()
-            if (data.url) {
-                // Open in new tab (presigned S3 URL)
-                window.open(data.url, '_blank')
-            }
+            if (data.url) window.open(data.url, '_blank')
         } catch (err) {
-            console.error(err)
             alert('Failed to download file. It might not exist yet.')
         }
     }
-
-    const handleFeedback = async (e, job, rating) => {
-        e.stopPropagation() // Prevent row selection
-
-        try {
-            const { data: { session } } = await supabase.auth.getSession()
-            if (!session) return
-
-            // Optimistic Update (Optional: could add local state to track processed IDs)
-            // But ideally we'd want to reload data or update local cache
-            // For MVP, just visual feedback via toast or simple console log, or update batchData locally
-
-            const res = await fetch(`${API_URL}/feedback/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${session.access_token}`
-                },
-                body: JSON.stringify({
-                    job_id: job.id,
-                    rating: rating
-                })
-            })
-
-            if (!res.ok) throw new Error('Feedback failed')
-
-            // Update local state to show the feedback (simplified)
-            // Ideally we'd fetch this from DB, but let's just alert
-            alert(`Draft: Feedback ${rating === 1 ? 'Positive' : 'Negative'} Recorded!`)
-
-        } catch (err) {
-            console.error(err)
-            alert('Failed to submit feedback')
-        }
-    }
-
 
     const handleSort = (key) => {
         let direction = 'ascending'
@@ -198,15 +76,11 @@ export default function BatchResultsPage() {
         setSortConfig({ key, direction })
     }
 
-    // Helper to get affinity from various potential fields
-    const getAffinity = (job) => {
-        return job.binding_affinity ?? job.vina_score ?? job.docking_score ?? null
-    }
+    const getAffinity = (job) => job.binding_affinity ?? job.vina_score ?? job.docking_score ?? null
 
     const sortedJobs = batchData?.jobs ? [...batchData.jobs].filter(j => j).sort((a, b) => {
         const valA = sortConfig.key === 'binding_affinity' ? getAffinity(a) : a[sortConfig.key]
         const valB = sortConfig.key === 'binding_affinity' ? getAffinity(b) : b[sortConfig.key]
-
         if (valA === null) return 1
         if (valB === null) return -1
         if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1
@@ -214,10 +88,13 @@ export default function BatchResultsPage() {
         return 0
     }) : []
 
+    const totalPages = Math.ceil(sortedJobs.length / itemsPerPage)
+    const paginatedJobs = sortedJobs.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
     const getAffinityColor = (score) => {
         if (!score) return 'text-slate-400'
         if (score < -9.0) return 'text-emerald-600 font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100'
-        if (score < -7.0) return 'text-blue-600 font-medium'
+        if (score < -7.0) return 'text-indigo-600 font-medium'
         return 'text-slate-600'
     }
 
@@ -243,70 +120,70 @@ export default function BatchResultsPage() {
     if (loading) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50">
             <div className="flex flex-col items-center gap-4">
-                <span className="text-5xl animate-spin text-indigo-600">🔄</span>
-                <p className="text-slate-500 font-medium">Retrieving results...</p>
+                <div className="relative">
+                    <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
+                    <div className="absolute inset-0 flex items-center justify-center text-xs font-bold text-indigo-600">AI</div>
+                </div>
+                <p className="text-slate-500 font-medium animate-pulse">Retrieving batch data...</p>
             </div>
         </div>
     )
 
     if (error || !batchData) return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50">
-            <div className="text-center max-w-md p-8 bg-white rounded-2xl shadow-xl">
-                <div className="text-4xl mb-4">⚠️</div>
-                <h2 className="text-xl font-bold text-slate-900">Batch Not Found</h2>
+            <div className="text-center max-w-md p-8 bg-white rounded-3xl shadow-xl border border-slate-100">
+                <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <XCircle size={32} />
+                </div>
+                <h2 className="text-xl font-bold text-slate-900 mb-2">Batch Not Found</h2>
                 <Link to="/dashboard" className="btn-secondary mt-6 inline-flex">Return to Dashboard</Link>
             </div>
         </div>
     )
 
-    return (
-        <div className="h-screen flex flex-col bg-slate-50 overflow-hidden">
+    // Calculate Stats
+    const successCount = batchData.jobs?.filter(j => j.status === 'SUCCEEDED').length || 0
+    const runningCount = batchData.jobs?.filter(j => ['RUNNING', 'QUEUED'].includes(j.status)).length || 0
+    const failedCount = batchData.jobs?.filter(j => j.status === 'FAILED').length || 0
 
-            {/* 1. Header Bar */}
-            <div className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 flex-shrink-0 z-30">
-                <div className="flex items-center gap-4">
-                    <Link to="/dashboard" className="p-2 hover:bg-slate-100 rounded-full text-slate-500 transition-colors">
-                        <span className="text-xl">⬅️</span>
+    // Average Affinity (only successes)
+    const validAffinities = batchData.jobs?.map(getAffinity).filter(a => a !== null && !isNaN(a)) || []
+    const avgAffinity = validAffinities.length > 0
+        ? (validAffinities.reduce((a, b) => a + b, 0) / validAffinities.length).toFixed(2)
+        : '-'
+
+    return (
+        <div className="h-screen flex flex-col bg-slate-50 overflow-hidden font-sans">
+
+            {/* Top Navigation Bar */}
+            <div className="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-8 flex-shrink-0 z-30 shadow-sm">
+                <div className="flex items-center gap-6">
+                    <Link to="/dashboard" className="w-10 h-10 flex items-center justify-center hover:bg-slate-100 rounded-full text-slate-400 transition-colors">
+                        <ArrowRight className="rotate-180 w-5 h-5" />
                     </Link>
                     <div>
-                        <h1 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                            Batch Analysis <span className="px-2 py-0.5 rounded text-xs bg-slate-100 text-slate-500 font-mono">{batchId.slice(0, 8)}</span>
-                        </h1>
-                        <div className="text-xs text-slate-500 flex items-center gap-2">
-                            {batchData.status === 'SUBMITTED' && (
-                                <span className="flex items-center gap-1 text-amber-600 font-bold"><span className="animate-pulse">⏳</span> Queued (Runnable)</span>
-                            )}
-                            {batchData.status === 'RUNNING' && (
-                                <span className="flex items-center gap-1 text-blue-600 font-bold"><span className="animate-spin">🔄</span> Processing ({batchData.stats?.completed || 0}/{batchData.stats?.total || 0})</span>
-                            )}
-                            {batchData.status === 'SUCCEEDED' && (
-                                <span className="text-emerald-600 font-bold flex items-center gap-1"><span>⭐</span> Complete</span>
-                            )}
-                            {batchData.status === 'FAILED' && (
-                                <span className="text-red-600 font-bold flex items-center gap-1"><span>⚠️</span> Failed</span>
-                            )}
-                            <span className="text-slate-300">|</span>
-                            <span>{batchData.stats?.total || 0} Ligands</span>
+                        <div className="flex items-center gap-3">
+                            <h1 className="text-xl font-bold text-slate-900 tracking-tight">Batch Results</h1>
+                            <span className="px-2 py-0.5 bg-slate-100 border border-slate-200 rounded text-xs font-mono text-slate-500">
+                                {batchId.slice(0, 8)}...
+                            </span>
+                        </div>
+                        <div className="text-xs text-slate-500 mt-1 flex items-center gap-2">
+                            Created {new Date(batchData.created_at || Date.now()).toLocaleDateString()}
                         </div>
                     </div>
                 </div>
 
                 <div className="flex items-center gap-3">
-                    <button onClick={downloadCSV} className="btn-secondary btn-sm flex items-center gap-2">
-                        <span>📥</span> Export CSV
+                    <button onClick={downloadCSV} className="btn-secondary btn-sm flex items-center gap-2 border-slate-200">
+                        <Download size={16} /> <span>Export CSV</span>
                     </button>
-                    {/* PDF Report (Phase 9) */}
                     <button
                         onClick={async () => {
+                            // ... existing PDF logic
                             const { data: { session } } = await supabase.auth.getSession()
                             if (!session) return
-
-                            // Track PDF Download
-                            trackEvent('report:downloaded', {
-                                batch_id: batchId,
-                                format: 'pdf'
-                            });
-
+                            trackEvent('report:downloaded', { batch_id: batchId, format: 'pdf' });
                             const res = await fetch(`${API_URL}/jobs/batch/${batchId}/report-pdf`, {
                                 headers: { 'Authorization': `Bearer ${session.access_token}` }
                             })
@@ -319,166 +196,189 @@ export default function BatchResultsPage() {
                             a.click()
                             window.URL.revokeObjectURL(url)
                         }}
-                        className="btn-secondary btn-sm flex items-center gap-2"
+                        className="btn-primary btn-sm flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white shadow-md shadow-indigo-100"
                     >
-                        <span>📊</span> PDF Report
+                        <span>📄</span> <span>Generate Report</span>
                     </button>
                 </div>
             </div>
 
-            {/* 2. Main Workbench Area */}
-            <div className="flex-1 flex flex-col md:flex-row overflow-hidden">
+            {/* Dashboard Content */}
+            <div className="flex-1 overflow-auto p-6 lg:p-10">
+                <div className="max-w-7xl mx-auto space-y-8">
 
-                {/* LEFT: Data Table with Heatmap */}
-                <div className="w-full h-1/2 md:h-full md:w-1/3 md:min-w-[400px] border-b md:border-b-0 md:border-r border-slate-200 bg-white flex flex-col">
-                    <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                        <h3 className="font-bold text-slate-700 text-sm uppercase tracking-wider">Results Table</h3>
-                        <div className="text-xs text-slate-500">Sorted by Affinity</div>
-                    </div>
-                    <div className="flex-1 overflow-auto">
-                        <table className="w-full text-sm text-left">
-                            <thead className="text-xs text-slate-500 uppercase bg-slate-50 sticky top-0 z-10 shadow-sm">
-                                <tr>
-                                    <th className="px-4 py-3 text-xs w-[100px]">ID</th>
-                                    <th className="px-4 py-3">Status</th>
-                                    <th onClick={() => handleSort('ligand_filename')} className="px-4 py-3 cursor-pointer hover:bg-slate-100">Ligand</th>
-                                    <th onClick={() => handleSort('vina_score')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right text-[10px]">Vina</th>
-                                    <th onClick={() => handleSort('docking_score')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right text-[10px]">Gnina</th>
-                                    <th onClick={() => handleSort('binding_affinity')} className="px-4 py-3 cursor-pointer hover:bg-slate-100 text-right text-[10px]">Consensus</th>
-                                    <th className="px-4 py-3 text-center">Files</th>
-                                    <th className="px-4 py-3 text-center">Feedback</th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-slate-100">
-                                {sortedJobs.map((job) => (
-                                    <tr
-                                        key={job.id}
-                                        onClick={() => handleJobSelect(job)}
-                                        className={`cursor-pointer transition-colors hover:bg-indigo-50 ${firstJobId === job.id ? 'bg-indigo-50 border-l-4 border-indigo-500' : ''}`}
-                                    >
-                                        <td className="px-4 py-3 font-mono text-xs text-slate-400">
-                                            {job.id.slice(0, 8)}
-                                        </td>
-                                        <td className="px-4 py-3">
-                                            <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${job.status === 'SUCCEEDED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                job.status === 'FAILED' ? 'bg-red-50 text-red-600 border-red-100' :
-                                                    'bg-blue-50 text-blue-600 border-blue-100'
-                                                }`}>
-                                                {job.status}
-                                            </span>
-                                        </td>
-                                        <td className="px-4 py-3 font-medium text-slate-900 truncate max-w-[150px]" title={job.ligand_filename}>
-                                            {(job.ligand_filename || 'Unknown').replace('.pdbqt', '')}
-                                        </td>
-                                        <td className="px-4 py-3 text-right font-mono text-xs">
-                                            {job.vina_score && !isNaN(Number(job.vina_score)) ? <span className="text-blue-600">{Number(job.vina_score).toFixed(2)}</span> : <span className="text-slate-300">-</span>}
-                                        </td>
-                                        <td className="px-4 py-3 text-right font-mono text-xs">
-                                            {job.docking_score && !isNaN(Number(job.docking_score)) ? <span className="text-purple-600">{Number(job.docking_score).toFixed(2)}</span> : <span className="text-slate-300">-</span>}
-                                        </td>
-                                        <td className="px-4 py-3 text-right font-mono font-bold">
-                                            {(() => {
-                                                const rawAff = getAffinity(job);
-                                                const aff = rawAff !== null ? Number(rawAff) : null;
-
-                                                if (aff !== null && !isNaN(aff) && aff !== 0) {
-                                                    return <span className={getAffinityColor(aff)}>{aff.toFixed(2)}</span>
-                                                }
-                                                if (job.status === 'SUCCEEDED') return <span className="text-red-500 text-xs">Error</span>
-                                                return <span className="text-slate-300">-</span>
-                                            })()}
-                                        </td>
-                                        <td className="px-4 py-3 text-center flex justify-center gap-2">
-                                            <button
-                                                onClick={(e) => handleDownload(e, job, 'output')}
-                                                className="p-1 hover:bg-indigo-100 text-slate-400 hover:text-indigo-600 rounded"
-                                                title="Download Docked PDBQT"
-                                            >
-                                                <Download size={14} />
-                                            </button>
-                                            <button
-                                                onClick={(e) => handleDownload(e, job, 'log')}
-                                                className="p-1 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded"
-                                                title="View Log"
-                                            >
-                                                <FileCode size={14} />
-                                            </button>
-                                            <button
-                                                onClick={(e) => handleDownload(e, job, 'config')}
-                                                className="p-1 hover:bg-slate-200 text-slate-400 hover:text-slate-600 rounded"
-                                                title="View Config"
-                                            >
-                                                <Zap size={14} />
-                                            </button>
-                                        </td>
-                                        <td className="px-4 py-3 text-center flex justify-center gap-2">
-                                            <button
-                                                onClick={(e) => handleFeedback(e, job, 1)}
-                                                className="p-1 hover:bg-green-100 text-slate-400 hover:text-green-600 rounded transition-colors"
-                                                title="Good Result"
-                                            >
-                                                <span>👍</span>
-                                            </button>
-                                            <button
-                                                onClick={(e) => handleFeedback(e, job, -1)}
-                                                className="p-1 hover:bg-red-100 text-slate-400 hover:text-red-600 rounded transition-colors"
-                                                title="Bad Result"
-                                            >
-                                                <span>👎</span>
-                                            </button>
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                {/* RIGHT: Visualization Panel (Simple 3D + Analysis Action) */}
-                <div className="flex-1 bg-slate-100 relative flex flex-col">
-                    {/* Simple Header for Panel */}
-                    <div className="absolute top-4 left-4 z-10 pointer-events-none">
-                        <div className="bg-white/90 backdrop-blur shadow-sm rounded-lg px-3 py-1.5 border border-slate-200">
-                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
-                                <span>📈</span> 3D Preview
-                            </h3>
+                    {/* 1. Metrics Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        {/* Total Jobs */}
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div className="p-3 bg-slate-100 rounded-xl text-slate-600">
+                                <List size={24} />
+                            </div>
+                            <div>
+                                <div className="text-sm font-bold text-slate-500 uppercase tracking-wide">Total Jobs</div>
+                                <div className="text-3xl font-bold text-slate-900">{batchData.stats?.total || 0}</div>
+                            </div>
                         </div>
-                    </div>
 
-                    {/* Action Button for Deep Analysis */}
-                    {firstJobId && (
-                        <div className="absolute top-4 right-4 z-10">
-                            <button
-                                onClick={() => navigate(`/jobs/${firstJobId}/analysis`)}
-                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 rounded-xl px-4 py-2 text-sm font-bold flex items-center gap-2 transition-all transform hover:scale-105"
-                            >
-                                <Zap size={16} /> Deep Analysis
-                            </button>
-                        </div>
-                    )}
-
-                    {/* Content Container */}
-                    <div className="flex-1 w-full h-full relative mt-0">
-                        {/* VIEW: Simple 3D Structure */}
-                        <div className="w-full h-full opacity-100 z-0">
-                            {firstJobPdbqt ? (
-                                <MoleculeViewer
-                                    pdbqtData={firstJobPdbqt}
-                                    receptorData={firstJobReceptor}
-                                    width="100%"
-                                    height="100%"
-                                    title=""
-                                />
-                            ) : (
-                                <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
-                                    <span className="text-6xl mb-4 opacity-50">⚡</span>
-                                    <p className="text-lg font-medium">Select a ligand to preview</p>
+                        {/* Completed */}
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div className="p-3 bg-emerald-50 rounded-xl text-emerald-600">
+                                <CheckCircle2 size={24} />
+                            </div>
+                            <div>
+                                <div className="text-sm font-bold text-slate-500 uppercase tracking-wide">Completed</div>
+                                <div className="text-3xl font-bold text-slate-900">{successCount}</div>
+                            </div>
+                            {runningCount > 0 && (
+                                <div className="ml-auto flex items-center gap-1 text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full animate-pulse">
+                                    <Clock size={12} /> {runningCount} Running
                                 </div>
                             )}
                         </div>
-                    </div>
-                </div>
 
+                        {/* Best Affinity */}
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600">
+                                <Zap size={24} />
+                            </div>
+                            <div>
+                                <div className="text-sm font-bold text-slate-500 uppercase tracking-wide">Best Affinity</div>
+                                <div className="text-3xl font-bold text-indigo-600">
+                                    {batchData.jobs?.reduce((min, job) => Math.min(min, getAffinity(job) || 0), 0)?.toFixed(1) || '-'}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Avg Affinity */}
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex items-center gap-4">
+                            <div className="p-3 bg-violet-50 rounded-xl text-violet-600">
+                                <Activity size={24} />
+                            </div>
+                            <div>
+                                <div className="text-sm font-bold text-slate-500 uppercase tracking-wide">Avg. Score</div>
+                                <div className="text-3xl font-bold text-slate-900">{avgAffinity}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* 2. Main Results Table */}
+                    <div className="bg-white rounded-3xl shadow-lg border border-slate-200 overflow-hidden">
+                        {/* Table Header / Toolbar */}
+                        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/50 backdrop-blur-sm">
+                            <div className="flex items-center gap-3">
+                                <h2 className="text-lg font-bold text-slate-800">Job Results</h2>
+                                <span className="px-2 py-0.5 bg-slate-200 text-slate-600 rounded-full text-xs font-bold">{sortedJobs.length} Items</span>
+                            </div>
+                            <div className="flex items-center gap-3">
+                                {/* Search Placeholder - Functional in future */}
+                                <div className="relative group">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 group-hover:text-indigo-500 transition-colors" size={16} />
+                                    <input
+                                        type="text"
+                                        placeholder="Search ligands..."
+                                        className="pl-10 pr-4 py-2 rounded-xl bg-white border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all w-64"
+                                    />
+                                </div>
+                                <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all">
+                                    <Filter size={18} />
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="overflow-x-auto">
+                            <table className="w-full text-left border-collapse">
+                                <thead>
+                                    <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-semibold">
+                                        <th className="px-8 py-5">Job ID</th>
+                                        <th className="px-6 py-5">Sim Status</th>
+                                        <th onClick={() => handleSort('ligand_filename')} className="px-6 py-5 cursor-pointer hover:text-indigo-600 transition-colors">Ligand Name</th>
+                                        <th onClick={() => handleSort('vina_score')} className="px-6 py-5 text-right cursor-pointer hover:text-indigo-600 transition-colors">Vina (kcal/mol)</th>
+                                        <th onClick={() => handleSort('docking_score')} className="px-6 py-5 text-right cursor-pointer hover:text-indigo-600 transition-colors">Gnina (kcal/mol)</th>
+                                        <th onClick={() => handleSort('binding_affinity')} className="px-6 py-5 text-right cursor-pointer hover:text-indigo-600 transition-colors">Consensus</th>
+                                        <th className="px-6 py-5 text-center">Quick Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-100">
+                                    {paginatedJobs.map((job) => (
+                                        <tr
+                                            key={job.id}
+                                            onClick={() => navigate(`/dock/${job.id}`)}
+                                            className="group hover:bg-indigo-50/50 cursor-pointer transition-colors duration-150"
+                                        >
+                                            <td className="px-8 py-5 font-mono text-xs text-slate-400 group-hover:text-indigo-500">
+                                                {job.id.slice(0, 8)}
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border capitalize tracking-wide ${job.status === 'SUCCEEDED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                        job.status === 'FAILED' ? 'bg-red-50 text-red-600 border-red-100' :
+                                                            'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'
+                                                    }`}>
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${job.status === 'SUCCEEDED' ? 'bg-emerald-500' :
+                                                            job.status === 'FAILED' ? 'bg-red-500' : 'bg-amber-500'
+                                                        }`}></span>
+                                                    {job.status.toLowerCase()}
+                                                </span>
+                                            </td>
+                                            <td className="px-6 py-5">
+                                                <div className="font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">
+                                                    {(job.ligand_filename || 'Unknown').replace('.pdbqt', '')}
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-5 text-right font-mono text-sm text-slate-500">
+                                                {job.vina_score && !isNaN(Number(job.vina_score)) ? Number(job.vina_score).toFixed(2) : '-'}
+                                            </td>
+                                            <td className="px-6 py-5 text-right font-mono text-sm text-slate-500">
+                                                {job.docking_score && !isNaN(Number(job.docking_score)) ? Number(job.docking_score).toFixed(2) : '-'}
+                                            </td>
+                                            <td className="px-6 py-5 text-right font-mono font-bold text-sm">
+                                                {(() => {
+                                                    const rawAff = getAffinity(job);
+                                                    const aff = rawAff !== null ? Number(rawAff) : null;
+                                                    if (aff !== null && !isNaN(aff) && aff !== 0) return <span className={getAffinityColor(aff)}>{aff.toFixed(2)}</span>
+                                                    return <span className="text-slate-300">-</span>
+                                                })()}
+                                            </td>
+                                            <td className="px-6 py-5 text-center">
+                                                <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button onClick={(e) => handleDownload(e, job, 'output')} className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="Download structure">
+                                                        <Download size={14} />
+                                                    </button>
+                                                    <button onClick={(e) => handleDownload(e, job, 'log')} className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all shadow-sm" title="View Logs">
+                                                        <FileCode size={14} />
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Pagination Footer */}
+                        <div className="p-6 border-t border-slate-200 flex items-center justify-between bg-slate-50">
+                            <span className="text-sm font-medium text-slate-500">
+                                Page {currentPage} of {totalPages || 1}
+                            </span>
+                            <div className="flex gap-2">
+                                <button
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                                    className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 disabled:opacity-50 hover:bg-slate-50 hover:border-slate-300 transition-all"
+                                >
+                                    Previous
+                                </button>
+                                <button
+                                    disabled={currentPage === totalPages}
+                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                                    className="px-4 py-2 bg-white border border-slate-200 rounded-xl text-sm font-bold text-slate-600 disabled:opacity-50 hover:bg-slate-50 hover:border-slate-300 transition-all"
+                                >
+                                    Next
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
             </div>
         </div>
     )
