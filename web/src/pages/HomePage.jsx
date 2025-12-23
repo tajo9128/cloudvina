@@ -8,7 +8,6 @@ import {
 } from 'lucide-react'
 import heroImage from '../assets/images/hero-molecular-v36.png'
 import bridgingGapImage from '../assets/images/bridging-gap-v36.png'
-import SEOHelmet from '../components/SEOHelmet'
 
 export default function HomePage() {
     const [isVisible, setIsVisible] = useState(false)
