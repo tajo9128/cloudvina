@@ -405,15 +405,17 @@ export default function BatchResultsPage() {
                                             {(job.ligand_filename || 'Unknown').replace('.pdbqt', '')}
                                         </td>
                                         <td className="px-4 py-3 text-right font-mono text-xs">
-                                            {job.vina_score ? <span className="text-blue-600">{job.vina_score.toFixed(2)}</span> : <span className="text-slate-300">-</span>}
+                                            {job.vina_score && !isNaN(Number(job.vina_score)) ? <span className="text-blue-600">{Number(job.vina_score).toFixed(2)}</span> : <span className="text-slate-300">-</span>}
                                         </td>
                                         <td className="px-4 py-3 text-right font-mono text-xs">
-                                            {job.docking_score ? <span className="text-purple-600">{job.docking_score.toFixed(2)}</span> : <span className="text-slate-300">-</span>}
+                                            {job.docking_score && !isNaN(Number(job.docking_score)) ? <span className="text-purple-600">{Number(job.docking_score).toFixed(2)}</span> : <span className="text-slate-300">-</span>}
                                         </td>
                                         <td className="px-4 py-3 text-right font-mono font-bold">
                                             {(() => {
-                                                const aff = getAffinity(job);
-                                                if (aff !== null && aff !== 0) {
+                                                const rawAff = getAffinity(job);
+                                                const aff = rawAff !== null ? Number(rawAff) : null;
+
+                                                if (aff !== null && !isNaN(aff) && aff !== 0) {
                                                     return <span className={getAffinityColor(aff)}>{aff.toFixed(2)}</span>
                                                 }
                                                 if (job.status === 'SUCCEEDED') return <span className="text-red-500 text-xs">Error</span>
