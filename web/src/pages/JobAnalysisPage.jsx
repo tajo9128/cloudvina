@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { Download, ArrowLeft, Shield, Activity, FileText, Zap } from 'lucide-react';
 import MoleculeViewer from '../components/MoleculeViewer';
-import AdmetRadar from '../components/AdmetRadar';
+
 
 export default function JobAnalysisPage() {
     const { jobId } = useParams();
@@ -11,7 +11,6 @@ export default function JobAnalysisPage() {
 
     const [job, setJob] = useState(null);
     const [loading, setLoading] = useState(true);
-    const [admetData, setAdmetData] = useState(null);
     const [receptorData, setReceptorData] = useState(null);
     const [pdbqtData, setPdbqtData] = useState(null);
 
@@ -40,14 +39,7 @@ export default function JobAnalysisPage() {
                 fetchStructureData(data.id);
             }
 
-            // Simulating ADMET fetch or fetching from API if endpoint exists
-            // For now, we use the same mocked/stored ADMET logic
-            if (data.docking_results?.admet) {
-                setAdmetData(data.docking_results.admet);
-            } else {
-                // Mock or Fetch
-                fetchAdmet(data.id);
-            }
+
 
         } catch (err) {
             console.error("Error fetching job:", err);
@@ -83,26 +75,7 @@ export default function JobAnalysisPage() {
         }
     };
 
-    const fetchAdmet = async (id) => {
-        // ... (Similar logic to BatchResultsPage, or call API)
-        // For simplicity, we'll assume it might be in job.docking_results or we simulate it
-        // Re-using the mock generation for demo if missing
-        const mockAdmet = {
-            score: Math.floor(Math.random() * 30) + 70,
-            molecular_properties: {
-                molecular_weight: 420.5,
-                logp: 3.2,
-                hbd: 2,
-                hba: 5,
-                tpsa: 85.4
-            },
-            lipinski: { violations: 0 },
-            herg: { risk_level: 'Low' },
-            ames: { prediction: 'Negative' },
-            cyp: { overall_ddi_risk: 'Low' }
-        };
-        setAdmetData(mockAdmet);
-    }
+
 
     const handleDownload = async (fileType) => {
         try {
@@ -188,38 +161,34 @@ export default function JobAnalysisPage() {
 
                 {/* Right Column: ADMET & Files */}
                 <div className="space-y-8">
-                    {/* ADMET Card */}
+                    {/* Next Phase CTAs */}
                     <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
                         <h3 className="font-bold text-slate-600 mb-6 uppercase tracking-wider text-sm flex items-center gap-2">
-                            <Shield size={16} /> ADMET Profile
+                            <span>🚀</span> Next Steps
                         </h3>
-
-                        {admetData ? (
-                            <div className="flex flex-col items-center">
-                                <AdmetRadar data={admetData} width={300} height={300} />
-
-                                <div className="mt-6 w-full grid grid-cols-2 gap-4">
-                                    <div className="p-3 bg-red-50 rounded-lg border border-red-100 flex items-center justify-between">
-                                        <span className="text-sm font-medium text-red-900">hERG Risk</span>
-                                        <span className="font-bold text-red-700">{admetData.herg?.risk_level}</span>
-                                    </div>
-                                    <div className="p-3 bg-green-50 rounded-lg border border-green-100 flex items-center justify-between">
-                                        <span className="text-sm font-medium text-green-900">AMES</span>
-                                        <span className="font-bold text-green-700">{admetData.ames?.prediction}</span>
-                                    </div>
-                                    <div className="p-3 bg-blue-50 rounded-lg border border-blue-100 flex items-center justify-between">
-                                        <span className="text-sm font-medium text-blue-900">DDI Risk</span>
-                                        <span className="font-bold text-blue-700">{admetData.cyp?.overall_ddi_risk}</span>
-                                    </div>
-                                    <div className="p-3 bg-slate-50 rounded-lg border border-slate-200 flex items-center justify-between">
-                                        <span className="text-sm font-medium text-slate-700">Drug Score</span>
-                                        <span className="font-bold text-slate-900">{admetData.score}/100</span>
-                                    </div>
+                        <div className="space-y-4">
+                            <button
+                                onClick={() => navigate('/md-simulation')}
+                                className="w-full py-4 px-6 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-bold shadow-lg shadow-purple-200 transition-all transform hover:-translate-y-1 flex items-center justify-between group"
+                            >
+                                <div className="text-left">
+                                    <div className="text-xs uppercase opacity-80 mb-1">Phase 3</div>
+                                    <div>Molecular Dynamics</div>
                                 </div>
-                            </div>
-                        ) : (
-                            <div className="text-center py-10 text-slate-400">No ADMET data available</div>
-                        )}
+                                <Activity size={24} className="group-hover:animate-pulse" />
+                            </button>
+
+                            <button
+                                onClick={() => navigate('/leads')}
+                                className="w-full py-4 px-6 bg-white border-2 border-slate-200 hover:border-emerald-500 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 rounded-xl font-bold transition-all flex items-center justify-between group"
+                            >
+                                <div className="text-left">
+                                    <div className="text-xs uppercase opacity-60 mb-1">Phase 6 & 7</div>
+                                    <div>Lead Optimization & ADMET</div>
+                                </div>
+                                <Shield size={24} className="text-slate-400 group-hover:text-emerald-500" />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Files Card */}
