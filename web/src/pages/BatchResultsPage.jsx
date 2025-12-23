@@ -469,51 +469,33 @@ export default function BatchResultsPage() {
                     </div>
                 </div>
 
-                {/* RIGHT: Visualization Panel (3D + ADMET + Downloads) */}
+                {/* RIGHT: Visualization Panel (Simple 3D + Analysis Action) */}
                 <div className="flex-1 bg-slate-100 relative flex flex-col">
-                    {/* Tab Bar & View Controls */}
-                    <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-start pointer-events-none">
-                        <div className="bg-white/90 backdrop-blur shadow-lg rounded-xl p-2 border border-slate-200 pointer-events-auto flex gap-1">
-                            <button
-                                onClick={() => setActiveTab('structure')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors ${activeTab === 'structure' && !isSplitView ? 'bg-indigo-100 text-indigo-700' : 'hover:bg-slate-50 text-slate-500'}`}
-                            >
-                                <span>📈</span> 3D
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('downloads')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors ${activeTab === 'downloads' ? 'bg-green-100 text-green-700' : 'hover:bg-slate-50 text-slate-500'}`}
-                            >
-                                <span>📥</span> Files
-                            </button>
-                            <button
-                                onClick={() => setActiveTab('admet')}
-                                className={`px-4 py-2 rounded-lg text-sm font-bold flex items-center gap-2 transition-colors ${activeTab === 'admet' ? 'bg-purple-100 text-purple-700' : 'hover:bg-slate-50 text-slate-500'}`}
-                            >
-                                <span>🛡️</span> ADMET
-                            </button>
-                        </div>
-
-                        <div className="bg-white/90 backdrop-blur shadow-lg rounded-xl p-2 border border-slate-200 pointer-events-auto">
-                            <button
-                                onClick={() => setIsSplitView(!isSplitView)}
-                                className={`px-3 py-2 rounded-lg text-xs font-bold flex items-center gap-2 transition-colors ${isSplitView ? 'bg-indigo-600 text-white' : 'hover:bg-slate-50 text-slate-500'}`}
-                                title="Toggle Split View (Side-by-Side)"
-                            >
-                                <Maximize2 size={16} /> {isSplitView ? 'Merge View' : 'Split View'}
-                            </button>
+                    {/* Simple Header for Panel */}
+                    <div className="absolute top-4 left-4 z-10 pointer-events-none">
+                        <div className="bg-white/90 backdrop-blur shadow-sm rounded-lg px-3 py-1.5 border border-slate-200">
+                            <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider flex items-center gap-1">
+                                <span>📈</span> 3D Preview
+                            </h3>
                         </div>
                     </div>
 
-                    {/* Content Container */}
-                    <div className={`flex-1 w-full h-full relative mt-0 flex ${isSplitView ? 'flex-col lg:flex-row' : ''}`}>
+                    {/* Action Button for Deep Analysis */}
+                    {firstJobSelected && (
+                        <div className="absolute top-4 right-4 z-10">
+                            <button
+                                onClick={() => navigate(`/jobs/${firstJobId}/analysis`)}
+                                className="bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 rounded-xl px-4 py-2 text-sm font-bold flex items-center gap-2 transition-all transform hover:scale-105"
+                            >
+                                <Zap size={16} /> Deep Analysis
+                            </button>
+                        </div>
+                    )}
 
-                        {/* VIEW 1: 3D Structure - Always rendered for state preservation */}
-                        <div className={`
-                            transition-all duration-300 relative
-                            ${isSplitView ? 'w-full lg:w-1/2 h-1/2 lg:h-full border-b lg:border-b-0 lg:border-r border-slate-200 order-1' : 'w-full h-full order-2'}
-                            ${(activeTab === 'structure' || isSplitView) ? 'opacity-100 z-0 visible' : 'opacity-0 z-[-1] absolute inset-0 invisible pointer-events-none'}
-                        `}>
+                    {/* Content Container */}
+                    <div className="flex-1 w-full h-full relative mt-0">
+                        {/* VIEW: Simple 3D Structure */}
+                        <div className="w-full h-full opacity-100 z-0">
                             {firstJobPdbqt ? (
                                 <MoleculeViewer
                                     pdbqtData={firstJobPdbqt}
@@ -525,72 +507,9 @@ export default function BatchResultsPage() {
                             ) : (
                                 <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-400">
                                     <span className="text-6xl mb-4 opacity-50">⚡</span>
-                                    <p className="text-lg font-medium">Select a ligand to visualize</p>
+                                    <p className="text-lg font-medium">Select a ligand to preview</p>
                                 </div>
                             )}
-                        </div>
-
-                        {/* VIEW 2 & 3: Tabs Content (ADMET / Downloads) */}
-                        {/* In Split View, this takes the other half. In Tab View, it overlays if active. */}
-                        <div className={`
-                            ${isSplitView ? 'w-full lg:w-1/2 h-1/2 lg:h-full overflow-y-auto bg-slate-50 order-2' : 'w-full h-full relative z-0'}
-                            ${(!isSplitView && activeTab === 'structure') ? 'hidden' : ''} 
-                        `}>
-
-                            {/* ADMET Content */}
-                            {(activeTab === 'admet' || (isSplitView && activeTab === 'structure')) && (
-                                <div className={`w-full h-full bg-slate-50 ${isSplitView ? 'p-4' : 'pt-24 pb-8 px-8'} overflow-y-auto`}>
-                                    {/* Re-using ADMET Layout but condensed if split */}
-                                    {/* If Split View AND activeTab is Structure, we default to showing ADMET or Downloads? 
-                                       Let's show ADMET as default 'secondary' view if structure is main. */ }
-
-                                    {(!isSplitView && activeTab !== 'admet') ? null : (
-                                        <div className="max-w-4xl mx-auto">
-                                            {/* ... ADMET Content Injection ... */}
-                                            {/* Since the original code had lengthy blocks, we need to preserve them. 
-                                                For this tool call, I'll wrap the logic to conditionally show the existing ADMET block
-                                            */}
-                                            <div className="text-center mb-6">
-                                                <h2 className="text-xl font-bold text-slate-800">{firstJobName ? firstJobName.replace('.pdbqt', '') : 'Compound'} Analysis</h2>
-                                            </div>
-
-                                            {admetLoading ? (
-                                                <div className="flex flex-col items-center justify-center py-10">
-                                                    <span className="text-4xl animate-spin mb-2">🔄</span>
-                                                    <p className="text-slate-400">Loading ADMET...</p>
-                                                </div>
-                                            ) : admetData ? (
-                                                <div className="space-y-6">
-                                                    <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
-                                                        <AdmetRadar data={admetData} width={isSplitView ? 280 : 340} height={isSplitView ? 280 : 340} />
-                                                    </div>
-                                                    {/* Other ADMET Widgets simplified for brevity in this replace, see instruction for strategy */}
-                                                </div>
-                                            ) : (
-                                                <div className="text-center text-slate-400 mt-10">Select a ligand.</div>
-                                            )}
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-
-                            {/* Downloads Content */}
-                            {activeTab === 'downloads' && (
-                                <div className={`w-full h-full bg-slate-50 ${isSplitView ? 'p-4' : 'pt-24 pb-8 px-8'} overflow-y-auto`}>
-                                    {/* ... Downloads Content ... */}
-                                    <div className="max-w-xl mx-auto">
-                                        <h2 className="text-xl font-bold text-center mb-6">Output Files</h2>
-                                        <div className="grid gap-3">
-                                            {/* ... Download Buttons ... */}
-                                            <button onClick={(e) => handleDownload(e, firstJobSelected, 'output')} className="btn-white p-4 text-left border rounded-lg hover:shadow-md">
-                                                <span className="font-bold block">🧬 Vina Output</span>
-                                            </button>
-                                            {/* ... more buttons ... */}
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
                         </div>
                     </div>
                 </div>

@@ -12,6 +12,7 @@ import DashboardPage from './pages/DashboardPage'
 import NewJobPage from './pages/NewJobPage'
 import BatchDockingPage from './pages/BatchDockingPage'
 import BatchResultsPage from './pages/BatchResultsPage'
+import JobAnalysisPage from './pages/JobAnalysisPage'
 import JobResultsPage from './pages/JobResultsPage'
 import MolecularDockingPage from './pages/MolecularDockingPage'
 import ConverterPage from './pages/ConverterPage'
@@ -164,6 +165,10 @@ function AppRoutes() {
                 <Route
                     path="/batch/:batchId"
                     element={session ? <BatchResultsPage /> : <Navigate to="/login" />}
+                />
+                <Route
+                    path="/jobs/:jobId/analysis"
+                    element={session ? <JobAnalysisPage /> : <Navigate to="/login" />}
                 />
                 <Route
                     path="/dock/:jobId"
