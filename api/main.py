@@ -713,6 +713,7 @@ async def get_job_status(
             "error_message": error_message
         }
     
+
     except HTTPException:
         raise
     except Exception as e:
@@ -720,6 +721,55 @@ async def get_job_status(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to get job status: {str(e)}"
         )
+
+
+@app.get("/jobs/{job_id}/files/{file_type}")
+async def get_job_file_url(
+    job_id: str,
+    file_type: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Get a presigned URL for a job file (log, config, output).
+    """
+    try:
+        from aws_services import generate_presigned_download_url
+        from auth import get_authenticated_client
+        
+        # 1. Auth check (ensure user owns job)
+        auth_client = get_authenticated_client(credentials.credentials)
+        job = auth_client.table('jobs').select('user_id').eq('id', job_id).single().execute()
+        
+        if not job.data:
+            raise HTTPException(status_code=404, detail="Job not found")
+            
+        if job.data['user_id'] != current_user.id:
+             raise HTTPException(status_code=403, detail="Not authorized")
+
+        # 2. Map file type to filename
+        filename_map = {
+            'log': 'log.txt',
+            'config': 'config.txt',
+            'output': 'output.pdbqt', 
+            'ligand': 'ligand_input.pdbqt',
+            'receptor': 'receptor_input.pdbqt',
+            'results': 'results.json'
+        }
+        
+        filename = filename_map.get(file_type)
+        if not filename:
+             raise HTTPException(status_code=400, detail="Invalid file type")
+
+        # 3. Generate presigned URL
+        url = generate_presigned_download_url(job_id, filename)
+        
+        return {"url": url}
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to generate download URL: {str(e)}")
 
 
 @app.post("/jobs/{job_id}/detect-cavities")
