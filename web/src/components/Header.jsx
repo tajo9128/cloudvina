@@ -45,6 +45,7 @@ export default function Header() {
                 { name: '3D Viewer', path: '/3d-viewer' },
                 { name: 'MD Simulation', path: '/md-simulation' },
                 { name: 'Target Prediction', path: '/tools/prediction' },
+                { name: 'ADMET Predictor', path: '/tools/admet' },
                 { name: 'Ranking & Leads', path: '/leads' },
             ]
         },

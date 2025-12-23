@@ -22,6 +22,8 @@ import MDResultsPage from './pages/MDResultsPage'
 import MDStabilityPage from './pages/MDStabilityPage' // NEW: Isolated MD Page
 import OnboardingPage from './pages/OnboardingPage' // [NEW]
 import BenchmarkingPage from './pages/tools/BenchmarkingPage' // [NEW] Sprint 3.1
+import ThreeDViewerPage from './pages/tools/ThreeDViewerPage'
+import AdmetToolPage from './pages/tools/AdmetToolPage'
 import LeadOptimizationPage from './pages/LeadOptimizationPage'
 import BlogPage from './pages/BlogPage'
 import BlogPostPage from './pages/BlogPostPage'
@@ -175,6 +177,8 @@ function AppRoutes() {
                     element={session ? <JobResultsPage /> : <Navigate to="/login" />}
                 />
                 <Route path="/tools/converter" element={<ConverterPage />} />
+                <Route path="/3d-viewer" element={<ThreeDViewerPage />} />
+                <Route path="/tools/admet" element={<AdmetToolPage />} />
                 <Route
                     path="/tools/prediction"
                     element={session ? <TargetPredictionPage /> : <Navigate to="/login" />}
