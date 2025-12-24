@@ -284,16 +284,75 @@ async def get_batch_details(
     current_user: dict = Depends(get_current_user),
     credentials: HTTPAuthorizationCredentials = Security(security)
 ):
-    auth_client = get_authenticated_client(credentials.credentials)
-    # Lazy Repair & Status Sync logic is duplicated here from jobs.py? 
-    # Or should we just fetch? 
-    # For speed, let's just fetch DB. Syncing happens on individual job status checks usually.
-    # But batch page needs status too.
-    
-    jobs = auth_client.table('jobs').select('*').eq('batch_id', batch_id).eq('user_id', current_user.id).execute().data
-    if not jobs: raise HTTPException(404, "Batch not found")
-    
-    return {"batch_id": batch_id, "jobs": jobs, "stats": {"total": len(jobs)}}
+    try:
+        from aws_services import get_batch_job_status
+        
+        auth_client = get_authenticated_client(credentials.credentials)
+        jobs = auth_client.table('jobs').select('*').eq('batch_id', batch_id).eq('user_id', current_user.id).execute().data
+        
+        if not jobs: raise HTTPException(404, "Batch not found")
+
+        # Sync Logic (Ported from jobs.py)
+        # We limit specific checks to avoid timeouts on large batches, 
+        # but for decent sizes this is okay for now.
+        updated_jobs = []
+        for job in jobs:
+            modified = False
+            
+            # 1. Sync Status with AWS Batch
+            if job['status'] in ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING']:
+                try:
+                    # Only check if we have an AWS Batch ID
+                    if job.get('batch_job_id'):
+                        batch_res = get_batch_job_status(job['batch_job_id'])
+                        if batch_res['status'] != job['status']:
+                            update_data = {'status': batch_res['status']}
+                            if batch_res['status'] == 'FAILED':
+                                update_data['error_message'] = batch_res.get('status_reason', 'Unknown error')
+                            
+                            auth_client.table('jobs').update(update_data).eq('id', job['id']).execute()
+                            job['status'] = batch_res['status']
+                            job['error_message'] = update_data.get('error_message')
+                            modified = True
+                except Exception as e:
+                    print(f"Error syncing job {job['id']}: {e}")
+
+            # 2. Lazy Repair Scores (if specific score is missing but job succeeded)
+            # This handles cases where the webhook/callback missed the update
+            if job['status'] == 'SUCCEEDED' and (not job.get('binding_affinity') or float(job.get('binding_affinity') or 0) == 0.0):
+                try:
+                    # Try to read results.json from S3
+                    s3_key = f"jobs/{job['id']}/results.json"
+                    obj = s3_client.get_object(Bucket=S3_BUCKET, Key=s3_key)
+                    res_data = json.loads(obj['Body'].read().decode('utf-8'))
+                    
+                    updates = {}
+                    if 'best_affinity' in res_data:
+                        updates['binding_affinity'] = res_data['best_affinity']
+                        job['binding_affinity'] = res_data['best_affinity']
+                    
+                    if 'vina_score' in res_data:
+                         updates['vina_score'] = res_data['vina_score']
+                         job['vina_score'] = res_data['vina_score']
+
+                    if 'docking_score' in res_data: # Gnina
+                         updates['docking_score'] = res_data['docking_score']
+                         job['docking_score'] = res_data['docking_score']
+                    
+                    if updates:
+                        auth_client.table('jobs').update(updates).eq('id', job['id']).execute()
+                        modified = True
+                        
+                except Exception as e:
+                    # S3 file might not exist yet or other error, ignore
+                    pass
+            
+            updated_jobs.append(job)
+
+        return {"batch_id": batch_id, "jobs": updated_jobs, "stats": {"total": len(updated_jobs)}}
+        
+    except Exception as e:
+        raise HTTPException(500, f"Failed to fetch batch details: {str(e)}")
 
 # NEW ENDPOINT FOR PDF REPORTS
 @router.get("/{batch_id}/report-pdf")
