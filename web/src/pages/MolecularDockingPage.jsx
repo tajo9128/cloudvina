@@ -226,7 +226,7 @@ export default function MolecularDockingPage() {
 
             </div>
 
-            <Footer />
+
         </div>
     )
 }
