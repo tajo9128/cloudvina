@@ -338,18 +338,24 @@ export default function BatchResultsPage() {
                                             onClick={() => navigate(`/dock/${job.id}`)}
                                             className="group hover:bg-indigo-50/50 cursor-pointer transition-colors duration-150"
                                         >
-                                            <td className="px-8 py-5 font-mono text-xs text-slate-400 group-hover:text-indigo-500">
-                                                {job.id.slice(0, 8)}
+                                            <td className="px-8 py-5 font-mono text-xs">
+                                                <Link
+                                                    to={`/dock/${job.id}`}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                    className="text-indigo-600 font-bold hover:underline"
+                                                >
+                                                    {job.id.slice(0, 8)}...
+                                                </Link>
                                             </td>
                                             <td className="px-6 py-5">
-                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border capitalize tracking-wide ${job.status === 'SUCCEEDED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                    job.status === 'FAILED' ? 'bg-red-50 text-red-600 border-red-100' :
+                                                <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border capitalize tracking-wide ${job.status?.toUpperCase() === 'SUCCEEDED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
+                                                    job.status?.toUpperCase() === 'FAILED' ? 'bg-red-50 text-red-600 border-red-100' :
                                                         'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'
                                                     }`}>
-                                                    <span className={`w-1.5 h-1.5 rounded-full ${job.status === 'SUCCEEDED' ? 'bg-emerald-500' :
-                                                        job.status === 'FAILED' ? 'bg-red-500' : 'bg-amber-500'
+                                                    <span className={`w-1.5 h-1.5 rounded-full ${job.status?.toUpperCase() === 'SUCCEEDED' ? 'bg-emerald-500' :
+                                                        job.status?.toUpperCase() === 'FAILED' ? 'bg-red-500' : 'bg-amber-500'
                                                         }`}></span>
-                                                    {job.status.toLowerCase()}
+                                                    {job.status?.toLowerCase()}
                                                 </span>
                                             </td>
                                             <td className="px-6 py-5">
@@ -373,7 +379,7 @@ export default function BatchResultsPage() {
                                             </td>
                                             <td className="px-6 py-5 text-center">
                                                 <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity items-center">
-                                                    {job.status === 'SUCCEEDED' && (
+                                                    {job.status?.toUpperCase() === 'SUCCEEDED' && (
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
