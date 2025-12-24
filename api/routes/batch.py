@@ -12,6 +12,7 @@ import json
 import logging
 from services.fda_service import fda_service
 from services.export import ExportService
+from services.vina_parser import parse_vina_log
 
 router = APIRouter(prefix="/jobs/batch", tags=["Batch Jobs"])
 security = HTTPBearer()
@@ -306,6 +307,7 @@ async def get_batch_details(
                     if job.get('batch_job_id'):
                         batch_res = get_batch_job_status(job['batch_job_id'])
                         if batch_res['status'] != job['status']:
+                            print(f"[BatchSync] Job {job['id']} status changed: {job['status']} -> {batch_res['status']}")
                             update_data = {'status': batch_res['status']}
                             if batch_res['status'] == 'FAILED':
                                 update_data['error_message'] = batch_res.get('status_reason', 'Unknown error')
@@ -315,37 +317,57 @@ async def get_batch_details(
                             job['error_message'] = update_data.get('error_message')
                             modified = True
                 except Exception as e:
-                    print(f"Error syncing job {job['id']}: {e}")
+                    print(f"[BatchSync] Error syncing job {job['id']}: {e}")
 
             # 2. Lazy Repair Scores (if specific score is missing but job succeeded)
             # This handles cases where the webhook/callback missed the update
+            # 2. Lazy Repair Scores (if specific score is missing but job succeeded)
+            # This handles cases where the webhook/callback missed the update or results.json is missing (Legacy V10 jobs)
             if job['status'] == 'SUCCEEDED' and (not job.get('binding_affinity') or float(job.get('binding_affinity') or 0) == 0.0):
+                print(f"[LazyRepair] Checking job {job['id']} for missing scores...")
                 try:
-                    # Try to read results.json from S3
-                    s3_key = f"jobs/{job['id']}/results.json"
-                    obj = s3_client.get_object(Bucket=S3_BUCKET, Key=s3_key)
-                    res_data = json.loads(obj['Body'].read().decode('utf-8'))
-                    
-                    updates = {}
-                    if 'best_affinity' in res_data:
-                        updates['binding_affinity'] = res_data['best_affinity']
-                        job['binding_affinity'] = res_data['best_affinity']
-                    
-                    if 'vina_score' in res_data:
-                         updates['vina_score'] = res_data['vina_score']
-                         job['vina_score'] = res_data['vina_score']
-
-                    if 'docking_score' in res_data: # Gnina
-                         updates['docking_score'] = res_data['docking_score']
-                         job['docking_score'] = res_data['docking_score']
-                    
-                    if updates:
-                        auth_client.table('jobs').update(updates).eq('id', job['id']).execute()
-                        modified = True
+                    # Strategy 1: Try results.json (Newer Job Definitions)
+                    try:
+                        s3_key = f"jobs/{job['id']}/results.json"
+                        obj = s3_client.get_object(Bucket=S3_BUCKET, Key=s3_key)
+                        res_data = json.loads(obj['Body'].read().decode('utf-8'))
                         
-                except Exception as e:
-                    # S3 file might not exist yet or other error, ignore
-                    pass
+                        updates = {}
+                        if 'best_affinity' in res_data:
+                            updates['binding_affinity'] = res_data['best_affinity']
+                            job['binding_affinity'] = res_data['best_affinity']
+                        
+                        if 'vina_score' in res_data:
+                             updates['vina_score'] = res_data['vina_score']
+                             job['vina_score'] = res_data['vina_score']
+    
+                        if 'docking_score' in res_data: # Gnina
+                             updates['docking_score'] = res_data['docking_score']
+                             job['docking_score'] = res_data['docking_score']
+                        
+                        if updates:
+                            print(f"[LazyRepair] Restored from results.json: {updates}")
+                            auth_client.table('jobs').update(updates).eq('id', job['id']).execute()
+                            modified = True
+                    except Exception as json_err:
+                        print(f"[LazyRepair] results.json failed ({json_err}). Trying log.txt fallback...")
+                        # Strategy 2: Fallback to log.txt (Old Job Definitions like v10)
+                        try:
+                            log_key = f"jobs/{job['id']}/log.txt"
+                            obj = s3_client.get_object(Bucket=S3_BUCKET, Key=log_key)
+                            log_content = obj['Body'].read().decode('utf-8')
+                            parsed = parse_vina_log(log_content)
+                            
+                            if parsed.get('best_affinity'):
+                                print(f"[LazyRepair] Restored from log.txt: {parsed['best_affinity']}")
+                                updates = {'binding_affinity': parsed['best_affinity'], 'vina_score': parsed['best_affinity']}
+                                auth_client.table('jobs').update(updates).eq('id', job['id']).execute()
+                                job['binding_affinity'] = parsed['best_affinity']
+                                job['vina_score'] = parsed['best_affinity']
+                                modified = True
+                        except Exception as log_ex:
+                             print(f"[LazyRepair] log.txt failed as well: {log_ex}")
+                             pass
             
             updated_jobs.append(job)
 
