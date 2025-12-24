@@ -84,7 +84,7 @@ export default function JobResultsPage() {
 
     const fetchAnalysis = async (token) => {
         try {
-            const res = await fetch(`${API_URL}/jobs/${jobId}/analyze`, { headers: { 'Authorization': `Bearer ${token}` } })
+            const res = await fetch(`${API_URL}/jobs/${jobId}/analysis`, { headers: { 'Authorization': `Bearer ${token}` } })
             if (res.ok) {
                 const data = await res.json()
                 setAnalysis(data.analysis)
@@ -180,8 +180,8 @@ export default function JobResultsPage() {
                         <div className="flex items-center gap-3">
                             <h1 className="text-xl font-bold text-slate-900 tracking-tight">Job Result Page</h1>
                             <span className={`px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider ${job.status === 'SUCCEEDED' ? 'bg-emerald-100 text-emerald-700' :
-                                    job.status === 'FAILED' ? 'bg-red-100 text-red-700' :
-                                        'bg-indigo-100 text-indigo-700 animate-pulse'
+                                job.status === 'FAILED' ? 'bg-red-100 text-red-700' :
+                                    'bg-indigo-100 text-indigo-700 animate-pulse'
                                 }`}>
                                 {job.status}
                             </span>
@@ -271,42 +271,115 @@ export default function JobResultsPage() {
                                     <h3 className="flex items-center gap-2 font-bold text-lg mb-6">
                                         <Download className="text-indigo-400" size={20} /> Data Export Vault
                                     </h3>
-                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        {/* Structure Files */}
-                                        <a href={job.download_urls.output || job.download_urls.output_vina} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+                                        {/* 0. Full Report (NEW) */}
+                                        <a href={`${API_URL}/jobs/${jobId}/export/pdf`} download className="group col-span-1 lg:col-span-3 flex items-center justify-between p-4 bg-gradient-to-r from-red-600/20 to-orange-600/20 hover:from-red-600/30 hover:to-orange-600/30 border border-red-500/30 rounded-xl transition-all">
                                             <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-indigo-500/20 rounded-lg text-indigo-400 group-hover:text-white group-hover:bg-indigo-500 transition-colors"><Database size={20} /></div>
+                                                <div className="p-2 bg-red-500 rounded-lg text-white shadow-lg shadow-red-500/30"><FileText size={20} /></div>
                                                 <div>
-                                                    <div className="font-bold text-sm">Docked Structure</div>
-                                                    <div className="text-xs text-indigo-200/50">PDBQT Format</div>
+                                                    <div className="font-bold text-sm text-red-100">Full Publication Report</div>
+                                                    <div className="text-xs text-red-200/50">PDF (Methods, Results, Plots)</div>
+                                                </div>
+                                            </div>
+                                            <Download size={16} className="text-red-400 group-hover:text-white transition-colors" />
+                                        </a>
+
+                                        {/* 0.5. PyMOL Session (NEW) */}
+                                        <a href={`${API_URL}/jobs/${jobId}/export/pymol`} download className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                            <div className="flex items-center gap-3">
+                                                <div className="p-2 bg-orange-500/20 rounded-lg text-orange-400 group-hover:text-white group-hover:bg-orange-500 transition-colors"><Layers size={20} /></div>
+                                                <div>
+                                                    <div className="font-bold text-sm">PyMOL Session</div>
+                                                    <div className="text-xs text-orange-200/50">Visualization Script (.pml)</div>
                                                 </div>
                                             </div>
                                             <Download size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
                                         </a>
 
-                                        {/* Config */}
-                                        <a href={job.download_urls.config} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400 group-hover:text-white group-hover:bg-emerald-500 transition-colors"><FileText size={20} /></div>
-                                                <div>
-                                                    <div className="font-bold text-sm">Configuration</div>
-                                                    <div className="text-xs text-emerald-200/50">TXT Format</div>
+                                        {/* 1. Receptor */}
+                                        {job.download_urls.receptor && (
+                                            <a href={job.download_urls.receptor} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-slate-700 rounded-lg text-slate-300 group-hover:text-white transition-colors"><Database size={20} /></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Target Receptor</div>
+                                                        <div className="text-xs text-slate-400">PDB/PDBQT</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <Download size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        </a>
+                                                <Download size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </a>
+                                        )}
 
-                                        {/* Logs */}
-                                        <a href={job.download_urls.log} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
-                                            <div className="flex items-center gap-3">
-                                                <div className="p-2 bg-slate-500/20 rounded-lg text-slate-400 group-hover:text-white group-hover:bg-slate-500 transition-colors"><Activity size={20} /></div>
-                                                <div>
-                                                    <div className="font-bold text-sm">Execution Log</div>
-                                                    <div className="text-xs text-slate-200/50">Details</div>
+                                        {/* 2. Vina Output */}
+                                        {(job.download_urls.output_vina || job.download_urls.output) && (
+                                            <a href={job.download_urls.output_vina || job.download_urls.output} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400 group-hover:text-white group-hover:bg-blue-500 transition-colors"><Database size={20} /></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Vina Structure</div>
+                                                        <div className="text-xs text-blue-200/50">Output PDBQT</div>
+                                                    </div>
                                                 </div>
-                                            </div>
-                                            <Download size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
-                                        </a>
+                                                <Download size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </a>
+                                        )}
+
+                                        {/* 3. Gnina Output */}
+                                        {job.download_urls.output_gnina && (
+                                            <a href={job.download_urls.output_gnina} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-purple-500/20 rounded-lg text-purple-400 group-hover:text-white group-hover:bg-purple-500 transition-colors"><Activity size={20} /></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Gnina Structure</div>
+                                                        <div className="text-xs text-purple-200/50">CNN Output</div>
+                                                    </div>
+                                                </div>
+                                                <Download size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </a>
+                                        )}
+
+                                        {/* 4. Results JSON */}
+                                        {job.download_urls.results_json && (
+                                            <a href={job.download_urls.results_json} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-emerald-500/20 rounded-lg text-emerald-400 group-hover:text-white group-hover:bg-emerald-500 transition-colors"><FileText size={20} /></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Consensus Metrics</div>
+                                                        <div className="text-xs text-emerald-200/50">JSON Data</div>
+                                                    </div>
+                                                </div>
+                                                <Download size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </a>
+                                        )}
+
+                                        {/* 5. Config */}
+                                        {job.download_urls.config && (
+                                            <a href={job.download_urls.config} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-slate-500/20 rounded-lg text-slate-400 group-hover:text-white group-hover:bg-slate-500 transition-colors"><FileText size={20} /></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Configuration</div>
+                                                        <div className="text-xs text-slate-200/50">Parameters</div>
+                                                    </div>
+                                                </div>
+                                                <Download size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </a>
+                                        )}
+
+                                        {/* 6. Logs */}
+                                        {job.download_urls.log && (
+                                            <a href={job.download_urls.log} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-slate-500/20 rounded-lg text-slate-400 group-hover:text-white group-hover:bg-slate-500 transition-colors"><Activity size={20} /></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Execution Log</div>
+                                                        <div className="text-xs text-slate-200/50">Console Output</div>
+                                                    </div>
+                                                </div>
+                                                <Download size={16} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="absolute top-0 right-0 w-64 h-64 bg-indigo-600/20 blur-[80px] rounded-full pointer-events-none -mr-16 -mt-16"></div>
