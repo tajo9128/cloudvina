@@ -15,12 +15,17 @@ export default function BatchResultsPage() {
     const [currentPage, setCurrentPage] = useState(1)
     const itemsPerPage = 10
 
-    // Auto-Refresh
+    // Auto-Refresh (Polling & Realtime)
     useEffect(() => {
-        if (batchId) fetchBatchDetails(batchId)
+        if (batchId) {
+            fetchBatchDetails(batchId)
+            // Polling every 10s as backup/primary sync (triggers lazy repair)
+            const interval = setInterval(() => fetchBatchDetails(batchId, true), 10000)
+            return () => clearInterval(interval)
+        }
     }, [batchId])
 
-    // Real-time Updates
+    // Real-time Updates (Supabase Subscription)
     useEffect(() => {
         if (!batchId) return
         const channel = supabase
@@ -142,9 +147,14 @@ export default function BatchResultsPage() {
     )
 
     // Calculate Stats
+    const totalJobs = batchData.stats?.total || 0
     const successCount = batchData.jobs?.filter(j => j.status === 'SUCCEEDED').length || 0
-    const runningCount = batchData.jobs?.filter(j => ['RUNNING', 'QUEUED'].includes(j.status)).length || 0
+    const runningCount = batchData.jobs?.filter(j => ['RUNNING', 'QUEUED', 'STARTING', 'submitted', 'SUBMITTED', 'RUNNABLE'].includes(j.status)).length || 0
     const failedCount = batchData.jobs?.filter(j => j.status === 'FAILED').length || 0
+
+    // Progress Calculation
+    const progressPercent = totalJobs > 0 ? Math.round(((successCount + failedCount) / totalJobs) * 100) : 0
+    const estTimeRemaining = runningCount > 0 ? Math.ceil(runningCount * 2.5) : 0 // Approx 2.5 mins per parallel slot (heuristic)
 
     // Average Affinity (only successes)
     const validAffinities = batchData.jobs?.map(getAffinity).filter(a => a !== null && !isNaN(a)) || []
@@ -207,6 +217,34 @@ export default function BatchResultsPage() {
             <div className="flex-1 overflow-auto p-6 lg:p-10">
                 <div className="max-w-7xl mx-auto space-y-8">
 
+                    {/* Progress Bar Section */}
+                    {progressPercent < 100 && (
+                        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                            <div className="flex justify-between items-end mb-2">
+                                <div>
+                                    <h3 className="font-bold text-slate-900">Batch Progress</h3>
+                                    <p className="text-sm text-slate-500 flex items-center gap-2">
+                                        {runningCount > 0 ? (
+                                            <>
+                                                <span className="w-2 h-2 bg-indigo-500 rounded-full animate-pulse"></span>
+                                                Processing {runningCount} jobs... (~{estTimeRemaining} mins remaining)
+                                            </>
+                                        ) : "Batch initialization..."}
+                                    </p>
+                                </div>
+                                <span className="text-2xl font-bold text-indigo-600">{progressPercent}%</span>
+                            </div>
+                            <div className="w-full bg-slate-100 rounded-full h-3 overflow-hidden">
+                                <div
+                                    className="bg-indigo-600 h-full rounded-full transition-all duration-1000 ease-out"
+                                    style={{ width: `${progressPercent}%` }}
+                                >
+                                    <div className="w-full h-full opacity-30 bg-[url('https://www.transparenttextures.com/patterns/diagonal-stripes.png')] animate-[slide_1s_linear_infinite]"></div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
                     {/* 1. Metrics Grid */}
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                         {/* Total Jobs */}
@@ -216,7 +254,7 @@ export default function BatchResultsPage() {
                             </div>
                             <div>
                                 <div className="text-sm font-bold text-slate-500 uppercase tracking-wide">Total Jobs</div>
-                                <div className="text-3xl font-bold text-slate-900">{batchData.stats?.total || 0}</div>
+                                <div className="text-3xl font-bold text-slate-900">{totalJobs}</div>
                             </div>
                         </div>
 
@@ -229,11 +267,6 @@ export default function BatchResultsPage() {
                                 <div className="text-sm font-bold text-slate-500 uppercase tracking-wide">Completed</div>
                                 <div className="text-3xl font-bold text-slate-900">{successCount}</div>
                             </div>
-                            {runningCount > 0 && (
-                                <div className="ml-auto flex items-center gap-1 text-xs font-bold text-indigo-600 bg-indigo-50 px-2 py-1 rounded-full animate-pulse">
-                                    <Clock size={12} /> {runningCount} Running
-                                </div>
-                            )}
                         </div>
 
                         {/* Best Affinity */}
@@ -310,11 +343,11 @@ export default function BatchResultsPage() {
                                             </td>
                                             <td className="px-6 py-5">
                                                 <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border capitalize tracking-wide ${job.status === 'SUCCEEDED' ? 'bg-emerald-50 text-emerald-600 border-emerald-100' :
-                                                        job.status === 'FAILED' ? 'bg-red-50 text-red-600 border-red-100' :
-                                                            'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'
+                                                    job.status === 'FAILED' ? 'bg-red-50 text-red-600 border-red-100' :
+                                                        'bg-amber-50 text-amber-600 border-amber-100 animate-pulse'
                                                     }`}>
                                                     <span className={`w-1.5 h-1.5 rounded-full ${job.status === 'SUCCEEDED' ? 'bg-emerald-500' :
-                                                            job.status === 'FAILED' ? 'bg-red-500' : 'bg-amber-500'
+                                                        job.status === 'FAILED' ? 'bg-red-500' : 'bg-amber-500'
                                                         }`}></span>
                                                     {job.status.toLowerCase()}
                                                 </span>
@@ -339,7 +372,18 @@ export default function BatchResultsPage() {
                                                 })()}
                                             </td>
                                             <td className="px-6 py-5 text-center">
-                                                <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity items-center">
+                                                    {job.status === 'SUCCEEDED' && (
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.stopPropagation();
+                                                                navigate(`/dock/${job.id}`)
+                                                            }}
+                                                            className="px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-600 text-xs font-bold hover:bg-indigo-100 transition-all flex items-center gap-1"
+                                                        >
+                                                            <Zap size={12} /> Analyze
+                                                        </button>
+                                                    )}
                                                     <button onClick={(e) => handleDownload(e, job, 'output')} className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="Download structure">
                                                         <Download size={14} />
                                                     </button>

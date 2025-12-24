@@ -79,8 +79,8 @@ async def submit_batch(
         auth_client = get_authenticated_client(credentials.credentials)
         batch_id = str(uuid.uuid4())
         
-        if len(request.ligand_filenames) > 100:
-            raise HTTPException(status_code=400, detail="Maximum 100 ligands per batch")
+        if len(request.ligand_filenames) > 10:
+            raise HTTPException(status_code=400, detail="Maximum 10 ligands per batch")
 
         rec_url, rec_key, lig_urls, lig_keys = generate_batch_urls(
             batch_id, request.receptor_filename, request.ligand_filenames
@@ -220,7 +220,7 @@ async def submit_csv_batch(
     if not smiles_col: raise HTTPException(400, "No 'smiles' column")
     
     smiles_list = df[smiles_col].dropna().tolist()
-    if len(smiles_list) > 100: raise HTTPException(400, "Max 100 items")
+    if len(smiles_list) > 10: raise HTTPException(400, "Max 10 items")
 
     # 2. Upload Receptor
     # TODO: Convert if not PDBQT
