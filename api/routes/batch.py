@@ -368,6 +368,8 @@ async def get_batch_details(
                         except Exception as log_ex:
                              print(f"[LazyRepair] log.txt failed as well: {log_ex}")
                              pass
+                except Exception as e:
+                    print(f"[LazyRepair] Critical error: {e}")
             
             updated_jobs.append(job)
 
