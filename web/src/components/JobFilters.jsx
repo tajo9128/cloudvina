@@ -1,6 +1,6 @@
 import { useState } from 'react'
 
-export default function JobFilters({ onFilterChange }) {
+export default function JobFilters({ onFilterChange, vertical = false }) {
     const [filters, setFilters] = useState({
         status: '',
         search: '',
@@ -26,7 +26,7 @@ export default function JobFilters({ onFilterChange }) {
     }
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow-sm mb-6 border border-gray-200">
+        <div className={`bg-white p-4 rounded-lg shadow-sm mb-6 border border-gray-200 ${vertical ? '' : ''}`}>
             <div className="flex justify-between items-center mb-4">
                 <h3 className="font-semibold text-gray-900">Filter Jobs</h3>
                 <button
@@ -37,8 +37,8 @@ export default function JobFilters({ onFilterChange }) {
                 </button>
             </div>
 
-            <div className="grid md:grid-cols-4 gap-4">
-                <div>
+            <div className={`grid gap-4 ${vertical ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-4'}`}>
+                <div className="md:col-span-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Search Job ID
                     </label>
@@ -51,7 +51,7 @@ export default function JobFilters({ onFilterChange }) {
                     />
                 </div>
 
-                <div>
+                <div className="md:col-span-1">
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                         Status
                     </label>
@@ -69,32 +69,35 @@ export default function JobFilters({ onFilterChange }) {
                     </select>
                 </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Min Affinity (kcal/mol)
-                    </label>
-                    <input
-                        type="number"
-                        step="0.1"
-                        placeholder="e.g., -10"
-                        value={filters.minAffinity}
-                        onChange={(e) => handleChange('minAffinity', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    />
-                </div>
+                {/* Affinity Range Group */}
+                <div className={vertical ? 'grid grid-cols-2 gap-2' : 'contents'}>
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Min Aff.
+                        </label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            placeholder="-12.0"
+                            value={filters.minAffinity}
+                            onChange={(e) => handleChange('minAffinity', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                        />
+                    </div>
 
-                <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Max Affinity (kcal/mol)
-                    </label>
-                    <input
-                        type="number"
-                        step="0.1"
-                        placeholder="e.g., 0"
-                        value={filters.maxAffinity}
-                        onChange={(e) => handleChange('maxAffinity', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                    />
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Max Aff.
+                        </label>
+                        <input
+                            type="number"
+                            step="0.1"
+                            placeholder="-5.0"
+                            value={filters.maxAffinity}
+                            onChange={(e) => handleChange('maxAffinity', e.target.value)}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm"
+                        />
+                    </div>
                 </div>
             </div>
         </div>
