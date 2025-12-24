@@ -78,16 +78,13 @@ export default function HomePage() {
                                     </div>
                                 </div>
 
-                                <img
-                                    src="/assets/images/hero-molecular-v36.png"
-                                    alt="BioDockify Interface"
-                                    className="w-full h-auto transform transition-transform duration-700 hover:scale-105"
-                                    onError={(e) => {
-                                        console.error("Hero image failed to load, falling back to placeholder");
-                                        e.target.onerror = null;
-                                        e.target.src = "https://images.unsplash.com/photo-1614935151651-0bea6508db6b?auto=format&fit=crop&q=80&w=1200";
-                                    }}
-                                />
+                                <div className="w-full h-[400px] rounded-2xl bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 flex items-center justify-center transform transition-transform duration-700 hover:scale-105">
+                                    <div className="text-center p-8">
+                                        <div className="text-6xl mb-4">🧬</div>
+                                        <div className="text-white text-2xl font-bold mb-2">Molecular Discovery Platform</div>
+                                        <div className="text-indigo-300 text-sm">AI-Powered Drug Discovery Workspace</div>
+                                    </div>
+                                </div>
 
                                 {/* Overlay Text on Image (Bottom Right) */}
                                 <div className="absolute bottom-0 right-0 p-8 text-right bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent w-full">
@@ -277,15 +274,27 @@ export default function HomePage() {
                         {/* 3D Visual for Section 3 */}
                         <div className="relative">
                             <div className="absolute inset-0 bg-blue-600 blur-[80px] opacity-10 rounded-full"></div>
-                            <img
-                                src="/assets/images/bridging-gap-v36.png"
-                                alt="BioDockify Bridging Research and Discovery"
-                                className="relative w-full h-auto rounded-3xl shadow-2xl border border-slate-200 transform hover:scale-[1.02] transition-transform duration-500"
-                                onError={(e) => {
-                                    e.target.onerror = null;
-                                    e.target.src = "https://placehold.co/800x600/f8fafc/e2e8f0?text=Analysis+Interface";
-                                }}
-                            />
+                            <div className="relative w-full h-[500px] rounded-3xl shadow-2xl border border-slate-200 bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-50 transform hover:scale-[1.02] transition-transform duration-500 flex items-center justify-center">
+                                <div className="text-center p-12">
+                                    <div className="text-7xl mb-6">📊</div>
+                                    <div className="text-slate-800 text-3xl font-bold mb-4">Advanced Analysis Dashboard</div>
+                                    <div className="text-slate-600 text-lg mb-8">Real-time computational insights for drug discovery</div>
+                                    <div className="flex gap-4 justify-center">
+                                        <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-slate-200">
+                                            <div className="text-xs text-slate-500">ADMET</div>
+                                            <div className="text-sm font-bold text-emerald-600">✓ Validated</div>
+                                        </div>
+                                        <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-slate-200">
+                                            <div className="text-xs text-slate-500">Docking</div>
+                                            <div className="text-sm font-bold text-indigo-600">-8.5 kcal/mol</div>
+                                        </div>
+                                        <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-slate-200">
+                                            <div className="text-xs text-slate-500">BBB</div>
+                                            <div className="text-sm font-bold text-blue-600">92% Prob</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
