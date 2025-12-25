@@ -97,7 +97,7 @@ function AppRoutes() {
     }, [location]);
 
     useEffect(() => {
-        console.log('BioDockify v3.2 (Router in Main) Loaded - Build: ' + new Date().toISOString())
+        console.log('BioDockify v6.2.0 (Verified Build) Loaded - Build: ' + new Date().toISOString())
     }, [])
 
     const checkAdmin = async (userId) => {
