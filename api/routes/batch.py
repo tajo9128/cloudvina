@@ -329,69 +329,6 @@ async def get_batch_details(
                 except Exception as e:
                     print(f"[BatchSync] Error syncing job {job['id']}: {e}")
 
-            # 2. Lazy Repair Scores (Defensive Wrapper)
-            try:
-                # Safe Float Conversion Helper
-                def safe_float(val):
-                    try:
-                        return float(val or 0)
-                    except:
-                        return 0.0
-
-                current_affinity = safe_float(job.get('binding_affinity'))
-                
-                if job['status'] == 'SUCCEEDED' and current_affinity == 0.0:
-                    # Only attempt repair if valid ID available
-                    # Strategy 1: results.json
-                    try:
-                        s3_key = f"jobs/{job['id']}/results.json"
-                        obj = s3_client.get_object(Bucket=S3_BUCKET, Key=s3_key)
-                        res_data = json.loads(obj['Body'].read().decode('utf-8'))
-                        
-                        updates = {}
-                        if 'best_affinity' in res_data:
-                            updates['binding_affinity'] = res_data['best_affinity']
-                            job['binding_affinity'] = res_data['best_affinity']
-                        
-                        if 'vina_score' in res_data:
-                             updates['vina_score'] = res_data['vina_score']
-                             job['vina_score'] = res_data['vina_score']
-    
-                        if 'docking_score' in res_data:
-                             updates['docking_score'] = res_data['docking_score']
-                             job['docking_score'] = res_data['docking_score']
-                        
-                        if updates:
-                            print(f"[LazyRepair] Restored from results.json: {updates}")
-                            auth_client.table('jobs').update(updates).eq('id', job['id']).execute()
-                            modified = True
-                            
-                    except Exception as json_err:
-                        # Strategy 2: log.txt
-                        try:
-                            log_key = f"jobs/{job['id']}/log.txt"
-                            obj = s3_client.get_object(Bucket=S3_BUCKET, Key=log_key)
-                            log_content = obj['Body'].read().decode('utf-8')
-                            
-                            # Ensure parser is imported
-                            from services.vina_parser import parse_vina_log
-                            parsed = parse_vina_log(log_content)
-                            
-                            if parsed and parsed.get('best_affinity'):
-                                print(f"[LazyRepair] Restored from log.txt: {parsed['best_affinity']}")
-                                updates = {'binding_affinity': parsed['best_affinity'], 'vina_score': parsed['best_affinity']}
-                                auth_client.table('jobs').update(updates).eq('id', job['id']).execute()
-                                job['binding_affinity'] = parsed['best_affinity']
-                                job['vina_score'] = parsed['best_affinity']
-                                modified = True
-                        except Exception as log_ex:
-                             # print(f"[LazyRepair] log.txt failed: {log_ex}") 
-                             pass
-
-            except Exception as e:
-                print(f"[LazyRepair] Critical error for job {job['id']}: {e}")
-                # Do not re-raise, allow endpoint to return partial data
-            
             updated_jobs.append(job)
 
         return {"batch_id": batch_id, "jobs": updated_jobs, "stats": {"total": len(updated_jobs)}}
