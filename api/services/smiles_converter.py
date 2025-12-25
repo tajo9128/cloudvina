@@ -55,7 +55,8 @@ def smiles_to_pdbqt(smiles: str, name: str = "ligand") -> Tuple[Optional[str], O
         preparator = MoleculePreparation()
         setups = preparator.prepare(mol)
         if setups:
-            pdbqt_string = PDBQTWriterLegacy.write_string(setups[0])
+            result = PDBQTWriterLegacy.write_string(setups[0])
+            pdbqt_string = result[0] if isinstance(result, tuple) else result
         else:
              return None, "Meeko preparation failed"
         
@@ -104,7 +105,8 @@ def pdb_to_pdbqt(pdb_content: str, remove_water: bool = True, add_hydrogens: boo
         preparator = MoleculePreparation()
         setups = preparator.prepare(mol)
         if setups:
-            pdbqt_string = PDBQTWriterLegacy.write_string(setups[0])
+            result = PDBQTWriterLegacy.write_string(setups[0])
+            pdbqt_string = result[0] if isinstance(result, tuple) else result
         else:
             return None, "Meeko preparation failed"
         
@@ -187,7 +189,8 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
         preparator = MoleculePreparation()
         setups = preparator.prepare(mol)
         if setups:
-            pdbqt_string = PDBQTWriterLegacy.write_string(setups[0])
+            result = PDBQTWriterLegacy.write_string(setups[0])
+            pdbqt_string = result[0] if isinstance(result, tuple) else result
         else:
             return None, "Meeko preparation failed to generate a molecule setup"
         
@@ -316,7 +319,12 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                 setups = preparator.prepare(frag)
                 if not setups: continue # Skip invalid
                 
-                frag_pdbqt = PDBQTWriterLegacy.write_string(setups[0])
+                # Meeko v0.5+ returns tuple (string, score_only, msg)
+                frag_pdbqt_tuple = PDBQTWriterLegacy.write_string(setups[0])
+                if isinstance(frag_pdbqt_tuple, tuple):
+                    frag_pdbqt = frag_pdbqt_tuple[0]
+                else:
+                    frag_pdbqt = frag_pdbqt_tuple
                 
                 # Flatten (Rigidify) - Strip ROOT/BRANCH/TORSDOF
                 # This effectively treats every fragment as a rigid body in the same frame.
