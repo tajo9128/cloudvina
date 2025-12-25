@@ -144,13 +144,13 @@ async def start_batch(
                 job_lig_key = f"jobs/{job_id}/ligand.pdbqt"
                 
                 # 1. Prepare Receptor & Ligand (Check/Convert/Copy)
-                from services.file_converter import convert_format
+                from services.smiles_converter import convert_to_pdbqt, convert_receptor_to_pdbqt
                 import tempfile
                 import shutil
                 
                 with tempfile.TemporaryDirectory() as temp_dir:
                     # Generic function to handle download -> convert -> key
-                    def prepare_file(s3_key, filename, target_key):
+                    def prepare_file(s3_key, filename, target_key, is_receptor=False):
                         ext = os.path.splitext(filename)[1].lower()
                         local_path = os.path.join(temp_dir, filename)
                         
@@ -158,20 +158,41 @@ async def start_batch(
                         s3_client.download_file(S3_BUCKET, s3_key, local_path)
                         
                         # Convert if needed
-                        final_path = local_path
                         if ext != '.pdbqt':
                             print(f" Converting {filename} to PDBQT...")
-                            final_path = convert_format(local_path, 'pdbqt')
+                            with open(local_path, 'r') as f: content = f.read()
+                            
+                            pdbqt_content = None
+                            err = None
+                            
+                            if is_receptor:
+                                pdbqt_content, err = convert_receptor_to_pdbqt(content, filename)
+                            else:
+                                pdbqt_content, err = convert_to_pdbqt(content, filename)
+                                
+                            if err or not pdbqt_content:
+                                raise Exception(f"Conversion failed: {err}")
+                                
+                            # Write Converted to temp file
+                            local_path = local_path + ".pdbqt" # Update path to point to converted
+                            with open(local_path, 'w') as f: f.write(pdbqt_content)
                         
                         # Upload to target
-                        s3_client.upload_file(final_path, S3_BUCKET, target_key)
+                        s3_client.upload_file(local_path, S3_BUCKET, target_key)
                         
                     # Process Receptor
-                    # Note: We reuse the same receptor file for the job
-                    prepare_file(job['receptor_s3_key'], job['receptor_filename'], job_rec_key)
+                    try:
+                        prepare_file(job['receptor_s3_key'], job['receptor_filename'], job_rec_key, is_receptor=True)
+                    except Exception as rx:
+                         print(f"Receptor Prep Failed for {job_id}: {rx}")
+                         raise rx
                     
                     # Process Ligand
-                    prepare_file(job['ligand_s3_key'], job['ligand_filename'], job_lig_key)
+                    try:
+                        prepare_file(job['ligand_s3_key'], job['ligand_filename'], job_lig_key, is_receptor=False)
+                    except Exception as lx:
+                         print(f"Ligand Prep Failed for {job_id}: {lx}")
+                         raise lx
                 
                 # Generate Config
                 generate_vina_config(job_id, grid_params=request.grid_params)
