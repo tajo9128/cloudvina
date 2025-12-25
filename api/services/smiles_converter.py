@@ -216,10 +216,33 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
             # Try parsing MMCIF
             mol = Chem.MolFromMMCIFBlock(content)
         elif ext in ['pdbqt']:
-            # TRUST THE USER: If they upload PDBQT, assume it is ready for Vina.
-            # Attempting to re-parse/strip waters often breaks valid PDBQT files.
-            print(f"DEBUG: Skipping conversion for existing PDBQT file: {filename}")
-            return content, None
+            # Full Featured Conversion: Try to parse, clean, and re-generate.
+            # 1. First, try to fix PDBQT format to be PDB-compatible for RDKit
+            # RDKit struggles with PDBQT's charge/type columns.
+            cleaned_content = ""
+            for line in content.splitlines():
+                if line.startswith(('ATOM', 'HETATM')):
+                     # PDBQT line length is usually fixed. 
+                     # Stripping the last columns (charge & type) often helps RDKit parse it as standard PDB.
+                     # Configurable heuristic: Keep first 66 chars (standard PDB width-ish)
+                     if len(line) > 66:
+                         cleaned_content += line[:66] + "\n"
+                     else:
+                         cleaned_content += line + "\n"
+                else:
+                     cleaned_content += line + "\n"
+                     
+            mol = Chem.MolFromPDBBlock(cleaned_content, removeHs=False, sanitize=False)
+            
+            if not mol:
+                 # Try raw content if cleaning failed
+                 mol = Chem.MolFromPDBBlock(content, removeHs=False, sanitize=False)
+                 
+            if mol:
+                 try:
+                     Chem.SanitizeMol(mol)
+                 except:
+                     pass # Best effort processing
             
         if not mol:
              # --- FALLBACK: If RDKit failed, try OpenBabel via file_converter ---
@@ -313,6 +336,11 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                 continue
         
         if not total_pdbqt_lines:
+             if ext == 'pdbqt':
+                 # Fallback: If "Full Feature" conversion stripped everything (e.g. failed to prepare fragments),
+                 # Return the original content instead of failing. This is a "Safe" full-featured approach.
+                 print(f"Warning: Rigorous conversion produced empty result for {filename}. Reverting to original PDBQT.")
+                 return content, None
              return None, "Receptor conversion produced no valid PDBQT lines"
              
         rigid_pdbqt = "\n".join(total_pdbqt_lines)
