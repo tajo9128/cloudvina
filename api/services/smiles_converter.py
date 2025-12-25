@@ -216,13 +216,10 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
             # Try parsing MMCIF
             mol = Chem.MolFromMMCIFBlock(content)
         elif ext in ['pdbqt']:
-            # Force processing: Try to parse PDBQT as PDB to clean waters/ions
-            # RDKit can often read PDBQT atom blocks if treated as PDB
-            mol = Chem.MolFromPDBBlock(content, removeHs=False)
-            if not mol:
-                 # Fallback: If strict parsing fails, trust raw content but warn
-                 print(f"Warning: Could not parse PDBQT structure for {filename}. Skipping water removal.")
-                 return content, None
+            # TRUST THE USER: If they upload PDBQT, assume it is ready for Vina.
+            # Attempting to re-parse/strip waters often breaks valid PDBQT files.
+            print(f"DEBUG: Skipping conversion for existing PDBQT file: {filename}")
+            return content, None
             
         if not mol:
              # --- FALLBACK: If RDKit failed, try OpenBabel via file_converter ---
