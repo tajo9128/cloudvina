@@ -4,7 +4,7 @@ Converts SMILES strings to 3D PDBQT format for docking
 """
 from rdkit import Chem
 from rdkit.Chem import AllChem
-from meeko import MoleculePreparation
+from meeko import MoleculePreparation, PDBQTWriterLegacy
 from typing import Optional, Tuple
 import logging
 
@@ -53,8 +53,11 @@ def smiles_to_pdbqt(smiles: str, name: str = "ligand") -> Tuple[Optional[str], O
         
         # Convert to PDBQT using Meeko
         preparator = MoleculePreparation()
-        preparator.prepare(mol)
-        pdbqt_string = preparator.write_pdbqt_string()
+        setups = preparator.prepare(mol)
+        if setups:
+            pdbqt_string = PDBQTWriterLegacy.write_string(setups[0])
+        else:
+             return None, "Meeko preparation failed"
         
         if not pdbqt_string or "ATOM" not in pdbqt_string:
             return None, f"PDBQT generation failed for: {smiles[:50]}..."
@@ -99,8 +102,11 @@ def pdb_to_pdbqt(pdb_content: str, remove_water: bool = True, add_hydrogens: boo
         
         # 3. Convert with Meeko
         preparator = MoleculePreparation()
-        preparator.prepare(mol)
-        pdbqt_string = preparator.write_pdbqt_string()
+        setups = preparator.prepare(mol)
+        if setups:
+            pdbqt_string = PDBQTWriterLegacy.write_string(setups[0])
+        else:
+            return None, "Meeko preparation failed"
         
         return pdbqt_string, None
         
@@ -179,8 +185,11 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
 
         # 4. Meeko Preparation
         preparator = MoleculePreparation()
-        preparator.prepare(mol)
-        pdbqt_string = preparator.write_pdbqt_string()
+        setups = preparator.prepare(mol)
+        if setups:
+            pdbqt_string = PDBQTWriterLegacy.write_string(setups[0])
+        else:
+            return None, "Meeko preparation failed to generate a molecule setup"
         
         return pdbqt_string, None
 
@@ -284,8 +293,10 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
             try:
                 # Prepare fragment
                 preparator = MoleculePreparation()
-                preparator.prepare(frag)
-                frag_pdbqt = preparator.write_pdbqt_string()
+                setups = preparator.prepare(frag)
+                if not setups: continue # Skip invalid
+                
+                frag_pdbqt = PDBQTWriterLegacy.write_string(setups[0])
                 
                 # Flatten (Rigidify) - Strip ROOT/BRANCH/TORSDOF
                 # This effectively treats every fragment as a rigid body in the same frame.
