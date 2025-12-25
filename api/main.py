@@ -30,8 +30,10 @@ from routes.jobs import router as jobs_router # NEW: Dedicated Jobs Router
 from routes.feedback import router as feedback_router 
 from services.cavity_detector import CavityDetector
 from services.drug_properties import DrugPropertiesCalculator
-from services.smiles_converter import pdbqt_to_pdb
-from rdkit import Chem
+from services.cavity_detector import CavityDetector
+from services.drug_properties import DrugPropertiesCalculator
+# from services.smiles_converter import pdbqt_to_pdb # Moved to function
+# from rdkit import Chem # Moved to function
 
 app = FastAPI(
     title="BioDockify API",
@@ -45,7 +47,7 @@ app = FastAPI(
 async def startup_event():
     print("="*50)
     print("BioDockify API v6.2.0 - Deployed at " + datetime.utcnow().isoformat())
-    print("Optimization: Job Logic separated to routes/jobs.py")
+    print("Optimization: Lazy Loading Enabled")
     print("="*50)
 
 @app.get("/health")

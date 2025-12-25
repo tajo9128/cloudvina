@@ -3,11 +3,10 @@ Drug Properties Service
 Calculates drug-likeness, ADMET predictions, and molecular properties using RDKit.
 """
 
-from rdkit import Chem
-from rdkit.Chem import Descriptors, Lipinski, FilterCatalog, AllChem
-from rdkit.Chem.FilterCatalog import FilterCatalogParams
 from typing import Dict, List, Optional
 import logging
+
+logger = logging.getLogger(__name__)
 
 logger = logging.getLogger(__name__)
 
@@ -19,6 +18,10 @@ class DrugPropertiesCalculator:
     """
     
     def __init__(self):
+        # Lazy import RDKit
+        from rdkit.Chem import FilterCatalog
+        from rdkit.Chem.FilterCatalog import FilterCatalogParams
+        
         # Initialize PAINS filter
         params = FilterCatalogParams()
         params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
@@ -27,13 +30,9 @@ class DrugPropertiesCalculator:
     def calculate_all(self, smiles: str) -> Dict:
         """
         Calculate all drug properties for a given SMILES string.
-        
-        Args:
-            smiles: SMILES representation of the molecule
-            
-        Returns:
-            Dictionary with all calculated properties
         """
+        from rdkit import Chem
+        
         mol = Chem.MolFromSmiles(smiles)
         if mol is None:
             return {"error": "Invalid SMILES string"}
@@ -62,6 +61,7 @@ class DrugPropertiesCalculator:
     
     def _get_molecular_properties(self, mol) -> Dict:
         """Calculate basic molecular properties."""
+        from rdkit.Chem import Descriptors, Lipinski
         return {
             "molecular_weight": round(Descriptors.MolWt(mol), 2),
             "logp": round(Descriptors.MolLogP(mol), 2),
@@ -77,13 +77,9 @@ class DrugPropertiesCalculator:
         }
     
     def _check_lipinski(self, mol) -> Dict:
+        from rdkit.Chem import Descriptors, Lipinski
         """
         Check Lipinski's Rule of 5 for oral bioavailability.
-        A drug-like compound should have:
-        - MW ≤ 500
-        - LogP ≤ 5
-        - HBD ≤ 5
-        - HBA ≤ 10
         """
         mw = Descriptors.MolWt(mol)
         logp = Descriptors.MolLogP(mol)
@@ -113,11 +109,7 @@ class DrugPropertiesCalculator:
         }
     
     def _check_veber(self, mol) -> Dict:
-        """
-        Check Veber rules for oral bioavailability.
-        - Rotatable bonds ≤ 10
-        - TPSA ≤ 140 Å²
-        """
+        from rdkit.Chem import Descriptors
         rot_bonds = Descriptors.NumRotatableBonds(mol)
         tpsa = Descriptors.TPSA(mol)
         
@@ -138,12 +130,7 @@ class DrugPropertiesCalculator:
         }
     
     def _check_lead_likeness(self, mol) -> Dict:
-        """
-        Check lead-likeness criteria (more restrictive than Lipinski).
-        - MW 250-350
-        - LogP ≤ 3.5
-        - Rotatable bonds ≤ 7
-        """
+        from rdkit.Chem import Descriptors
         mw = Descriptors.MolWt(mol)
         logp = Descriptors.MolLogP(mol)
         rot_bonds = Descriptors.NumRotatableBonds(mol)
@@ -163,10 +150,6 @@ class DrugPropertiesCalculator:
         }
     
     def _check_pains(self, mol) -> Dict:
-        """
-        Check for PAINS (Pan-Assay Interference Compounds).
-        These are compounds that give false positives in assays.
-        """
         matches = self.pains_catalog.GetMatches(mol)
         pains_alerts = [match.GetDescription() for match in matches]
         
@@ -177,9 +160,6 @@ class DrugPropertiesCalculator:
         }
     
     def _assess_drug_likeness(self, mol) -> Dict:
-        """
-        Overall drug-likeness assessment combining multiple rules.
-        """
         lipinski = self._check_lipinski(mol)
         veber = self._check_veber(mol)
         pains = self._check_pains(mol)
@@ -191,7 +171,6 @@ class DrugPropertiesCalculator:
         score -= pains["num_alerts"] * 20
         score = max(0, min(100, score))
         
-        # Determine category
         if score >= 80 and lipinski["passed"] and pains["passed"]:
             category = "Drug-like"
             color = "green"
@@ -210,7 +189,6 @@ class DrugPropertiesCalculator:
         }
     
     def _get_recommendation(self, lipinski, veber, pains) -> str:
-        """Generate recommendation based on violations."""
         issues = []
         
         if not lipinski["passed"]:
@@ -226,10 +204,6 @@ class DrugPropertiesCalculator:
         return " | ".join(issues)
     
     def _get_admet_links(self, smiles: str) -> Dict:
-        """
-        Generate links to external ADMET prediction tools.
-        All these tools are FREE to use.
-        """
         import urllib.parse
         encoded_smiles = urllib.parse.quote(smiles, safe='')
         
@@ -262,14 +236,11 @@ class DrugPropertiesCalculator:
         }
     
     def _predict_bbb_permeability(self, mol) -> Dict:
-        """
-        Predict Blood-Brain Barrier (BBB) permeability using physicochemical rules.
-        """
+        from rdkit.Chem import Descriptors, Lipinski
         tpsa = Descriptors.TPSA(mol)
         mw = Descriptors.MolWt(mol)
         hbd = Lipinski.NumHDonors(mol)
         
-        # Rule: TPSA < 90 and MW < 450 usually indicates good CNS penetration
         is_permeable = (tpsa < 90) and (mw < 450) and (hbd < 3)
         
         return {
@@ -283,18 +254,13 @@ class DrugPropertiesCalculator:
         }
 
     def _check_toxicity_alerts(self, mol) -> Dict:
-        """
-        Check for common structural alerts (Toxicophores).
-        Extended with hERG, AMES, and hepatotoxicity patterns.
-        """
-        # Basic toxicophores
+        from rdkit import Chem
         alerts = {
             "Nitro Group": "[N+](=O)[O-]",
             "Hydrazine": "[NX3][NX3]",
             "Michael Acceptor": "[CX3]=[CX3]-[CX3](=[OX1])",
             "Alkyl Halide": "[CX4][F,Cl,Br,I]",
             "Aldehyde": "[CX3H1](=O)[#6]",
-            # Extended alerts
             "Epoxide": "C1OC1",
             "Acyl Halide": "[CX3](=[OX1])[F,Cl,Br,I]",
             "Thiourea": "[NX3][CX3](=[SX1])[NX3]",
@@ -315,22 +281,15 @@ class DrugPropertiesCalculator:
         }
     
     def _predict_herg_liability(self, mol) -> Dict:
-        """
-        Predict hERG channel liability (cardiac toxicity risk).
-        
-        Rule-based prediction using physicochemical properties:
-        - High lipophilicity (LogP > 3.5) + basic nitrogen -> High risk
-        - MW > 500 and TPSA < 75 -> Moderate risk
-        """
+        from rdkit import Chem
+        from rdkit.Chem import Descriptors
         logp = Descriptors.MolLogP(mol)
         mw = Descriptors.MolWt(mol)
         tpsa = Descriptors.TPSA(mol)
         
-        # Check for basic nitrogen (common in hERG blockers)
         basic_n_pattern = Chem.MolFromSmarts("[NX3;H2,H1,H0;!$(NC=O)]")
         has_basic_n = mol.HasSubstructMatch(basic_n_pattern) if basic_n_pattern else False
         
-        # Risk assessment
         risk_factors = []
         if logp > 3.5:
             risk_factors.append("High lipophilicity")
@@ -356,16 +315,12 @@ class DrugPropertiesCalculator:
         }
     
     def _predict_ames_mutagenicity(self, mol) -> Dict:
-        """
-        Predict AMES mutagenicity using structural alerts.
-        
-        Checks for known mutagenic moieties.
-        """
+        from rdkit import Chem
         mutagenic_alerts = {
             "Aromatic Nitro": "c[N+](=O)[O-]",
             "Aromatic Amine": "c[NH2]",
             "Aromatic Nitroso": "c[N]=O",
-            "Polycyclic Aromatic": "c1ccc2c(c1)ccc1ccccc12",  # Naphthalene-like
+            "Polycyclic Aromatic": "c1ccc2c(c1)ccc1ccccc12",
             "Azide": "[N-]=[N+]=[N-]",
             "Diazo": "[N]=[N]"
         }
@@ -394,50 +349,39 @@ class DrugPropertiesCalculator:
         }
     
     def _predict_cyp_inhibition(self, mol) -> Dict:
-        """
-        Predict CYP450 inhibition potential.
-        
-        Rule-based assessment for major CYP isoforms.
-        """
+        from rdkit import Chem
+        from rdkit.Chem import Descriptors
         mw = Descriptors.MolWt(mol)
         logp = Descriptors.MolLogP(mol)
         n_aromatic = Descriptors.NumAromaticRings(mol)
         
-        # General CYP inhibition risk factors
         cyp_risk = {}
         
-        # CYP3A4 (major drug metabolizing enzyme)
-        # High MW + high LogP + multiple aromatics -> risk
+        # CYP3A4
         cyp3a4_risk = 0
-        if mw > 400:
-            cyp3a4_risk += 1
-        if logp > 3:
-            cyp3a4_risk += 1
-        if n_aromatic >= 2:
-            cyp3a4_risk += 1
+        if mw > 400: cyp3a4_risk += 1
+        if logp > 3: cyp3a4_risk += 1
+        if n_aromatic >= 2: cyp3a4_risk += 1
             
         cyp_risk['CYP3A4'] = {
             'inhibition_risk': 'High' if cyp3a4_risk >= 2 else 'Moderate' if cyp3a4_risk == 1 else 'Low',
             'score': cyp3a4_risk
         }
         
-        # CYP2D6 (polymorphic, many CNS drugs)
-        # Basic nitrogen + aromatic -> risk
+        # CYP2D6
         basic_n = Chem.MolFromSmarts("[NX3;H2,H1,H0;!$(NC=O)]")
         has_basic_n = mol.HasSubstructMatch(basic_n) if basic_n else False
         
         cyp2d6_risk = 0
-        if has_basic_n:
-            cyp2d6_risk += 1
-        if n_aromatic >= 1:
-            cyp2d6_risk += 1
+        if has_basic_n: cyp2d6_risk += 1
+        if n_aromatic >= 1: cyp2d6_risk += 1
             
         cyp_risk['CYP2D6'] = {
             'inhibition_risk': 'High' if cyp2d6_risk >= 2 else 'Moderate' if cyp2d6_risk == 1 else 'Low',
             'score': cyp2d6_risk
         }
         
-        # CYP2C9 (warfarin metabolism)
+        # CYP2C9
         cyp2c9_risk = 1 if logp > 2.5 and mw > 300 else 0
         cyp_risk['CYP2C9'] = {
             'inhibition_risk': 'Moderate' if cyp2c9_risk else 'Low',
