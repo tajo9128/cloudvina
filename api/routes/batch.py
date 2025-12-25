@@ -143,31 +143,41 @@ async def start_batch(
                 job_rec_key = f"jobs/{job_id}/receptor.pdbqt"
                 job_lig_key = f"jobs/{job_id}/ligand.pdbqt"
                 
-                # 1. Prepare Receptor (Check/Convert/Copy)
-                if not job['receptor_filename'].endswith('.pdbqt'):
-                     # Needs conversion (Expensive - should be cached or async)
-                     # For now, we assume if it's NOT pdbqt, we convert.
-                     # Optimisation: Check if we already converted for this batch?
-                     # Using "Shared" receptor logic would be better: convert ONCE per batch.
-                     # But current data model is per-job.
-                     pass 
+                # 1. Prepare Receptor & Ligand (Check/Convert/Copy)
+                from services.file_converter import convert_format
+                import tempfile
+                import shutil
                 
-                # Simplified Logic:
-                # We assume client uploaded to the PRESIGNED URLs which are formatted as:
-                # receptor: jobs/{batch_id}/receptor_input.ext
-                # ligand: jobs/{batch_id}/ligands/{filename}
-                
-                # We need to COPY these to job specific API-expected paths:
-                # jobs/{job_id}/receptor_input.pdbqt
-                # jobs/{job_id}/ligand_input.pdbqt
-                
-                # Doing this sync for now as per legacy logic, but cleaner.
+                with tempfile.TemporaryDirectory() as temp_dir:
+                    # Generic function to handle download -> convert -> key
+                    def prepare_file(s3_key, filename, target_key):
+                        ext = os.path.splitext(filename)[1].lower()
+                        local_path = os.path.join(temp_dir, filename)
+                        
+                        # Download
+                        s3_client.download_file(S3_BUCKET, s3_key, local_path)
+                        
+                        # Convert if needed
+                        final_path = local_path
+                        if ext != '.pdbqt':
+                            print(f" Converting {filename} to PDBQT...")
+                            final_path = convert_format(local_path, 'pdbqt')
+                        
+                        # Upload to target
+                        s3_client.upload_file(final_path, S3_BUCKET, target_key)
+                        
+                    # Process Receptor
+                    # Note: We reuse the same receptor file for the job
+                    prepare_file(job['receptor_s3_key'], job['receptor_filename'], job_rec_key)
+                    
+                    # Process Ligand
+                    prepare_file(job['ligand_s3_key'], job['ligand_filename'], job_lig_key)
                 
                 # Generate Config
                 generate_vina_config(job_id, grid_params=request.grid_params)
                 
                 # Submit
-                aws_id = submit_to_aws(job_id, job['receptor_s3_key'], job['ligand_s3_key'], engine=request.engine)
+                aws_id = submit_to_aws(job_id, job_rec_key, job_lig_key, engine=request.engine)
                 
                 auth_client.table('jobs').update({
                     'status': 'SUBMITTED', 'batch_job_id': aws_id
@@ -319,14 +329,20 @@ async def get_batch_details(
                 except Exception as e:
                     print(f"[BatchSync] Error syncing job {job['id']}: {e}")
 
-            # 2. Lazy Repair Scores (if specific score is missing but job succeeded)
-            # This handles cases where the webhook/callback missed the update
-            # 2. Lazy Repair Scores (if specific score is missing but job succeeded)
-            # This handles cases where the webhook/callback missed the update or results.json is missing (Legacy V10 jobs)
-            if job['status'] == 'SUCCEEDED' and (not job.get('binding_affinity') or float(job.get('binding_affinity') or 0) == 0.0):
-                print(f"[LazyRepair] Checking job {job['id']} for missing scores...")
-                try:
-                    # Strategy 1: Try results.json (Newer Job Definitions)
+            # 2. Lazy Repair Scores (Defensive Wrapper)
+            try:
+                # Safe Float Conversion Helper
+                def safe_float(val):
+                    try:
+                        return float(val or 0)
+                    except:
+                        return 0.0
+
+                current_affinity = safe_float(job.get('binding_affinity'))
+                
+                if job['status'] == 'SUCCEEDED' and current_affinity == 0.0:
+                    # Only attempt repair if valid ID available
+                    # Strategy 1: results.json
                     try:
                         s3_key = f"jobs/{job['id']}/results.json"
                         obj = s3_client.get_object(Bucket=S3_BUCKET, Key=s3_key)
@@ -341,7 +357,7 @@ async def get_batch_details(
                              updates['vina_score'] = res_data['vina_score']
                              job['vina_score'] = res_data['vina_score']
     
-                        if 'docking_score' in res_data: # Gnina
+                        if 'docking_score' in res_data:
                              updates['docking_score'] = res_data['docking_score']
                              job['docking_score'] = res_data['docking_score']
                         
@@ -349,16 +365,19 @@ async def get_batch_details(
                             print(f"[LazyRepair] Restored from results.json: {updates}")
                             auth_client.table('jobs').update(updates).eq('id', job['id']).execute()
                             modified = True
+                            
                     except Exception as json_err:
-                        print(f"[LazyRepair] results.json failed ({json_err}). Trying log.txt fallback...")
-                        # Strategy 2: Fallback to log.txt (Old Job Definitions like v10)
+                        # Strategy 2: log.txt
                         try:
                             log_key = f"jobs/{job['id']}/log.txt"
                             obj = s3_client.get_object(Bucket=S3_BUCKET, Key=log_key)
                             log_content = obj['Body'].read().decode('utf-8')
+                            
+                            # Ensure parser is imported
+                            from services.vina_parser import parse_vina_log
                             parsed = parse_vina_log(log_content)
                             
-                            if parsed.get('best_affinity'):
+                            if parsed and parsed.get('best_affinity'):
                                 print(f"[LazyRepair] Restored from log.txt: {parsed['best_affinity']}")
                                 updates = {'binding_affinity': parsed['best_affinity'], 'vina_score': parsed['best_affinity']}
                                 auth_client.table('jobs').update(updates).eq('id', job['id']).execute()
@@ -366,10 +385,12 @@ async def get_batch_details(
                                 job['vina_score'] = parsed['best_affinity']
                                 modified = True
                         except Exception as log_ex:
-                             print(f"[LazyRepair] log.txt failed as well: {log_ex}")
+                             # print(f"[LazyRepair] log.txt failed: {log_ex}") 
                              pass
-                except Exception as e:
-                    print(f"[LazyRepair] Critical error: {e}")
+
+            except Exception as e:
+                print(f"[LazyRepair] Critical error for job {job['id']}: {e}")
+                # Do not re-raise, allow endpoint to return partial data
             
             updated_jobs.append(job)
 
