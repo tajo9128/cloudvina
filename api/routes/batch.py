@@ -159,7 +159,7 @@ async def start_batch(
                         
                         # Convert if needed
                         if ext != '.pdbqt':
-                            print(f" Converting {filename} to PDBQT...")
+                            print(f" Converting {filename} to PDBQT...", flush=True)
                             with open(local_path, 'r') as f: content = f.read()
                             
                             pdbqt_content = None
@@ -338,7 +338,7 @@ async def get_batch_details(
                     if job.get('batch_job_id'):
                         batch_res = get_batch_job_status(job['batch_job_id'])
                         if batch_res['status'] != job['status']:
-                            print(f"[BatchSync] Job {job['id']} status changed: {job['status']} -> {batch_res['status']}")
+                            print(f"[BatchSync] Job {job['id']} status changed: {job['status']} -> {batch_res['status']}", flush=True)
                             update_data = {'status': batch_res['status']}
                             if batch_res['status'] == 'FAILED':
                                 update_data['error_message'] = batch_res.get('status_reason', 'Unknown error')
@@ -348,7 +348,7 @@ async def get_batch_details(
                             job['error_message'] = update_data.get('error_message')
                             modified = True
                 except Exception as e:
-                    print(f"[BatchSync] Error syncing job {job['id']}: {e}")
+                    print(f"[BatchSync] Error syncing job {job['id']}: {e}", flush=True)
 
             updated_jobs.append(job)
 

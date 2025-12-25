@@ -11,6 +11,10 @@ from typing import Optional, Dict, List
 import os
 from datetime import datetime
 import uuid
+import sys
+
+# Force unbuffered output for Render logs
+sys.stdout.reconfigure(line_buffering=True)
 
 # Import auth and AWS utilities
 from auth import supabase, get_current_user
