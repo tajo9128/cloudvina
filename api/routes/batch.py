@@ -5,6 +5,19 @@ from starlette.concurrency import run_in_threadpool
 from auth import get_current_user, get_authenticated_client, security
 # security = HTTPBearer() # Removed local instance to use shared auth.security
 
+import os
+import boto3
+import json
+import logging
+import uuid
+from typing import List, Optional
+from pydantic import BaseModel
+from services.fda_service import fda_service
+from services.export import ExportService
+from services.vina_parser import parse_vina_log
+
+router = APIRouter(prefix="/jobs/batch", tags=["Batch Jobs"])
+
 # AWS Configuration
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 S3_BUCKET = os.getenv("S3_BUCKET", "BioDockify-jobs-use1-1763775915")
