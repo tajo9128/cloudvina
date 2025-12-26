@@ -117,13 +117,24 @@ class QueueProcessor:
                 safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Preparing Receptor...'})
                 prepare_file_safe(job['receptor_s3_key'], job['receptor_filename'], job_rec_key, is_receptor=True)
 
+                # Capture Receptor Content for Autoboxing
+                # We need to find where prepare_file_safe put it.
+                # It saved to os.path.join(temp_dir, job['receptor_filename']) + potentially '.pdbqt'
+                rec_local_name = job['receptor_filename']
+                if not rec_local_name.lower().endswith('.pdbqt'):
+                    rec_local_name += ".pdbqt"
+                
+                rec_local_path = os.path.join(temp_dir, rec_local_name)
+                with open(rec_local_path, 'r') as f:
+                    receptor_content = f.read()
+
                 # 2. Ligand
                 safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Preparing Ligand...'})
                 prepare_file_safe(job['ligand_s3_key'], job['ligand_filename'], job_lig_key, is_receptor=False)
 
             # D. Generate Vina Config
             safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Generating Config...'})
-            generate_vina_config(job_id, grid_params=grid_params)
+            generate_vina_config(job_id, grid_params=grid_params, receptor_content=receptor_content)
 
             # E. Submit to AWS
             safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Submitting to AWS...'})

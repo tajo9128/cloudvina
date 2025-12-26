@@ -252,7 +252,8 @@ async def submit_csv_batch(
         }).execute()
         
         # Submit
-        generate_vina_config(job_id, grid_params=gp)
+        # Submit
+        generate_vina_config(job_id, grid_params=gp, receptor_content=rec_content.decode('utf-8'))
         aid = submit_to_aws(job_id, job_rec_key, lig_key, engine=engine)
         
         safe_update(auth_client, "jobs", {"id": job_id}, {
