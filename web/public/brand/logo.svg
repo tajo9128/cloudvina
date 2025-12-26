@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 120" width="500" height="120">
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#4F46E5;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06B6D4;stop-opacity:1" />
+    </linearGradient>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="2" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <!-- Symbol: Abstract DNA/Tech Node -->
+  <g transform="translate(40, 60)">
+     <!-- Outer Ring -->
+     <circle cx="0" cy="0" r="35" fill="none" stroke="url(#grad1)" stroke-width="4" opacity="0.2" />
+     <circle cx="0" cy="0" r="35" fill="none" stroke="url(#grad1)" stroke-width="1" stroke-dasharray="4,4" class="spin" />
+     
+     <!-- Helix/Nodes -->
+     <path d="M-15,-15 Q0,0 15,15 M15,-15 Q0,0 -15,15" stroke="url(#grad1)" stroke-width="6" stroke-linecap="round" filter="url(#glow)" />
+     <circle cx="-15" cy="-15" r="5" fill="#10B981" />
+     <circle cx="15" cy="15" r="5" fill="#4F46E5" />
+     <circle cx="15" cy="-15" r="5" fill="#06B6D4" />
+     <circle cx="-15" cy="15" r="5" fill="#8B5CF6" />
+  </g>
+
+  <!-- Text: BioDockify -->
+  <text x="90" y="75" font-family="'Inter', 'Roboto', sans-serif" font-weight="900" font-size="60" fill="#1E293B" letter-spacing="-2">
+    Bio<tspan fill="url(#grad1)">Dockify</tspan>
+  </text>
+  
+  <!-- Tagline -->
+  <text x="92" y="98" font-family="'Inter', 'Roboto', sans-serif" font-weight="500" font-size="14" fill="#64748B" letter-spacing="3" text-transform="uppercase">
+    Molecular Intelligence
+  </text>
+</svg>
