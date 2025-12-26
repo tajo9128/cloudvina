@@ -178,7 +178,7 @@ async def process_batch_jobs(batch_id: str, user_id: str, token: str, grid_param
         for job in jobs:
             try:
                 # Update status to PROCESSING
-                # auth_client.table('jobs').update({'status': 'PROCESSING'}).eq('id', job['id']).execute()
+                auth_client.table('jobs').update({'status': 'PROCESSING', 'notes': 'Starting Preparation...'}).eq('id', job['id']).execute()
                 
                 job_id = job['id']
                 job_rec_key = f"jobs/{job_id}/receptor.pdbqt"
@@ -220,6 +220,7 @@ async def process_batch_jobs(batch_id: str, user_id: str, token: str, grid_param
                         
                     # Process Receptor
                     try:
+                        auth_client.table('jobs').update({'notes': 'Preparing Receptor...'}).eq('id', job_id).execute()
                         prepare_file(job['receptor_s3_key'], job['receptor_filename'], job_rec_key, is_receptor=True)
                     except Exception as rx:
                          print(f"Receptor Prep Failed for {job_id}: {rx}")
@@ -227,19 +228,22 @@ async def process_batch_jobs(batch_id: str, user_id: str, token: str, grid_param
                     
                     # Process Ligand
                     try:
+                        auth_client.table('jobs').update({'notes': 'Preparing Ligand...'}).eq('id', job_id).execute()
                         prepare_file(job['ligand_s3_key'], job['ligand_filename'], job_lig_key, is_receptor=False)
                     except Exception as lx:
                          print(f"Ligand Prep Failed for {job_id}: {lx}")
                          raise lx
                 
                 # Generate Config
+                auth_client.table('jobs').update({'notes': 'Generating Vina Config...'}).eq('id', job_id).execute()
                 generate_vina_config(job_id, grid_params=grid_params)
                 
                 # Submit
+                auth_client.table('jobs').update({'notes': 'Submitting to AWS Batch...'}).eq('id', job_id).execute()
                 aws_id = submit_to_aws(job_id, job_rec_key, job_lig_key, engine=engine)
                 
                 auth_client.table('jobs').update({
-                    'status': 'SUBMITTED', 'batch_job_id': aws_id
+                    'status': 'SUBMITTED', 'batch_job_id': aws_id, 'notes': 'Batch Submitted'
                 }).eq('id', job_id).execute()
                 
                 print(f"✅ [Background] Job {job_id} submitted. AWS ID: {aws_id}", flush=True)
