@@ -108,14 +108,8 @@ async def websocket_job_progress(websocket: WebSocket, job_id: str):
 # CORS middleware for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "https://biodockify.com",
-        "https://www.biodockify.com",
-        "https://www.biodockify.com/",
-    ],
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origins=[], # Using regex for catch-all
+    allow_origin_regex=".*", # Allow ALL origins with credentials
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
