@@ -108,8 +108,13 @@ async def websocket_job_progress(websocket: WebSocket, job_id: str):
 # CORS middleware for frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[], # Using regex for catch-all
-    allow_origin_regex=".*", # Allow ALL origins with credentials
+    allow_origins=[
+        "https://www.biodockify.com",
+        "https://biodockify.com",
+        "http://localhost:5173",
+        "http://localhost:3000"
+    ],
+    allow_origin_regex="https://.*\.biodockify\.com", # Specific subdomains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
