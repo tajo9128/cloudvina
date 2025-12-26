@@ -25,9 +25,9 @@ def generate_vina_config(job_id: str, grid_params: dict = None):
     size_x = params.get('grid_size_x', 20)
     size_y = params.get('grid_size_y', 20)
     size_z = params.get('grid_size_z', 20)
-    exhaustiveness = params.get('exhaustiveness', 8)
-    num_modes = params.get('num_modes', 9)
-    energy_range = params.get('energy_range', 3)
+    exhaustiveness = params.get('exhaustiveness', 64) # Increased for max precision
+    num_modes = params.get('num_modes', 20)
+    energy_range = params.get('energy_range', 5)
     
     # Generate config content
     config_content = f"""# AutoDock Vina Configuration File
