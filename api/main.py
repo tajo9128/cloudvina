@@ -54,6 +54,32 @@ async def startup_event():
     print("Optimization: Lazy Loading Enabled")
     print("="*50)
 
+    # --- Start Sentinel Monitoring Loop ---
+    import asyncio
+    async def start_sentinel_background():
+        """Background loop for Self-Healing"""
+        print("🤖 Sentinel: Background Monitor Started (Interval: 5m)")
+        while True:
+            await asyncio.sleep(300) # Wait 5 minutes
+            try:
+                from services.sentinel import BioDockifySentinel
+                from auth import get_service_client
+                
+                svc_client = get_service_client()
+                sentinel = BioDockifySentinel(svc_client)
+                
+                # Run Scan
+                report = await sentinel.scan_and_heal()
+                
+                if report['anomalies_detected'] > 0:
+                     print(f"🤖 Sentinel: Auto-Healed {report['anomalies_detected']} anomalies.")
+                     
+            except Exception as e:
+                print(f"❌ Sentinel Loop Error: {e}")
+                
+    # Fire and forget task
+    asyncio.create_task(start_sentinel_background())
+
 @app.get("/health")
 async def health_check():
     """Health check endpoint for UptimeRobot"""

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../supabaseClient';
 import { Link } from 'react-router-dom';
+import SentinelPanel from './SentinelPanel';
 
 // Simple Icons (Replacing Lucide for now to match style or avoid missing imports/unused vars if any)
 const Activity = () => <span>📈</span>;
@@ -190,6 +191,9 @@ const Dashboard = () => {
 
                 {/* Right Col: System & Activity */}
                 <div className="space-y-6">
+                    {/* Sentinel Auto-Healer */}
+                    <SentinelPanel />
+
                     {/* Activity Feed */}
                     <div className="bg-slate-800/40 border border-primary-500/20 rounded-xl backdrop-blur-sm p-5 h-[400px] flex flex-col">
                         <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
