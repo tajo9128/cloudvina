@@ -141,6 +141,7 @@ export default function BatchDockingPage() {
             })
 
             clearInterval(listInterval) // Stop fake logs
+            setPrepStatus({ receptor: 100, ligand: 100, grid: 100 })
 
             if (!startRes.ok) {
                 const errJson = await startRes.json()

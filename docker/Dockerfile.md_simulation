@@ -23,17 +23,18 @@ RUN conda install -c conda-forge -y \
     xgboost \
     boto3 \
     joblib \
+    matplotlib \
+    fpdf \
     && conda clean -afy
 
 # 3. Copy Application Code
 WORKDIR /app
 COPY docker/run_md.py .
 
-# 4. Copy AI Model (You must ensure this file is present locally before build)
+# 4. Copy AI Model (MD Stability Bundle)
 # The user's workflow implies this model exists or is downloaded.
-# Ideally, we COPY it. If missing, the build fails.
-# We assume 'alzheimers_ensemble_model.pkl' is in the build context.
-COPY alzheimers_ensemble_model.pkl .
+# We COPY it. If missing, the build fails.
+COPY md_stability_model.pkl .
 
 # 5. Entrypoint
 ENTRYPOINT ["python", "run_md.py"]

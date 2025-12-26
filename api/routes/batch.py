@@ -121,37 +121,74 @@ async def submit_batch(
 async def start_batch(
     batch_id: str,
     request: BatchStartRequest,
+    background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
     credentials: HTTPAuthorizationCredentials = Security(security)
 ):
     try:
+        # Validate batch exists first
+        auth_client = get_authenticated_client(credentials.credentials)
+        # Just check one job to verify ownership
+        check = auth_client.table('jobs').select('id').eq('batch_id', batch_id).eq('user_id', current_user.id).limit(1).execute()
+        if not check.data:
+            raise HTTPException(404, "Batch not found or empty")
+
+        # Offload to background
+        background_tasks.add_task(
+            process_batch_jobs, 
+            batch_id, 
+            current_user['id'], 
+            credentials.credentials, 
+            request.grid_params, 
+            request.engine
+        )
+
+        return {"batch_id": batch_id, "started": True, "message": "Batch processing started in background"}
+
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(500, f"Start failed: {e}")
+
+async def process_batch_jobs(batch_id: str, user_id: str, token: str, grid_params: dict, engine: str):
+    """
+    Background worker to process and submit batch jobs.
+    Handles PDBQT conversion, S3 upload, and AWS Batch submission.
+    """
+    try:
         from services.config_generator import generate_vina_config
         from aws_services import submit_batch_job as submit_to_aws
-        from services.smiles_converter import convert_receptor_to_pdbqt, convert_to_pdbqt
+        from services.smiles_converter import convert_to_pdbqt, convert_receptor_to_pdbqt
+        import tempfile
+        import shutil
+        import traceback
 
-        auth_client = get_authenticated_client(credentials.credentials)
-        jobs = auth_client.table('jobs').select('*').eq('batch_id', batch_id).eq('user_id', current_user.id).execute().data
+        # Re-initialize client for background thread
+        auth_client = get_authenticated_client(token)
         
-        if not jobs: raise HTTPException(404, "Batch not found")
-
+        # Fetch all jobs
+        jobs = auth_client.table('jobs').select('*').eq('batch_id', batch_id).eq('user_id', user_id).execute().data
+        
+        print(f"🔄 [Background] Starting processing for batch {batch_id} ({len(jobs)} jobs)")
+        
         started_count = 0
         
-        # NOTE: This loop is synchronous but handles critical preparation logic.
-        # Ideally moved to Celery, but keeping simple for now.
         for job in jobs:
             try:
+                # Update status to PROCESSING
+                # auth_client.table('jobs').update({'status': 'PROCESSING'}).eq('id', job['id']).execute()
+                
                 job_id = job['id']
                 job_rec_key = f"jobs/{job_id}/receptor.pdbqt"
                 job_lig_key = f"jobs/{job_id}/ligand.pdbqt"
                 
                 # 1. Prepare Receptor & Ligand (Check/Convert/Copy)
-                from services.smiles_converter import convert_to_pdbqt, convert_receptor_to_pdbqt
-                import tempfile
-                import shutil
-                
                 with tempfile.TemporaryDirectory() as temp_dir:
                     # Generic function to handle download -> convert -> key
                     def prepare_file(s3_key, filename, target_key, is_receptor=False):
+                        print(f"   preparing {filename}...", flush=True)
                         ext = os.path.splitext(filename)[1].lower()
                         local_path = os.path.join(temp_dir, filename)
                         
@@ -160,7 +197,7 @@ async def start_batch(
                         
                         # Convert if needed
                         if ext != '.pdbqt':
-                            print(f" Converting {filename} to PDBQT...", flush=True)
+                            print(f"   Converting {filename} to PDBQT...", flush=True)
                             with open(local_path, 'r') as f: content = f.read()
                             
                             pdbqt_content = None
@@ -196,26 +233,29 @@ async def start_batch(
                          raise lx
                 
                 # Generate Config
-                generate_vina_config(job_id, grid_params=request.grid_params)
+                generate_vina_config(job_id, grid_params=grid_params)
                 
                 # Submit
-                aws_id = submit_to_aws(job_id, job_rec_key, job_lig_key, engine=request.engine)
+                aws_id = submit_to_aws(job_id, job_rec_key, job_lig_key, engine=engine)
                 
                 auth_client.table('jobs').update({
                     'status': 'SUBMITTED', 'batch_job_id': aws_id
                 }).eq('id', job_id).execute()
                 
+                print(f"✅ [Background] Job {job_id} submitted. AWS ID: {aws_id}", flush=True)
                 started_count += 1
+                
             except Exception as e:
-                print(f"Job start failed: {e}")
+                traceback.print_exc()
+                print(f"❌ [Background] Job start failed: {e}", flush=True)
                 auth_client.table('jobs').update({'status': 'FAILED', 'error_message': str(e)}).eq('id', job['id']).execute()
 
-        await fda_service.log_audit_event(auth_client, current_user.id, 'BATCH_STARTED', 'batch', batch_id, {'jobs': started_count})
+        await fda_service.log_audit_event(auth_client, user_id, 'BATCH_STARTED', 'batch', batch_id, {'jobs': started_count})
+        print(f"🏁 [Background] Batch {batch_id} complete. Started: {started_count}")
 
-        return {"batch_id": batch_id, "started": started_count, "message": "Batch started"}
-
-    except Exception as e:
-        raise HTTPException(500, f"Start failed: {e}")
+    except Exception as outer_e:
+        traceback.print_exc()
+        print(f"❌ [Background] Critical Batch Failure: {outer_e}", flush=True)
 
 @router.post("/submit-csv", status_code=status.HTTP_201_CREATED)
 async def submit_csv_batch(
