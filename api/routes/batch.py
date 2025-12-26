@@ -2,20 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status, Security, UploadF
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.concurrency import run_in_threadpool
-from auth import get_current_user, get_authenticated_client
-from pydantic import BaseModel
-from typing import List, Optional
-import uuid
-import os
-import boto3
-import json
-import logging
-from services.fda_service import fda_service
-from services.export import ExportService
-from services.vina_parser import parse_vina_log
-
-router = APIRouter(prefix="/jobs/batch", tags=["Batch Jobs"])
-security = HTTPBearer()
+from auth import get_current_user, get_authenticated_client, security
+# security = HTTPBearer() # Removed local instance to use shared auth.security
 
 # AWS Configuration
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
@@ -310,6 +298,27 @@ async def submit_csv_batch(
     return {"batch_id": batch_id, "jobs_created": len(jobs_created)}
 
 
+# NEW ENDPOINT FOR PDF REPORTS (Moved to top to avoid routing conflicts)
+@router.get("/{batch_id}/report-pdf")
+async def generate_batch_report(
+    batch_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """Generate a comprehensive PDF report for the entire batch"""
+    print(f"Generating PDF report for batch {batch_id} user {current_user.get('email')}", flush=True)
+    try:
+        auth_client = get_authenticated_client(credentials.credentials)
+        jobs = auth_client.table('jobs').select('*').eq('batch_id', batch_id).eq('user_id', current_user.id).execute().data
+        if not jobs: raise HTTPException(404, "Batch not found")
+
+        # Use ExportService
+        return ExportService.export_batch_pdf(batch_id, jobs)
+        
+    except Exception as e:
+         print(f"Report generation error: {e}", flush=True)
+         raise HTTPException(500, f"Report generation failed: {e}")
+
 @router.get("/{batch_id}")
 async def get_batch_details(
     batch_id: str,
@@ -395,21 +404,4 @@ async def get_batch_details(
     except Exception as e:
         raise HTTPException(500, f"Failed to fetch batch details: {str(e)}")
 
-# NEW ENDPOINT FOR PDF REPORTS
-@router.get("/{batch_id}/report-pdf")
-async def generate_batch_report(
-    batch_id: str,
-    current_user: dict = Depends(get_current_user),
-    credentials: HTTPAuthorizationCredentials = Security(security)
-):
-    """Generate a comprehensive PDF report for the entire batch"""
-    try:
-        auth_client = get_authenticated_client(credentials.credentials)
-        jobs = auth_client.table('jobs').select('*').eq('batch_id', batch_id).eq('user_id', current_user.id).execute().data
-        if not jobs: raise HTTPException(404, "Batch not found")
 
-        # Use ExportService
-        return ExportService.export_batch_pdf(batch_id, jobs)
-        
-    except Exception as e:
-         raise HTTPException(500, f"Report generation failed: {e}")
