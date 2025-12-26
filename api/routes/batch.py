@@ -137,7 +137,7 @@ async def start_batch(
         background_tasks.add_task(
             process_batch_jobs, 
             batch_id, 
-            current_user['id'], 
+            current_user.id, 
             credentials.credentials, 
             request.grid_params, 
             request.engine
