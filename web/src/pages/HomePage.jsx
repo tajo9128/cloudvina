@@ -81,8 +81,8 @@ export default function HomePage() {
                                 <div className="relative w-full h-[400px] rounded-2xl overflow-hidden shadow-2xl transform transition-transform duration-700 hover:scale-105 group">
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent z-10" />
                                     <img
-                                        src="https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=2564"
-                                        alt="Abstract 3D Molecular Network"
+                                        src="/assets/images/hero-molecular-v36.png"
+                                        alt="BioDockify 3D Molecular Interface"
                                         className="w-full h-full object-cover"
                                     />
                                     <div className="absolute bottom-0 left-0 p-8 z-20">
@@ -126,7 +126,7 @@ export default function HomePage() {
                                     number="01"
                                     title="AI Virtual Screening"
                                     subtitle="Fine Tuned AI Ensemble"
-                                    description="Multi-encoder deep learning for CNS targets. Fused ChemBERTa (SMILES) + GNN (Structure) + ProteinCNN architecture trained on Google Colab L4 GPU for affinity prediction."
+                                    description="Multi-encoder deep learning for CNS targets. Fused ChemBERta (SMILES) + GNN (Structure) + ProteinCNN architecture trained on Google Colab L4 GPU for affinity prediction."
                                     features={[
                                         "ChemBERTa 768-dim Molecular Embeddings",
                                         "GNN (GAT) Structure-Aware Features",
@@ -278,8 +278,8 @@ export default function HomePage() {
                                     <div className="absolute inset-0 bg-blue-600 blur-[80px] opacity-20 rounded-full"></div>
                                     <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200 transform hover:scale-[1.02] transition-transform duration-500 group">
                                         <img
-                                            src="https://images.unsplash.com/photo-1551288049-bebda4e38f71?auto=format&fit=crop&q=80&w=2670"
-                                            alt="Advanced Analytics Dashboard"
+                                            src="/assets/images/bridging-gap-v36.png"
+                                            alt="BioDockify Bridging Research and Discovery"
                                             className="w-full h-full object-cover"
                                         />
                                         <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex flex-col justify-end p-12">
