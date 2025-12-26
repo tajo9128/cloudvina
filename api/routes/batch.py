@@ -352,6 +352,44 @@ async def get_batch_details(
 
             updated_jobs.append(job)
 
+        # Lazy Repair Score (Ported from jobs.py)
+        for job in updated_jobs:
+            if job['status'] == 'SUCCEEDED' and (not job.get('binding_affinity') or float(job.get('binding_affinity') or 0) == 0.0):
+                try:
+                    s3 = boto3.client('s3', region_name=AWS_REGION)
+                    obj = s3.get_object(Bucket=S3_BUCKET, Key=f"jobs/{job['id']}/results.json")
+                    res_data = json.loads(obj['Body'].read().decode('utf-8'))
+                    
+                    # Extract scores
+                    best_score = res_data.get('best_affinity')
+                    vina_score = res_data.get('vina_affinity') or res_data.get('vina_score')
+                    gnina_score = res_data.get('gnina_affinity') or res_data.get('cnn_score') or res_data.get('docking_score')
+                    
+                    updates = {}
+                    if best_score is not None:
+                        updates['binding_affinity'] = best_score
+                        job['binding_affinity'] = best_score
+                        
+                    # Attempt to update DB if columns exist (ignoring errors if they don't)
+                    # And blindly populate the response object
+                    if vina_score is not None:
+                        job['vina_score'] = vina_score
+                        # updates['vina_score'] = vina_score # Uncomment if column exists
+                        
+                    if gnina_score is not None:
+                        job['docking_score'] = gnina_score
+                        # updates['docking_score'] = gnina_score # Uncomment if column exists
+
+                    if updates:
+                        try:
+                            auth_client.table('jobs').update(updates).eq('id', job['id']).execute()
+                        except Exception as db_err:
+                            print(f"[BatchSync] Warning: Could not update some columns in DB: {db_err}", flush=True)
+
+                except Exception as e:
+                    # Log error but don't fail the request
+                    print(f"Failed to repair score for job {job['id']}: {e}", flush=True)
+
         return {"batch_id": batch_id, "jobs": updated_jobs, "stats": {"total": len(updated_jobs)}}
         
     except Exception as e:
