@@ -12,7 +12,8 @@ import logging
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("sentinel")
+import logging
+from utils.db import safe_update
 
 class BioDockifySentinel:
     def __init__(self, supabase_client: Client):
@@ -66,10 +67,11 @@ class BioDockifySentinel:
             # In V2, we could auto-restart the conversion with 'lenient' mode.
             
             msg = "Sentinel: Job stuck in preparation for > 30mins. Marked as Failed."
-            self.db.table("jobs").update({
+            msg = "Sentinel: Job stuck in preparation for > 30mins. Marked as Failed."
+            safe_update(self.db, "jobs", {"id": job['id']}, {
                 "status": "FAILED",
                 "error_message": msg
-            }).eq("id", job['id']).execute()
+            })
             
             self._log_sentinel_action(job['id'], "Stuck Prep", "Marked FAILED")
             report["actions_taken"].append(action)
@@ -118,10 +120,11 @@ class BioDockifySentinel:
                             action = f"Sentinel: Detected SPOT Instance Failure for {local_job['id']}. Requesting creation of new job..."
                             
                             # Update DB to reflect precise error
-                            self.db.table("jobs").update({
+                            # Update DB to reflect precise error
+                            safe_update(self.db, "jobs", {"id": local_job['id']}, {
                                 "status": "FAILED", 
                                 "error_message": "AWS Spot Instance Reclaimed. Please Retry."
-                            }).eq("id", local_job['id']).execute()
+                            })
                             
                             self._log_sentinel_action(local_job['id'], "Spot Failure", "Marked FAILED (Spot Reclaim)")
                             report["actions_taken"].append(action)

@@ -3,6 +3,7 @@ from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.concurrency import run_in_threadpool
 from auth import get_current_user, get_authenticated_client, security
+from utils.db import safe_update
 # security = HTTPBearer() # Removed local instance to use shared auth.security
 
 import os
@@ -151,9 +152,12 @@ async def start_batch(
 
         # 2. Update Status to 'QUEUED'
         # The Sentinel/QueueProcessor will pick this up automatically.
-        auth_client.table('jobs').update({
-            'status': 'QUEUED'
-        }).eq('batch_id', batch_id).eq('user_id', current_user.id).execute()
+        # 2. Update Status to 'QUEUED'
+        # The Sentinel/QueueProcessor will pick this up automatically.
+        safe_update(auth_client, "jobs", {"batch_id": batch_id, "user_id": current_user.id}, {
+            "status": "QUEUED",
+            "notes": "Queued for processing"
+        })
 
         return {"batch_id": batch_id, "started": True, "message": "Batch queued for processing. Zero-Failure Mode Active."}
 
@@ -251,7 +255,11 @@ async def submit_csv_batch(
         generate_vina_config(job_id, grid_params=gp)
         aid = submit_to_aws(job_id, job_rec_key, lig_key, engine=engine)
         
-        auth_client.table('jobs').update({'status': 'SUBMITTED', 'batch_job_id': aid}).eq('id', job_id).execute()
+        safe_update(auth_client, "jobs", {"id": job_id}, {
+            "status": "SUBMITTED",
+            "batch_job_id": aid,
+            "notes": "Batch Submitted (CSV)"
+        })
         jobs_created.append(job_id)
 
     return {"batch_id": batch_id, "jobs_created": len(jobs_created)}
@@ -311,7 +319,7 @@ async def get_batch_details(
                             if batch_res['status'] == 'FAILED':
                                 update_data['error_message'] = batch_res.get('status_reason', 'Unknown error')
                             
-                            auth_client.table('jobs').update(update_data).eq('id', job['id']).execute()
+                            safe_update(auth_client, "jobs", {"id": job['id']}, update_data)
                             job['status'] = batch_res['status']
                             job['error_message'] = update_data.get('error_message')
                             modified = True
@@ -350,7 +358,7 @@ async def get_batch_details(
 
                     if updates:
                         try:
-                            auth_client.table('jobs').update(updates).eq('id', job['id']).execute()
+                            safe_update(auth_client, "jobs", {"id": job['id']}, updates)
                         except Exception as db_err:
                             print(f"[BatchSync] Warning: Could not update some columns in DB: {db_err}", flush=True)
 
