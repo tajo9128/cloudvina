@@ -12,7 +12,7 @@ export default function Footer() {
                             <img
                                 src="/brand/logo.svg"
                                 alt="BioDockify"
-                                className="h-12 w-auto brightness-0 invert opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+                                className="h-16 w-auto brightness-0 invert opacity-90 group-hover:opacity-100 transition-opacity duration-300"
                             />
                         </Link>
                         <p className="text-sm leading-relaxed text-slate-500">
