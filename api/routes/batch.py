@@ -118,10 +118,10 @@ async def submit_batch(
         raise HTTPException(status_code=500, detail=f"Batch submission failed: {str(e)}")
 
 @router.post("/{batch_id}/start")
+@router.post("/{batch_id}/start")
 async def start_batch(
     batch_id: str,
     request: BatchStartRequest,
-    background_tasks: BackgroundTasks,
     current_user: dict = Depends(get_current_user),
     credentials: HTTPAuthorizationCredentials = Security(security)
 ):
@@ -133,17 +133,30 @@ async def start_batch(
         if not check.data:
             raise HTTPException(404, "Batch not found or empty")
 
-        # Offload to background
-        background_tasks.add_task(
-            process_batch_jobs, 
-            batch_id, 
-            current_user.id, 
-            credentials.credentials, 
-            request.grid_params, 
-            request.engine
-        )
+        # 1. Save Batch Configuration to S3 (Correct Zero-Failure Pattern)
+        # This ensures the worker has access to parameters even if API restarts
+        config_data = {
+            "grid_params": request.grid_params,
+            "engine": request.engine
+        }
+        try:
+            s3_client.put_object(
+                Bucket=S3_BUCKET,
+                Key=f"jobs/{batch_id}/batch_config.json",
+                Body=json.dumps(config_data).encode('utf-8'),
+                ContentType='application/json'
+            )
+        except Exception as s3_err:
+            raise HTTPException(500, f"Failed to save batch config: {s3_err}")
 
-        return {"batch_id": batch_id, "started": True, "message": "Batch processing started in background"}
+        # 2. Update Status to 'QUEUED'
+        # The Sentinel/QueueProcessor will pick this up automatically.
+        auth_client.table('jobs').update({
+            'status': 'QUEUED', 
+            'notes': 'Queued for processing'
+        }).eq('batch_id', batch_id).eq('user_id', current_user.id).execute()
+
+        return {"batch_id": batch_id, "started": True, "message": "Batch queued for processing. Zero-Failure Mode Active."}
 
     except HTTPException as he:
         raise he
@@ -151,115 +164,6 @@ async def start_batch(
         import traceback
         traceback.print_exc()
         raise HTTPException(500, f"Start failed: {e}")
-
-async def process_batch_jobs(batch_id: str, user_id: str, token: str, grid_params: dict, engine: str):
-    """
-    Background worker to process and submit batch jobs.
-    Handles PDBQT conversion, S3 upload, and AWS Batch submission.
-    """
-    try:
-        from services.config_generator import generate_vina_config
-        from aws_services import submit_batch_job as submit_to_aws
-        from services.smiles_converter import convert_to_pdbqt, convert_receptor_to_pdbqt
-        import tempfile
-        import shutil
-        import traceback
-
-        # Re-initialize client for background thread
-        auth_client = get_authenticated_client(token)
-        
-        # Fetch all jobs
-        jobs = auth_client.table('jobs').select('*').eq('batch_id', batch_id).eq('user_id', user_id).execute().data
-        
-        print(f"🔄 [Background] Starting processing for batch {batch_id} ({len(jobs)} jobs)")
-        
-        started_count = 0
-        
-        for job in jobs:
-            try:
-                # Update status to PROCESSING
-                auth_client.table('jobs').update({'status': 'PROCESSING', 'notes': 'Starting Preparation...'}).eq('id', job['id']).execute()
-                
-                job_id = job['id']
-                job_rec_key = f"jobs/{job_id}/receptor.pdbqt"
-                job_lig_key = f"jobs/{job_id}/ligand.pdbqt"
-                
-                # 1. Prepare Receptor & Ligand (Check/Convert/Copy)
-                with tempfile.TemporaryDirectory() as temp_dir:
-                    # Generic function to handle download -> convert -> key
-                    def prepare_file(s3_key, filename, target_key, is_receptor=False):
-                        print(f"   preparing {filename}...", flush=True)
-                        ext = os.path.splitext(filename)[1].lower()
-                        local_path = os.path.join(temp_dir, filename)
-                        
-                        # Download
-                        s3_client.download_file(S3_BUCKET, s3_key, local_path)
-                        
-                        # Convert if needed
-                        if ext != '.pdbqt':
-                            print(f"   Converting {filename} to PDBQT...", flush=True)
-                            with open(local_path, 'r') as f: content = f.read()
-                            
-                            pdbqt_content = None
-                            err = None
-                            
-                            if is_receptor:
-                                pdbqt_content, err = convert_receptor_to_pdbqt(content, filename)
-                            else:
-                                pdbqt_content, err = convert_to_pdbqt(content, filename)
-                                
-                            if err or not pdbqt_content:
-                                raise Exception(f"Conversion failed: {err}")
-                                
-                            # Write Converted to temp file
-                            local_path = local_path + ".pdbqt" # Update path to point to converted
-                            with open(local_path, 'w') as f: f.write(pdbqt_content)
-                        
-                        # Upload to target
-                        s3_client.upload_file(local_path, S3_BUCKET, target_key)
-                        
-                    # Process Receptor
-                    try:
-                        auth_client.table('jobs').update({'notes': 'Preparing Receptor...'}).eq('id', job_id).execute()
-                        prepare_file(job['receptor_s3_key'], job['receptor_filename'], job_rec_key, is_receptor=True)
-                    except Exception as rx:
-                         print(f"Receptor Prep Failed for {job_id}: {rx}")
-                         raise rx
-                    
-                    # Process Ligand
-                    try:
-                        auth_client.table('jobs').update({'notes': 'Preparing Ligand...'}).eq('id', job_id).execute()
-                        prepare_file(job['ligand_s3_key'], job['ligand_filename'], job_lig_key, is_receptor=False)
-                    except Exception as lx:
-                         print(f"Ligand Prep Failed for {job_id}: {lx}")
-                         raise lx
-                
-                # Generate Config
-                auth_client.table('jobs').update({'notes': 'Generating Vina Config...'}).eq('id', job_id).execute()
-                generate_vina_config(job_id, grid_params=grid_params)
-                
-                # Submit
-                auth_client.table('jobs').update({'notes': 'Submitting to AWS Batch...'}).eq('id', job_id).execute()
-                aws_id = submit_to_aws(job_id, job_rec_key, job_lig_key, engine=engine)
-                
-                auth_client.table('jobs').update({
-                    'status': 'SUBMITTED', 'batch_job_id': aws_id, 'notes': 'Batch Submitted'
-                }).eq('id', job_id).execute()
-                
-                print(f"✅ [Background] Job {job_id} submitted. AWS ID: {aws_id}", flush=True)
-                started_count += 1
-                
-            except Exception as e:
-                traceback.print_exc()
-                print(f"❌ [Background] Job start failed: {e}", flush=True)
-                auth_client.table('jobs').update({'status': 'FAILED', 'error_message': str(e)}).eq('id', job['id']).execute()
-
-        await fda_service.log_audit_event(auth_client, user_id, 'BATCH_STARTED', 'batch', batch_id, {'jobs': started_count})
-        print(f"🏁 [Background] Batch {batch_id} complete. Started: {started_count}")
-
-    except Exception as outer_e:
-        traceback.print_exc()
-        print(f"❌ [Background] Critical Batch Failure: {outer_e}", flush=True)
 
 @router.post("/submit-csv", status_code=status.HTTP_201_CREATED)
 async def submit_csv_batch(

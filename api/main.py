@@ -56,6 +56,8 @@ async def startup_event():
 
     # --- Start Sentinel Monitoring Loop ---
     import asyncio
+    
+    # 1. Self-Healing Sentinel (5 min interval)
     async def start_sentinel_background():
         """Background loop for Self-Healing"""
         print("🤖 Sentinel: Background Monitor Started (Interval: 5m)")
@@ -76,9 +78,29 @@ async def startup_event():
                      
             except Exception as e:
                 print(f"❌ Sentinel Loop Error: {e}")
+
+    # 2. Zero-Failure Queue Processor (5 sec interval)
+    async def start_queue_processor():
+        """Aggressive Loop to consume QUEUED jobs immediately"""
+        print("⚡ Queue Processor: Started (Interval: 5s)")
+        while True:
+            await asyncio.sleep(5)
+            try:
+                from services.queue_processor import QueueProcessor
+                from auth import get_service_client
                 
-    # Fire and forget task
+                svc_client = get_service_client()
+                processor = QueueProcessor(svc_client)
+                
+                # Consumes one job per loop to start with
+                await processor.process_queue()
+                
+            except Exception as e:
+                print(f"❌ Queue Loop Error: {e}")
+                
+    # Fire and forget tasks
     asyncio.create_task(start_sentinel_background())
+    asyncio.create_task(start_queue_processor())
 
 @app.get("/health")
 async def health_check():

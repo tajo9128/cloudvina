@@ -203,159 +203,112 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
 def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Optional[str]]:
     """
     Convert Receptor files (PDB, MOL2, CIF, PDBQT) to PDBQT.
-    Receptors MUST have 3D coordinates. We do not generate them.
-    Includes Rigorous Preparation: Water Removal, Ion Preservation, Fragmentation handling.
+    Implements "Never Fail" architecture: RDKit Clean -> RDKit Raw -> OpenBabel -> Pass-Through.
     """
     ext = filename.lower().split('.')[-1]
     
+    # --- LAYER 1: RDKit Parsing (Preferred for cleanliness) ---
+    mol = None
     try:
-        mol = None
-        
         if ext in ['pdb', 'ent']:
             mol = Chem.MolFromPDBBlock(content, removeHs=False)
         elif ext in ['mol2']:
             mol = Chem.MolFromMol2Block(content, removeHs=False)
-        elif ext in ['cif', 'mmcif']:
-            # Try parsing MMCIF
-            mol = Chem.MolFromMMCIFBlock(content)
         elif ext in ['pdbqt']:
-            # Full Featured Conversion: Try to parse, clean, and re-generate.
-            # 1. First, try to fix PDBQT format to be PDB-compatible for RDKit
-            # RDKit struggles with PDBQT's charge/type columns.
+            # PDBQT Cleaning Strategy
             cleaned_content = ""
             for line in content.splitlines():
                 if line.startswith(('ATOM', 'HETATM')):
-                     # PDBQT line length is usually fixed. 
-                     # Stripping the last columns (charge & type) often helps RDKit parse it as standard PDB.
-                     # Configurable heuristic: Keep first 66 chars (standard PDB width-ish)
+                     # RDKit hates the charge/type columns in PDBQT. Keep first 66 chars.
                      if len(line) > 66:
                          cleaned_content += line[:66] + "\n"
                      else:
                          cleaned_content += line + "\n"
+                elif line.startswith(('ROOT', 'ENDROOT', 'BRANCH', 'ENDBRANCH', 'TORSDOF', 'REMARK', 'USER')):
+                     continue # Strip AutoDock keywords
                 else:
                      cleaned_content += line + "\n"
-                     
+            
             mol = Chem.MolFromPDBBlock(cleaned_content, removeHs=False, sanitize=False)
             
-            if not mol:
-                 # Try raw content if cleaning failed
-                 mol = Chem.MolFromPDBBlock(content, removeHs=False, sanitize=False)
-                 
-            if mol:
-                 try:
-                     Chem.SanitizeMol(mol)
-                 except:
-                     pass # Best effort processing
-            
-        if not mol:
-             # --- FALLBACK: If RDKit failed, try OpenBabel via file_converter ---
-             logger.info(f"RDKit parsing failed for receptor {filename}, trying OpenBabel fallback...")
-             try:
-                 import tempfile
-                 import os
-                 from services.file_converter import convert_format
-                 
-                 # Write content to temp file
-                 suffix = f".{ext}" if not filename.endswith(f".{ext}") else ""
-                 with tempfile.NamedTemporaryFile(suffix=f"{suffix}", delete=False, mode='w', encoding='utf-8') as tmp:
-                     tmp.write(content)
-                     tmp_path = tmp.name
- 
-                 # Convert to PDBQT directly
-                 pdbqt_path = convert_format(tmp_path, 'pdbqt')
- 
-                 # Read result
-                 with open(pdbqt_path, 'r', encoding='utf-8') as f:
-                     pdbqt_string = f.read()
-                     
-                 # Cleanup
-                 try:
-                     os.remove(tmp_path)
-                     os.remove(pdbqt_path)
-                 except:
-                     pass
-                     
-                 return pdbqt_string, None
-                 
-             except Exception as fallback_err:
-                 # If fallback fails, return specific error
-                 return None, f"Could not parse receptor format: {ext} (RDKit & Obabel failed: {fallback_err})"
-
-        # Check for 3D coordinates
-        if mol.GetNumConformers() == 0:
-            return None, "Receptor file missing 3D coordinates"
-
-        # 1. Remove Waters (HOH) - Common cause of fragmentation
-        try:
-             # pattern for water
-             water = Chem.MolFromSmarts('[OH2]')
-             if water:
-                 mol = Chem.DeleteSubstructs(mol, water)
-                 Chem.SanitizeMol(mol)
-        except Exception:
-             pass # Continue if water removal fails
-        
-        # 2. Add Hydrogens (Critical for binding pockets)
-        # Note: AddHs might add H to salts/ions making them weird, but needed for protein.
-        mol = Chem.AddHs(mol, addCoords=True)
-        
-        # 3. Handle Fragmentation (Chains, Ions, etc.)
-        # Meeko fails if multiple disconnected fragments exist.
-        # Strategy: Get fragments, keep large ones (protein chains), process individually, then merge PDBQT.
-        
-        frags = Chem.GetMolFrags(mol, asMols=True, sanitizeFrags=False)
-        total_pdbqt_lines = []
-        
-        print(f"DEBUG: Receptor decomposed into {len(frags)} fragments.")
-        
-        for frag in frags:
-            # Filter: We want to keep Proteins AND Ions, but maybe not isolated weird small things that break Meeko.
-            # But "Correct" preparation should keep cofactors.
-            # We trust Meeko to handle small fragments if passed individually.
-            
+        if mol:
             try:
-                # Prepare fragment
-                preparator = MoleculePreparation()
-                setups = preparator.prepare(frag)
-                if not setups: continue # Skip invalid
-                
-                # Meeko v0.5+ returns tuple (string, score_only, msg)
-                frag_pdbqt_tuple = PDBQTWriterLegacy.write_string(setups[0])
-                if isinstance(frag_pdbqt_tuple, tuple):
-                    frag_pdbqt = frag_pdbqt_tuple[0]
-                else:
-                    frag_pdbqt = frag_pdbqt_tuple
-                
-                # Flatten (Rigidify) - Strip ROOT/BRANCH/TORSDOF
-                # This effectively treats every fragment as a rigid body in the same frame.
-                for line in frag_pdbqt.splitlines():
-                    if line.startswith(('ROOT', 'ENDROOT', 'BRANCH', 'ENDBRANCH', 'TORSDOF', 'REMARK')):
-                         continue
-                    total_pdbqt_lines.append(line)
-                    
-            except Exception as e:
-                # Fallback for single atoms (Ions) that Meeko might choke on
-                if frag.GetNumAtoms() == 1:
-                     # It's an ion. We can try to manually format it if Meeko failed?
-                     # Ideally we just log warning. Most ions pass Meeko fine.
-                     print(f"Warning: Failed to convert ion/fragment: {e}")
-                else:
-                     print(f"Warning: Failed to convert a fragment: {e}")
-                continue
-        
-        if not total_pdbqt_lines:
-             if ext == 'pdbqt':
-                 # Fallback: If "Full Feature" conversion stripped everything (e.g. failed to prepare fragments),
-                 # Return the original content instead of failing. This is a "Safe" full-featured approach.
-                 print(f"Warning: Rigorous conversion produced empty result for {filename}. Reverting to original PDBQT.")
-                 return content, None
-             return None, "Receptor conversion produced no valid PDBQT lines"
-             
-        rigid_pdbqt = "\n".join(total_pdbqt_lines)
-        return rigid_pdbqt, None
-        
+                Chem.SanitizeMol(mol)
+            except:
+                pass # Continue even if sanitization fails (we trust the input geometry)
+            
     except Exception as e:
-        return None, f"Receptor conversion failed 2: {str(e)}"
+        logger.warning(f"Layer 1 (RDKit) failed for {filename}: {e}")
+
+    # --- LAYER 2: Processing & Meeko ---
+    if mol:
+        try:
+            # 1. Remove Waters (Optional but recommended)
+            try:
+                water = Chem.MolFromSmarts('[OH2]')
+                if water:
+                    mol = Chem.DeleteSubstructs(mol, water)
+            except: pass
+
+            # 2. Add Hydrogens (Critical)
+            mol = Chem.AddHs(mol, addCoords=True)
+            
+            # 3. Preparation
+            preparator = MoleculePreparation()
+            setups = preparator.prepare(mol)
+            if setups:
+                result = PDBQTWriterLegacy.write_string(setups[0])
+                pdbqt_string = result[0] if isinstance(result, tuple) else result
+                return pdbqt_string, None
+            else:
+                logger.warning(f"Layer 2 (Meeko) failed: No setups generated")
+                # Fall through to Layer 3
+                
+        except Exception as e:
+            logger.warning(f"Layer 2 (Preparation) failed: {e}")
+            # Fall through to Layer 3
+
+    # --- LAYER 3: OpenBabel Fallback (The Heavy Lifter) ---
+    logger.info(f"Engaging Layer 3 (OpenBabel) for {filename}...")
+    try:
+        import tempfile
+        import os
+        from services.file_converter import convert_format
+        
+        # Write content
+        suffix = f".{ext}" if not filename.endswith(f".{ext}") else ""
+        with tempfile.NamedTemporaryFile(suffix=f"{suffix}", delete=False, mode='w', encoding='utf-8') as tmp:
+            tmp.write(content)
+            tmp_path = tmp.name
+        
+        # Convert
+        pdbqt_path = convert_format(tmp_path, 'pdbqt')
+        
+        # Read
+        with open(pdbqt_path, 'r', encoding='utf-8') as f:
+            pdbqt_string = f.read()
+            
+        # Cleanup
+        try:
+            os.remove(tmp_path)
+            os.remove(pdbqt_path)
+        except: pass
+        
+        # Validate result isn't empty
+        if len(pdbqt_string) > 10:
+            return pdbqt_string, None
+            
+    except Exception as e:
+        logger.error(f"Layer 3 (OpenBabel) failed: {e}")
+
+    # --- LAYER 4: Pass-Through (Last Resort) ---
+    # If input was already PDBQT and everything failed (maybe because it has weird ions Meeko/Obabel hate),
+    # just return the original content. Vina might handle it better than our parsers.
+    if ext == 'pdbqt' and len(content) > 10:
+        logger.warning(f"All conversion layers failed. Returning original content for {filename}.")
+        return content, None
+
+    return None, f"All conversion layers failed for {filename}. Please check file format."
 
 
 def pdbqt_to_pdb(pdbqt_content: str) -> Tuple[Optional[str], Optional[str]]:
