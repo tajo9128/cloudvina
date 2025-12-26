@@ -64,7 +64,6 @@ class QueueProcessor:
             # A. Mark as PROCESSING immediately
             self.db.table("jobs").update({
                 "status": "PROCESSING",
-                "notes": "Queue: Starting Preparation...",
                 "started_at": datetime.utcnow().isoformat()
             }).eq("id", job_id).execute()
 
@@ -114,26 +113,27 @@ class QueueProcessor:
                     self.s3.upload_file(local_path, S3_BUCKET, target_key)
 
                 # 1. Receptor
-                self.db.table('jobs').update({'notes': 'Queue: Preparing Receptor...'}).eq('id', job_id).execute()
+                # 1. Receptor
+                # self.db.table('jobs').update({'notes': 'Queue: Preparing Receptor...'}).eq('id', job_id).execute()
                 prepare_file_safe(job['receptor_s3_key'], job['receptor_filename'], job_rec_key, is_receptor=True)
 
                 # 2. Ligand
-                self.db.table('jobs').update({'notes': 'Queue: Preparing Ligand...'}).eq('id', job_id).execute()
+                # 2. Ligand
+                # self.db.table('jobs').update({'notes': 'Queue: Preparing Ligand...'}).eq('id', job_id).execute()
                 prepare_file_safe(job['ligand_s3_key'], job['ligand_filename'], job_lig_key, is_receptor=False)
 
             # D. Generate Vina Config
-            self.db.table('jobs').update({'notes': 'Queue: Generating Config...'}).eq('id', job_id).execute()
+            # self.db.table('jobs').update({'notes': 'Queue: Generating Config...'}).eq('id', job_id).execute()
             generate_vina_config(job_id, grid_params=grid_params)
 
             # E. Submit to AWS
-            self.db.table('jobs').update({'notes': 'Queue: Submitting to AWS...'}).eq('id', job_id).execute()
+            # self.db.table('jobs').update({'notes': 'Queue: Submitting to AWS...'}).eq('id', job_id).execute()
             aws_id = submit_to_aws(job_id, job_rec_key, job_lig_key, engine=engine)
 
             # F. Finalize
             self.db.table('jobs').update({
                 'status': 'SUBMITTED', 
-                'batch_job_id': aws_id, 
-                'notes': 'Batch Submitted (Queue)'
+                'batch_job_id': aws_id
             }).eq('id', job_id).execute()
 
             logger.info(f"✅ [Queue] Job {job_id} submitted successfully.")
@@ -143,8 +143,7 @@ class QueueProcessor:
             logger.error(f"❌ [Queue] Job {job_id} failed: {e}")
             self.db.table("jobs").update({
                 "status": "FAILED",
-                "error_message": str(e),
-                "notes": "Queue Processing Failed"
+                "error_message": str(e)
             }).eq("id", job_id).execute()
 
     def _get_batch_config(self, batch_id):
