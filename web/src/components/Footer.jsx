@@ -9,10 +9,11 @@ export default function Footer() {
                     {/* Brand */}
                     <div className="space-y-4">
                         <Link to="/" className="flex items-center space-x-2 group">
-                            <div className="text-2xl transform group-hover:scale-110 transition-transform duration-300">🧬</div>
-                            <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-slate-400">
-                                Bio<span className="text-primary-500">Dockify</span>
-                            </span>
+                            <img
+                                src="/brand/logo.svg"
+                                alt="BioDockify"
+                                className="h-12 w-auto brightness-0 invert opacity-90 group-hover:opacity-100 transition-opacity duration-300"
+                            />
                         </Link>
                         <p className="text-sm leading-relaxed text-slate-500">
                             Accelerating drug discovery with AI-powered molecular docking and analysis tools.
