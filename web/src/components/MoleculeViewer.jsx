@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as $3Dmol from '3dmol/build/3Dmol.js'
-import { Eye, RotateCw, Layers, Type, Maximize, Focus, Palette, BookOpen } from 'lucide-react'
+import { Eye, RotateCw, Layers, Type, Maximize, Focus, Palette, BookOpen, Camera, RefreshCw } from 'lucide-react'
 
 export default function MoleculeViewer({
     pdbqtData,
@@ -49,7 +49,7 @@ export default function MoleculeViewer({
         // Preset Configurations
         const config = {
             publication: {
-                receptor: { style: 'cartoon', color: 'white', opacity: 1.0 },
+                receptor: { style: 'cartoon', color: 'spectrum', opacity: 1.0 },
                 ligand: { style: 'stick', color: 'greenCarbon', radius: 0.25 },
                 surface: false,
                 hbonds: true
@@ -165,6 +165,24 @@ export default function MoleculeViewer({
         }
     }
 
+    const handleSnapshot = () => {
+        if (!viewerRef.current) return
+        try {
+            const dataURL = viewerRef.current.pngURI()
+            const link = document.createElement('a')
+            link.href = dataURL
+            link.download = `biodockify-structure-${Date.now()}.png`
+            link.click()
+        } catch (e) {
+            console.error("Snapshot failed", e)
+        }
+    }
+
+    const handleResetView = () => {
+        if (!viewerRef.current) return
+        viewerRef.current.zoomTo({ hetflag: true }, 1000)
+    }
+
     return (
         <div className={`relative w-full h-full bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm group ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}>
 
@@ -219,6 +237,14 @@ export default function MoleculeViewer({
                     </button>
 
                     <div className="w-px h-6 bg-white/20 mx-1"></div>
+
+                    <button onClick={handleSnapshot} className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors" title="Take Snapshot">
+                        <Camera size={18} />
+                    </button>
+
+                    <button onClick={handleResetView} className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors" title="Reset View">
+                        <RefreshCw size={18} />
+                    </button>
 
                     <button onClick={handleFullscreen} className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors" title="Fullscreen">
                         <Maximize size={18} />
