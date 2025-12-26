@@ -79,8 +79,10 @@ class QueueProcessor:
             job_lig_key = f"jobs/{job_id}/ligand.pdbqt"
 
             with tempfile.TemporaryDirectory() as temp_dir:
-                # helper
-                def prepare_file(s3_key, filename, target_key, is_receptor=False):
+                # Initialize Process Pool for Isolation (Prevents Segfaults killing API)
+                import concurrent.futures
+                
+                def prepare_file_safe(s3_key, filename, target_key, is_receptor=False):
                     ext = os.path.splitext(filename)[1].lower()
                     local_path = os.path.join(temp_dir, filename)
                     
@@ -89,11 +91,20 @@ class QueueProcessor:
                     if ext != '.pdbqt':
                         with open(local_path, 'r') as f: content = f.read()
                         
-                        pdbqt_content, err = (
-                            convert_receptor_to_pdbqt(content, filename) if is_receptor 
-                            else convert_to_pdbqt(content, filename)
-                        )
-                        
+                        # Run conversion in isolated process
+                        with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
+                            if is_receptor:
+                                future = executor.submit(convert_receptor_to_pdbqt, content, filename)
+                            else:
+                                future = executor.submit(convert_to_pdbqt, content, filename)
+                            
+                            try:
+                                pdbqt_content, err = future.result(timeout=120) # 2 min timeout
+                            except concurrent.futures.TimeoutError:
+                                raise Exception("Conversion Timed Out (Possible Hang)")
+                            except Exception as exc:
+                                raise Exception(f"Conversion Crash/Error: {exc}")
+
                         if err or not pdbqt_content:
                             raise Exception(f"Conversion failed: {err}")
                             
@@ -104,11 +115,11 @@ class QueueProcessor:
 
                 # 1. Receptor
                 self.db.table('jobs').update({'notes': 'Queue: Preparing Receptor...'}).eq('id', job_id).execute()
-                prepare_file(job['receptor_s3_key'], job['receptor_filename'], job_rec_key, is_receptor=True)
+                prepare_file_safe(job['receptor_s3_key'], job['receptor_filename'], job_rec_key, is_receptor=True)
 
                 # 2. Ligand
                 self.db.table('jobs').update({'notes': 'Queue: Preparing Ligand...'}).eq('id', job_id).execute()
-                prepare_file(job['ligand_s3_key'], job['ligand_filename'], job_lig_key, is_receptor=False)
+                prepare_file_safe(job['ligand_s3_key'], job['ligand_filename'], job_lig_key, is_receptor=False)
 
             # D. Generate Vina Config
             self.db.table('jobs').update({'notes': 'Queue: Generating Config...'}).eq('id', job_id).execute()
