@@ -378,24 +378,23 @@ export default function BatchResultsPage() {
                                                 })()}
                                             </td>
                                             <td className="px-6 py-5 text-center">
-                                                <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity items-center">
+                                                <div className="flex justify-center gap-2 items-center">
                                                     {job.status?.toUpperCase() === 'SUCCEEDED' && (
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 navigate(`/dock/${job.id}`)
                                                             }}
-                                                            className="px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-600 text-xs font-bold hover:bg-indigo-100 transition-all flex items-center gap-1"
+                                                            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-md shadow-indigo-100 transition-all flex items-center gap-2 animate-fade-in"
                                                         >
-                                                            <Zap size={12} /> Analyze
+                                                            <span>View Result</span> <ArrowRight size={12} />
                                                         </button>
                                                     )}
-                                                    <button onClick={(e) => handleDownload(e, job, 'output')} className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="Download structure">
-                                                        <Download size={14} />
-                                                    </button>
-                                                    <button onClick={(e) => handleDownload(e, job, 'log')} className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all shadow-sm" title="View Logs">
-                                                        <FileCode size={14} />
-                                                    </button>
+                                                    {job.status?.toUpperCase() !== 'SUCCEEDED' && (
+                                                        <div className="text-xs text-slate-400 font-medium italic">
+                                                            Processing...
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>

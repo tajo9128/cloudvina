@@ -17,9 +17,9 @@ export default function HomePage() {
     return (
         <div className="overflow-hidden bg-slate-50 font-sans text-slate-900">
             <SEOHelmet
-                title="BioDockify | Intelligent Molecular Research Platform"
-                description="Accelerating Drug Discovery Through Intelligent Molecular Research. Simplify and accelerate modern drug discovery research without expensive infrastructure."
-                keywords="drug discovery, molecular analysis, computational pharmacology, virtual screening, medicinal chemistry"
+                title="BioDockify: Cloud-Native Molecular Docking & CADD Platform"
+                description="Integrated AutoDock Vina and Machine Learning workflows for precise virtual screening. Empowering Drug Discovery with Cloud-Native Docking."
+                keywords="drug discovery, molecular analysis, computational pharmacology, virtual screening, medicinal chemistry, CADD, cloud docking"
                 canonical="https://biodockify.com/"
             />
 
@@ -39,15 +39,13 @@ export default function HomePage() {
                                 Major Release v6.0.0: Privacy-First Consensus Docking
                             </div>
 
-                            <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
-                                Cloud-Native, <br />
-                                <span className="text-indigo-400">End-to-End</span> <br />
-                                Drug Discovery.
+                            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
+                                Accelerate Drug Discovery with <span className="text-indigo-400">AI-Powered</span> Molecular Docking
                             </h1>
 
                             <p className="text-lg text-slate-400 mb-10 leading-relaxed max-w-lg">
-                                Accelerate your pipeline from Virtual Screening to Lead Optimization with our high-performance cloud infrastructure.
-                                Scalable, secure, and ready for production.
+                                Integrated AutoDock Vina and Machine Learning workflows for precise virtual screening.
+                                <span className="block mt-2 text-indigo-300 font-medium">Empowering Drug Discovery with Cloud-Native Docking.</span>
                             </p>
 
                             <div className="flex flex-wrap gap-4">
@@ -150,9 +148,9 @@ export default function HomePage() {
                             description="Massive-scale validation with parallel AutoDock Vina and Gnina execution. Secure batch processing with real-time protein preparation and automated grid calculation."
                             features={[
                                 "Consensus Scoring (Vina + Gnina)",
-                                "Automated Protein Prep Pipeline",
+                                "Automated Ligand Preparation",
                                 "Parallel Cloud Execution (5 cores)",
-                                "PDBQT Conversion & Grid Generation",
+                                "Seamless PDB file processing",
                                 "Real-Time Terminal & Progress Logs"
                             ]}
                             icon={<Server className="w-8 h-8 text-white" />}
@@ -188,7 +186,7 @@ export default function HomePage() {
                             description="Consensus-based lead ranking integrating docking scores, MD stability, and AI predictions. Full ADMET toxicity profiling with Lipinski rule validation."
                             features={[
                                 "Consensus Ranking (Docking + MD + AI)",
-                                "ADMET: hERG, Ames, CYP450 Inhibition",
+                                "ADMET Prediction utilizing AI",
                                 "Lipinski Rule of 5 Compliance",
                                 "BBB Penetration Prediction",
                                 "Synthetic Accessibility Score (SAScore)"

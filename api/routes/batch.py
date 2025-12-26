@@ -152,8 +152,7 @@ async def start_batch(
         # 2. Update Status to 'QUEUED'
         # The Sentinel/QueueProcessor will pick this up automatically.
         auth_client.table('jobs').update({
-            'status': 'QUEUED', 
-            'notes': 'Queued for processing'
+            'status': 'QUEUED'
         }).eq('batch_id', batch_id).eq('user_id', current_user.id).execute()
 
         return {"batch_id": batch_id, "started": True, "message": "Batch queued for processing. Zero-Failure Mode Active."}
@@ -245,8 +244,7 @@ async def submit_csv_batch(
             'receptor_s3_key': job_rec_key,
             'ligand_s3_key': lig_key,
             'receptor_filename': receptor_file.filename,
-            'ligand_filename': f"{compound_name}.pdbqt",
-            'notes': smiles
+            'ligand_filename': f"{compound_name}.pdbqt"
         }).execute()
         
         # Submit
