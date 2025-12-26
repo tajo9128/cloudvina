@@ -48,7 +48,7 @@ class BioDockifySentinel:
         """
         Detects jobs stuck in 'PROCESSING' state (local PDBQT conversion)
         """
-        threshold = datetime.utcnow() - timedelta(minutes=30)
+        threshold = datetime.utcnow() - timedelta(minutes=10)
         
         response = self.db.table("jobs") \
             .select("*") \
