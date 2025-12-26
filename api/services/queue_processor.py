@@ -63,8 +63,7 @@ class QueueProcessor:
         try:
             # A. Mark as PROCESSING immediately
             self.db.table("jobs").update({
-                "status": "PROCESSING",
-                "started_at": datetime.utcnow().isoformat()
+                "status": "PROCESSING"
             }).eq("id", job_id).execute()
 
             # B. Fetch Configuration (Grid Params, Engine)
