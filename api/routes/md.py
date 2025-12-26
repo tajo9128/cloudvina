@@ -21,46 +21,44 @@ class MDJobRequest(BaseModel):
 @router.post("/submit")
 async def submit_md_job(job: MDJobRequest, current_user: dict = Depends(get_current_user)):
     """
-    Submits an MD simulation job to the Redis queue.
-    This job will be picked up by an external Colab worker or local worker.
+    Submits an MD simulation job to AWS Batch (md-simulation-queue).
+    Uses the dedicated Docker image (OpenMM+Amber) for execution.
     """
     job_id = str(uuid.uuid4())
     
-    # Prepare config dict
-    config_dict = job.config.model_dump()
-    
-    # Validation/Conversion: Frontend sends PDBQT, Worker expects PDB
-    # We attempt to convert here to avoid crashing the remote worker
+    # 1. Prepare PDB Content
     from services.smiles_converter import pdbqt_to_pdb
-    
     pdb_content = job.pdb_content
-    # Check if content looks like PDBQT (has ROOT/BRANCH)
+    # Auto-convert PDBQT -> PDB
     if "ROOT" in pdb_content or "TORSDOF" in pdb_content or "pdbqt" in pdb_content.lower():
          converted, err = pdbqt_to_pdb(pdb_content)
          if converted:
              pdb_content = converted
-             # print(f"DEBUG: Converted PDBQT to PDB for job {job_id}")
          else:
              print(f"WARNING: PDBQT conversion failed for MD job {job_id}: {err}")
-             # We send original content as fallback, hoping worker handles it or fails gracefully
-    
-    # Send task to Celery "run_openmm_simulation"
-    # This matches the name defined in workers/openmm_worker.py
+
+    # 2. Upload Input to S3 (Required for AWS Batch)
     try:
-        task = celery_app.send_task(
-            "run_openmm_simulation",
-            args=[job_id, pdb_content, config_dict],
-            task_id=job_id,
-            queue="colab_gpu" # Send to 'colab_gpu' queue to ensure GPU execution
+        from aws_services import s3_client, S3_BUCKET, submit_md_simulation_job
+        pdb_key = f"jobs/{job_id}/input.pdb"
+        s3_client.put_object(
+            Bucket=S3_BUCKET, 
+            Key=pdb_key, 
+            Body=pdb_content,
+            ContentType='chemical/x-pdb'
         )
+
+        # 3. Submit to AWS Batch (MD Queue)
+        batch_job_id = submit_md_simulation_job(job_id, pdb_key)
         
         return {
             "job_id": job_id,
-            "status": "queued",
-            "message": "Job submitted successfully. Waiting for Colab GPU worker (queue: colab_gpu)."
+            "aws_batch_id": batch_job_id,
+            "status": "SUBMITTED",
+            "message": "MD Simulation submitted to AWS Batch (GPU/Docker)."
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to queue job: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to submit MD job: {str(e)}")
 
 @router.get("/status/{job_id}")
 async def get_md_status(job_id: str, current_user: dict = Depends(get_current_user)):
