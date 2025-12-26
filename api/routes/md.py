@@ -51,13 +51,13 @@ async def submit_md_job(job: MDJobRequest, current_user: dict = Depends(get_curr
             "run_openmm_simulation",
             args=[job_id, pdb_content, config_dict],
             task_id=job_id,
-            queue="worker" # Send to 'worker' queue
+            queue="colab_gpu" # Send to 'colab_gpu' queue to ensure GPU execution
         )
         
         return {
             "job_id": job_id,
             "status": "queued",
-            "message": "Job submitted successfully. Waiting for a worker (Colab) to pick it up."
+            "message": "Job submitted successfully. Waiting for Colab GPU worker (queue: colab_gpu)."
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to queue job: {str(e)}")
