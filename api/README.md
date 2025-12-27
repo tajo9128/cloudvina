@@ -40,11 +40,13 @@ Visit http://localhost:8000/docs for interactive API documentation.
 
 - `GET /` - Health check
 - `GET /health` - Detailed health status
-- `POST /auth/signup` - Create account (TODO)
-- `POST /auth/login` - Login (TODO)
-- `POST /jobs/submit` - Submit docking job (TODO)
-- `POST /jobs/{job_id}/start` - Start job (TODO)
-- `GET /jobs/{job_id}` - Get job status (TODO)
+- `POST /auth/signup` - Create account
+- `POST /auth/login` - Login
+- `POST /jobs/submit` - Submit docking job
+- `POST /jobs/{job_id}/start` - Start job
+- `GET /jobs/{job_id}` - Get job status
+- `POST /md/submit` - Submit MD Simulation
+- `POST /md/analyze/binding-energy/{jobId}` - Trigger MM-GBSA Analysis
 
 ## Environment Variables
 

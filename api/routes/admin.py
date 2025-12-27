@@ -31,29 +31,32 @@ async def get_dashboard_stats(
 ):
     """Get comprehensive admin dashboard statistics and recent activity"""
     
+    # Use Service Client to see ALL data (bypass RLS)
+    service_client = get_service_client()
+
     # 1. Summary Stats (Counts)
     # Real-time job stats
-    jobs_response = supabase.table("jobs") \
+    jobs_response = service_client.table("jobs") \
         .select("*", count="exact") \
         .gte("created_at", (datetime.utcnow() - timedelta(hours=hours_back)).isoformat()) \
         .execute()
     
     # User stats
-    users_response = supabase.table("profiles") \
+    users_response = service_client.table("profiles") \
         .select("*", count="exact") \
         .gte("created_at", (datetime.utcnow() - timedelta(hours=hours_back)).isoformat()) \
         .execute()
     
     # 2. Detailed Lists for "All-in-One" View
     # Recent Jobs (Top 5)
-    recent_jobs = supabase.table("jobs") \
+    recent_jobs = service_client.table("jobs") \
         .select("*, profiles(email, username)") \
         .order("created_at", desc=True) \
         .limit(5) \
         .execute()
         
     # Recent Users (Top 5)
-    recent_users = supabase.table("profiles") \
+    recent_users = service_client.table("profiles") \
         .select("*") \
         .order("created_at", desc=True) \
         .limit(5) \
@@ -62,7 +65,7 @@ async def get_dashboard_stats(
     # Recent Activity (Top 10)
     # We try-catch this in case admin_actions doesn't exist yet for some deployments
     try:
-        activity_log = supabase.table("admin_actions") \
+        activity_log = service_client.table("admin_actions") \
             .select("*") \
             .order("created_at", desc=True) \
             .limit(10) \
@@ -122,7 +125,10 @@ async def get_all_jobs(
 ):
     """Get all jobs with filtering"""
     
-    query = supabase.table("jobs") \
+    # Use Service Client
+    service_client = get_service_client()
+    
+    query = service_client.table("jobs") \
         .select("*, profiles(email, username)") \
         .order("created_at", desc=True) \
         .range(offset, offset + limit - 1)
@@ -144,8 +150,11 @@ async def cancel_job(
 ):
     """Cancel a running job"""
     
+    # Use Service Client
+    service_client = get_service_client()
+
     # Log admin action
-    supabase.table("admin_actions").insert({
+    service_client.table("admin_actions").insert({
         "admin_id": admin["id"],
         "action_type": "cancel_job",
         "target_id": job_id,
@@ -155,11 +164,11 @@ async def cancel_job(
     }).execute()
     
     # Get job details to find batch_job_id
-    job_response = supabase.table("jobs").select("batch_job_id").eq("id", job_id).single().execute()
+    job_response = service_client.table("jobs").select("batch_job_id").eq("id", job_id).single().execute()
     batch_job_id = job_response.data.get("batch_job_id") if job_response.data else None
 
     # Update job status in DB
-    supabase.table("jobs") \
+    service_client.table("jobs") \
         .update({"status": "cancelled", "completed_at": datetime.utcnow().isoformat()}) \
         .eq("id", job_id) \
         .execute()
@@ -178,7 +187,10 @@ async def get_all_users(
 ):
     """Get all users"""
     
-    response = supabase.table("profiles") \
+    # Use Service Client
+    service_client = get_service_client()
+    
+    response = service_client.table("profiles") \
         .select("*") \
         .order("created_at", desc=True) \
         .range(offset, offset + limit - 1) \
@@ -189,12 +201,19 @@ async def get_all_users(
 @router.post("/users/{user_id}/suspend")
 async def suspend_user(
     user_id: str,
-    reason: str,
-    request: Request,
+    reason: str = Body(..., embed=True),
+    request: Request = None,
     admin: dict = Depends(verify_admin)
 ):
     """Suspend a user account"""
+    service_client = get_service_client()
     
+    # Apply suspension
+    service_client.table("profiles").update({
+        "role": "suspended",
+        "notes": f"Suspended by admin: {reason}"
+    }).eq("id", user_id).execute()
+
     # Log admin action
     supabase.table("admin_actions").insert({
         "admin_id": admin["id"],
@@ -202,11 +221,54 @@ async def suspend_user(
         "target_id": user_id,
         "target_type": "user",
         "details": {"reason": reason},
-        "ip_address": request.client.host,
-        "user_agent": request.headers.get("user-agent")
+        "ip_address": request.client.host if request else "unknown",
+        "user_agent": request.headers.get("user-agent") if request else "unknown"
     }).execute()
     
-    return {"status": "success", "message": f"User {user_id} suspended (logged)"}
+    return {"status": "success", "message": f"User {user_id} suspended"}
+
+@router.get("/jobs/{job_id}/details")
+async def get_job_details(
+    job_id: str,
+    admin: dict = Depends(verify_admin)
+):
+    """Get deep audit details for a job (Config, Logs, Metadata)"""
+    try:
+        from services.export import ExportService
+        
+        # Use Service Client to see ALL data (bypass RLS)
+        service_client = get_service_client()
+        
+        # 1. Fetch DB Record
+        job_res = service_client.table("jobs").select("*").eq("id", job_id).single().execute()
+        if not job_res.data: raise HTTPException(404, "Job not found")
+        job = job_res.data
+
+        details = {
+            "db_record": job,
+            "s3_config": None,
+            "s3_logs": None
+        }
+
+        # 2. Try Fetch Config from S3 if batch
+        if job.get('batch_id'):
+            try:
+                # Assuming standard batch config path
+                # Note: We need boto3 here
+                import boto3
+                s3 = boto3.client('s3', region_name=os.getenv("AWS_REGION", "us-east-1"))
+                bucket = os.getenv("S3_BUCKET")
+                
+                # Try fetch batch_config.json
+                key = f"jobs/{job['batch_id']}/batch_config.json"
+                obj = s3.get_object(Bucket=bucket, Key=key)
+                details['s3_config'] = json.loads(obj['Body'].read().decode('utf-8'))
+            except:
+                pass # Config might not exist for all jobs
+
+        return details
+    except Exception as e:
+        raise HTTPException(500, f"Audit failed: {str(e)}")
 
 @router.get("/system/config")
 async def get_system_config(admin: dict = Depends(verify_admin)):

@@ -454,30 +454,11 @@ export default function JobResultsPage() {
                             </div>
                         )}
 
-                        {/* 3. MD Simulation Call to Action */}
-                        {job.status === 'SUCCEEDED' && (
-                            <div className="bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl p-1 shadow-lg">
-                                <div className="bg-white rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-                                    <div className="flex items-center gap-4">
-                                        <div className="p-3 bg-violet-50 text-violet-600 rounded-xl">
-                                            <Activity size={24} />
-                                        </div>
-                                        <div>
-                                            <h3 className="font-bold text-slate-900 text-lg">Validate with MD Simulation</h3>
-                                            <p className="text-slate-500 text-sm">Run 10ns stability check via OpenMM (Cost: 10 Credits)</p>
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={handleRunMD}
-                                        disabled={loadingMD}
-                                        className="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all shadow-xl hover:shadow-2xl flex items-center gap-2 disabled:opacity-50"
-                                    >
-                                        {loadingMD ? <span className="animate-spin">⌛</span> : <Play size={16} fill="white" />}
-                                        <span>Run Simulation</span>
-                                    </button>
-                                </div>
-                            </div>
-                        )}
+                        {/* 3. MD Simulation Call to Action (REMOVED for Strict Module Separation) */}
+                        {/* 
+    The user requested strict separation between Docking and MD modules.
+    Users should manually download the PDB and upload it to the MD Simulation Page.
+*/}
 
                         {/* 4. Consensus & Pockets (Tabs Style) */}
                         {[consensusResults, detectedPockets.length > 0].some(Boolean) && (

@@ -45,6 +45,7 @@ import AdminJobs from './pages/admin/Jobs'
 import AdminUsers from './pages/admin/Users'
 import AdminPhases from './pages/admin/PhasesControl'
 import AdminPricing from './pages/admin/PricingControl'
+import AdminSettings from './pages/admin/Settings' // [NEW] Verified
 import AdminMessages from './pages/admin/Messages'
 import AdminCalendar from './pages/admin/Calendar' // Anticipating Calendar next
 import FDACompliancePage from './pages/admin/FDACompliancePage' // [NEW] Sprint 2.1
@@ -125,6 +126,7 @@ function AppRoutes() {
                 <Route path="messages" element={<AdminMessages />} />
                 <Route path="phases" element={<AdminPhases />} />
                 <Route path="pricing" element={<AdminPricing />} />
+                <Route path="settings" element={<AdminSettings />} />
                 <Route path="fda" element={<FDACompliancePage />} />
                 <Route path="roles" element={<RBACManagerPage />} />
             </Route>

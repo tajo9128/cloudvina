@@ -135,6 +135,9 @@ def main():
         with open("result.json", "w") as f:
             json.dump(result, f)
             
+        print("   Upload result.json...") 
+        upload_file("result.json", f"jobs/{job_id}/result.json")
+            
         # Optional: Trigger completion webhook or similar
         print(f"✅ Job Done. Result: {json.dumps(result)}")
         

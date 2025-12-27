@@ -86,6 +86,15 @@ async def get_md_status(
             s3_client.head_object(Bucket=S3_BUCKET, Key=result_key)
             # If successful, job is DONE
             
+            # Retrieve Stability Score from S3
+            stability_score = 0.0
+            try:
+                result_obj = s3_client.get_object(Bucket=S3_BUCKET, Key=f"jobs/{job_id}/result.json")
+                result_data = json.loads(result_obj['Body'].read().decode('utf-8'))
+                stability_score = result_data.get('stability_score', 0.0)
+            except Exception as e:
+                print(f"Warning: Could not read MD result.json: {e}")
+
             # Generate URLs for outputs
             return {
                 "job_id": job_id,
@@ -95,7 +104,7 @@ async def get_md_status(
                     "report_url": generate_presigned_download_url(job_id, "MD_analysis_report.pdf"),
                     "log_url": generate_presigned_download_url(job_id, "md_log.txt"),
                     "rmsd_plot_url": generate_presigned_download_url(job_id, "rmsd_plot.png"),
-                    "stability_score": 85.5 # TODO: Read from JSON file
+                    "stability_score": stability_score
                 }
             }
         except botocore.exceptions.ClientError:

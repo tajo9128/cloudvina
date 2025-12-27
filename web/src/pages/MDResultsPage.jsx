@@ -162,6 +162,45 @@ const MDResultsPage = () => {
                             </div>
                         </div>
 
+                        {/* Phase 5: Binding Energy Analysis (MM-GBSA) */}
+                        <div className="mb-8">
+                            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-1 shadow-lg">
+                                <div className="bg-white rounded-xl p-6 flex flex-col md:flex-row items-center justify-between gap-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="p-3 bg-emerald-50 text-emerald-600 rounded-xl">
+                                            <Zap size={24} />
+                                        </div>
+                                        <div>
+                                            <h3 className="font-bold text-slate-900 text-lg">Binding Energy Analysis</h3>
+                                            <p className="text-slate-500 text-sm">Calculate ΔG (MM-GBSA) with per-residue decomposition (Cost: 25 Credits)</p>
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            if (!confirm("Run MM-GBSA Analysis? (Cost: 25 Credits)")) return;
+                                            setLoadingEnergy(true);
+                                            try {
+                                                const { data: { session } } = await supabase.auth.getSession();
+                                                const res = await fetch(`${import.meta.env.VITE_API_URL}/md/analyze/binding-energy/${jobId}`, {
+                                                    method: 'POST',
+                                                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${session.access_token}` },
+                                                    body: JSON.stringify({ ligand_resname: 'LIG', stride: 10 })
+                                                });
+                                                if (res.ok) alert("Analysis Started! You will be notified via email.");
+                                                else throw new Error("Failed to start analysis");
+                                            } catch (e) { alert(e.message); }
+                                            finally { setLoadingEnergy(false); }
+                                        }}
+                                        disabled={loadingEnergy}
+                                        className="px-6 py-3 bg-slate-900 text-white font-bold rounded-xl hover:bg-slate-800 transition-all shadow-xl hover:shadow-2xl flex items-center gap-2 disabled:opacity-50"
+                                    >
+                                        {loadingEnergy ? <span className="animate-spin">⌛</span> : <Zap size={16} fill="white" />}
+                                        <span>Calculate ΔG</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
                         {/* Content Grid */}
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                             {/* 3D Viewer */}
@@ -173,13 +212,21 @@ const MDResultsPage = () => {
 
                             {/* Analysis Card */}
                             <div className="space-y-6">
-                                <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-6">
-                                    <h3 className="font-bold text-slate-900 mb-4">RMSD Trajectory</h3>
-                                    <div className="h-48">
-                                        <Line data={rmsdData} options={chartOptions} />
-                                    </div>
-                                    <div className="mt-4 text-xs text-center text-slate-400">Stability over 100ns</div>
+                                <h3 className="font-bold text-slate-900 mb-4">RMSD Trajectory</h3>
+                                <div className="rounded-xl overflow-hidden border border-slate-100">
+                                    {jobData.result?.rmsd_plot_url ? (
+                                        <img
+                                            src={jobData.result.rmsd_plot_url}
+                                            alt="RMSD Plot"
+                                            className="w-full h-auto object-contain"
+                                        />
+                                    ) : (
+                                        <div className="h-48 bg-slate-50 flex items-center justify-center text-slate-400 text-sm">
+                                            Plot generating...
+                                        </div>
+                                    )}
                                 </div>
+                                <div className="mt-4 text-xs text-center text-slate-400">Backbone stability over simulation time</div>
 
                                 <div className="bg-slate-900 rounded-3xl text-white p-8">
                                     <h3 className="font-bold text-lg mb-6 flex items-center gap-2">
@@ -201,8 +248,8 @@ const MDResultsPage = () => {
                         </div>
                     </>
                 )}
-            </main>
-        </div>
+            </main >
+        </div >
     );
 };
 

@@ -101,21 +101,38 @@ const Jobs = () => {
         job.receptor_filename?.includes(search)
     );
 
+
+    const [selectedJob, setSelectedJob] = useState(null);
+    const [jobDetails, setJobDetails] = useState(null);
+    const [showAuditModal, setShowAuditModal] = useState(false);
+
+    const handleAuditJob = async (job) => {
+        setSelectedJob(job);
+        setShowAuditModal(true);
+        setJobDetails(null);
+        try {
+            const { data: { session } } = await supabase.auth.getSession();
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/jobs/${job.id}/details`, {
+                headers: { 'Authorization': `Bearer ${session?.access_token}` }
+            });
+            if (res.ok) setJobDetails(await res.json());
+        } catch (e) { console.error(e); }
+    };
+
     return (
         <div className="p-8">
             <header className="mb-8 flex justify-between items-center">
                 <div>
                     <h1 className="text-3xl font-bold text-white mb-2 flex items-center gap-2">
-                        <Database className="text-primary-400" /> Job Management
+                        <Database className="text-primary-400" /> Process Run Audit
                     </h1>
-                    <p className="text-slate-400">Monitor and control docking jobs</p>
+                    <p className="text-slate-400">Monitor, audit, and control system processes.</p>
                 </div>
                 <button
                     onClick={fetchJobs}
                     className="flex items-center gap-2 px-4 py-2 bg-primary-600/20 text-primary-400 border border-primary-500/30 rounded-lg hover:bg-primary-600/30 transition-colors"
                 >
-                    <RefreshCw size={16} />
-                    Refresh
+                    <RefreshCw size={16} />Refresh
                 </button>
             </header>
 
@@ -128,7 +145,7 @@ const Jobs = () => {
                         placeholder="Search by Job ID, User Email, or Receptor..."
                         value={search}
                         onChange={(e) => setSearch(e.target.value)}
-                        className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-primary-500/20 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/30 transition-all"
+                        className="w-full pl-10 pr-4 py-3 bg-slate-800/50 border border-primary-500/20 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-primary-500/50 focus:ring-1 focus:ring-primary-500/30 transition-all font-mono text-sm"
                     />
                 </div>
                 <div className="flex gap-2 flex-wrap">
@@ -148,17 +165,17 @@ const Jobs = () => {
             </div>
 
             {/* Jobs Table */}
-            <div className="bg-slate-800/30 border border-primary-500/20 rounded-xl overflow-hidden backdrop-blur-sm">
+            <div className="bg-slate-800/30 border border-primary-500/20 rounded-xl overflow-hidden backdrop-blur-sm shadow-xl">
                 <div className="overflow-x-auto">
                     <table className="w-full text-left">
                         <thead>
-                            <tr className="bg-slate-800/50 border-b border-primary-500/20 text-slate-400 text-sm">
-                                <th className="p-4 font-medium">Job ID</th>
-                                <th className="p-4 font-medium">User</th>
-                                <th className="p-4 font-medium">Status</th>
-                                <th className="p-4 font-medium">Created At</th>
-                                <th className="p-4 font-medium">Target</th>
-                                <th className="p-4 text-right font-medium">Actions</th>
+                            <tr className="bg-slate-800/80 border-b border-primary-500/20 text-slate-400 text-sm uppercase tracking-wider">
+                                <th className="p-4 font-bold">Job ID</th>
+                                <th className="p-4 font-bold">User</th>
+                                <th className="p-4 font-bold">Status</th>
+                                <th className="p-4 font-bold">Time</th>
+                                <th className="p-4 font-bold">Engine</th>
+                                <th className="p-4 text-right font-bold">Control</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-primary-500/10">
@@ -166,44 +183,52 @@ const Jobs = () => {
                                 <tr>
                                     <td colSpan="6" className="p-8 text-center text-slate-400">
                                         <div className="flex items-center justify-center gap-2">
-                                            <RefreshCw className="animate-spin" size={16} />
-                                            Loading jobs...
+                                            <RefreshCw className="animate-spin" size={16} /> Retrieving Processes...
                                         </div>
                                     </td>
                                 </tr>
                             ) : filteredJobs.length === 0 ? (
-                                <tr>
-                                    <td colSpan="6" className="p-8 text-center text-slate-400">No jobs found</td>
-                                </tr>
+                                <tr><td colSpan="6" className="p-8 text-center text-slate-400">No active processes found</td></tr>
                             ) : (
                                 filteredJobs.map(job => (
-                                    <tr key={job.id} className="hover:bg-primary-500/5 transition-colors">
+                                    <tr key={job.id} className="hover:bg-primary-500/5 transition-colors group">
                                         <td className="p-4">
-                                            <span className="font-mono text-sm text-primary-300 bg-primary-500/10 px-2 py-1 rounded" title={job.id}>
+                                            <button onClick={() => handleAuditJob(job)} className="font-mono text-xs text-primary-300 bg-primary-500/10 px-2 py-1 rounded hover:bg-primary-500/20 transition-colors">
                                                 {job.id?.substring(0, 8)}...
-                                            </span>
+                                            </button>
                                         </td>
                                         <td className="p-4">
-                                            <div className="text-sm text-white">{job.profiles?.email || 'Unknown'}</div>
+                                            <div className="text-sm text-white font-medium">{job.profiles?.email || 'System'}</div>
+                                            <div className="text-xs text-slate-500">{job.user_id?.substring(0, 6)}...</div>
                                         </td>
                                         <td className="p-4">
                                             {getStatusBadge(job.status)}
+                                            {job.error_message && (
+                                                <div className="text-red-400 text-xs mt-1 max-w-[200px] truncate" title={job.error_message}>
+                                                    {job.error_message}
+                                                </div>
+                                            )}
                                         </td>
-                                        <td className="p-4 text-slate-400 text-sm">
+                                        <td className="p-4 text-slate-400 text-xs font-mono">
                                             {new Date(job.created_at).toLocaleString()}
                                         </td>
-                                        <td className="p-4 text-slate-300 text-sm font-mono">
-                                            {job.receptor_filename || 'N/A'}
+                                        <td className="p-4 text-slate-300 text-xs uppercase font-bold tracking-wide">
+                                            {job.engine || 'VINA'}
                                         </td>
                                         <td className="p-4 text-right">
-                                            {(job.status === 'running' || job.status === 'queued') && (
-                                                <button
-                                                    onClick={() => handleCancelJob(job.id)}
-                                                    className="text-red-400 hover:text-red-300 text-sm font-medium flex items-center gap-1 ml-auto bg-red-500/10 px-3 py-1 rounded-lg border border-red-500/30 hover:bg-red-500/20 transition-colors"
-                                                >
-                                                    <XCircle size={14} /> Cancel
+                                            <div className="flex justify-end gap-2">
+                                                <button onClick={() => handleAuditJob(job)} className="text-indigo-400 hover:text-indigo-300 text-xs font-medium bg-indigo-500/10 px-3 py-1 rounded border border-indigo-500/30">
+                                                    Audit
                                                 </button>
-                                            )}
+                                                {(job.status === 'running' || job.status === 'queued') && (
+                                                    <button
+                                                        onClick={() => handleCancelJob(job.id)}
+                                                        className="text-red-400 hover:text-red-300 text-xs font-medium bg-red-500/10 px-3 py-1 rounded border border-red-500/30 hover:bg-red-500/20 transition-colors"
+                                                    >
+                                                        Kill Process
+                                                    </button>
+                                                )}
+                                            </div>
                                         </td>
                                     </tr>
                                 ))
@@ -212,6 +237,63 @@ const Jobs = () => {
                     </table>
                 </div>
             </div>
+
+            {/* Audit Modal */}
+            {showAuditModal && selectedJob && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4">
+                    <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-4xl h-[80vh] flex flex-col shadow-2xl overflow-hidden">
+                        <div className="flex justify-between items-center p-6 border-b border-slate-700 bg-slate-800">
+                            <div>
+                                <h3 className="text-xl font-bold text-white flex items-center gap-3">
+                                    Process Audit
+                                    <span className="text-sm font-mono font-normal text-slate-400 bg-slate-900 px-2 py-1 rounded">{selectedJob.id}</span>
+                                </h3>
+                                <p className="text-slate-400 text-sm mt-1">Full context inspection</p>
+                            </div>
+                            <button onClick={() => setShowAuditModal(false)} className="px-3 py-1 bg-slate-700 hover:bg-white/10 rounded-lg text-white">Close</button>
+                        </div>
+
+                        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                            {/* Metadata Grid */}
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="p-4 bg-slate-800 rounded-xl border border-slate-700">
+                                    <h4 className="text-xs uppercase text-slate-500 font-bold mb-2">Process State</h4>
+                                    <div className="text-lg text-white font-mono">{selectedJob.status}</div>
+                                </div>
+                                <div className="p-4 bg-slate-800 rounded-xl border border-slate-700">
+                                    <h4 className="text-xs uppercase text-slate-500 font-bold mb-2">Execution Engine</h4>
+                                    <div className="text-lg text-white font-mono">{selectedJob.engine || "Standard"}</div>
+                                </div>
+                                <div className="p-4 bg-slate-800 rounded-xl border border-slate-700">
+                                    <h4 className="text-xs uppercase text-slate-500 font-bold mb-2">AWS Batch ID</h4>
+                                    <div className="text-sm text-slate-300 font-mono break-all">{selectedJob.batch_job_id || "Local/Pending"}</div>
+                                </div>
+                            </div>
+
+                            {/* Configuration Dump */}
+                            <div className="space-y-2">
+                                <h4 className="text-sm font-bold text-white">Input Configuration (S3)</h4>
+                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-green-400 overflow-x-auto">
+                                    {jobDetails?.s3_config ? (
+                                        <pre>{JSON.stringify(jobDetails.s3_config, null, 2)}</pre>
+                                    ) : (
+                                        <span className="text-slate-600 italic">No configuration file found in S3 (or access denied).</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Full DB Record */}
+                            <div className="space-y-2">
+                                <h4 className="text-sm font-bold text-white">Database Snapshot</h4>
+                                <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 font-mono text-xs text-blue-300 overflow-x-auto">
+                                    <pre>{JSON.stringify(selectedJob, null, 2)}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </div>
     );
 };
