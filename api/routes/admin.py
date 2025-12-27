@@ -480,3 +480,32 @@ async def remove_role(
         }).execute()
 
     return {"success": success}
+
+# --- Sentinel Auto-Healer ---
+
+@router.post("/sentinel/scan")
+async def trigger_sentinel(
+    background_tasks: BackgroundTasks,
+    admin: dict = Depends(verify_admin)
+):
+    """
+    Trigger the Sentinel Self-Healing System manually.
+    Scans for Stuck Processing, Spot Failures, and Zombie jobs.
+    """
+    from services.sentinel import BioDockifySentinel
+    
+    # Use service client for omniscient access
+    svc_client = get_service_client()
+    sentinel = BioDockifySentinel(svc_client)
+    
+    # Run scan
+    report = await sentinel.scan_and_heal()
+    
+    # Log the scan
+    supabase.table("admin_actions").insert({
+        "admin_id": admin["id"],
+        "action_type": "sentinel_manual_trigger",
+        "details": report
+    }).execute()
+    
+    return {"status": "success", "report": report}

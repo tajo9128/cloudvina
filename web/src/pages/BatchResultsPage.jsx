@@ -3,7 +3,7 @@ import { useParams, Link, useNavigate } from 'react-router-dom'
 import { supabase } from '../supabaseClient'
 import { API_URL } from '../config'
 import { trackEvent } from '../services/analytics'
-import { Download, FileCode, Zap, ArrowRight, LayoutGrid, List, Activity, CheckCircle2, XCircle, Clock, Filter, Search } from 'lucide-react'
+import { Download, FileCode, Zap, ArrowRight, LayoutGrid, List, Activity, CheckCircle2, XCircle, Clock, Filter, Search, AlertTriangle, CheckCircle } from 'lucide-react'
 
 export default function BatchResultsPage() {
     const { batchId } = useParams()
@@ -324,6 +324,7 @@ export default function BatchResultsPage() {
                                     <tr className="bg-slate-50 border-b border-slate-200 text-xs text-slate-500 uppercase tracking-wider font-semibold">
                                         <th className="px-8 py-5">Job ID</th>
                                         <th className="px-6 py-5">Sim Status</th>
+                                        <th className="px-6 py-5 ml-4">QC</th>
                                         <th onClick={() => handleSort('ligand_filename')} className="px-6 py-5 cursor-pointer hover:text-indigo-600 transition-colors">Ligand Name</th>
                                         <th onClick={() => handleSort('vina_score')} className="px-6 py-5 text-right cursor-pointer hover:text-indigo-600 transition-colors">Vina (kcal/mol)</th>
                                         <th onClick={() => handleSort('docking_score')} className="px-6 py-5 text-right cursor-pointer hover:text-indigo-600 transition-colors">Gnina (kcal/mol)</th>
@@ -359,6 +360,29 @@ export default function BatchResultsPage() {
                                                 </span>
                                             </td>
                                             <td className="px-6 py-5">
+                                                {job.qc_status ? (
+                                                    <div className="flex items-center gap-1.5 group/qc relative">
+                                                        {job.qc_status === 'PASS' ? (
+                                                            <div className="bg-emerald-100 text-emerald-600 p-1 rounded-full"><CheckCircle size={14} /></div>
+                                                        ) : job.qc_status === 'REJECT' ? (
+                                                            <div className="bg-red-100 text-red-600 p-1 rounded-full"><XCircle size={14} /></div>
+                                                        ) : (
+                                                            <div className="bg-amber-100 text-amber-600 p-1 rounded-full"><AlertTriangle size={14} /></div>
+                                                        )}
+                                                        <span className={`text-xs font-bold ${job.qc_status === 'PASS' ? 'text-emerald-700' :
+                                                                job.qc_status === 'REJECT' ? 'text-red-700' : 'text-amber-700'
+                                                            }`}>{job.qc_status}</span>
+
+                                                        {/* Tooltip for Flags */}
+                                                        {job.qc_flags && job.qc_flags.length > 0 && (
+                                                            <div className="absolute left-0 bottom-full mb-2 hidden group-hover/qc:block z-10 w-48 bg-slate-800 text-white text-xs p-2 rounded shadow-lg pointer-events-none">
+                                                                {job.qc_flags.join(', ')}
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                ) : <span className="text-slate-300 text-xs">-</span>}
+                                            </td>
+                                            <td className="px-6 py-5">
                                                 <div className="font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">
                                                     {(job.ligand_filename || 'Unknown').replace('.pdbqt', '')}
                                                 </div>
@@ -378,24 +402,23 @@ export default function BatchResultsPage() {
                                                 })()}
                                             </td>
                                             <td className="px-6 py-5 text-center">
-                                                <div className="flex justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity items-center">
+                                                <div className="flex justify-center gap-2 items-center">
                                                     {job.status?.toUpperCase() === 'SUCCEEDED' && (
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 navigate(`/dock/${job.id}`)
                                                             }}
-                                                            className="px-3 py-1.5 bg-indigo-50 border border-indigo-100 rounded-lg text-indigo-600 text-xs font-bold hover:bg-indigo-100 transition-all flex items-center gap-1"
+                                                            className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 shadow-md shadow-indigo-100 transition-all flex items-center gap-2 animate-fade-in"
                                                         >
-                                                            <Zap size={12} /> Analyze
+                                                            <span>View Result</span> <ArrowRight size={12} />
                                                         </button>
                                                     )}
-                                                    <button onClick={(e) => handleDownload(e, job, 'output')} className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-indigo-600 hover:border-indigo-200 transition-all shadow-sm" title="Download structure">
-                                                        <Download size={14} />
-                                                    </button>
-                                                    <button onClick={(e) => handleDownload(e, job, 'log')} className="p-2 bg-white border border-slate-200 rounded-lg text-slate-500 hover:text-slate-800 hover:border-slate-300 transition-all shadow-sm" title="View Logs">
-                                                        <FileCode size={14} />
-                                                    </button>
+                                                    {job.status?.toUpperCase() !== 'SUCCEEDED' && (
+                                                        <div className="text-xs text-slate-400 font-medium italic">
+                                                            Processing...
+                                                        </div>
+                                                    )}
                                                 </div>
                                             </td>
                                         </tr>

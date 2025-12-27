@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import * as $3Dmol from '3dmol/build/3Dmol.js'
-import { Eye, RotateCw, Layers, Type, Maximize, Focus, Palette, BookOpen } from 'lucide-react'
+import { Eye, RotateCw, Layers, Type, Maximize, Focus, Palette, BookOpen, Camera, RefreshCw } from 'lucide-react'
 
 export default function MoleculeViewer({
     pdbqtData,
@@ -49,7 +49,7 @@ export default function MoleculeViewer({
         // Preset Configurations
         const config = {
             publication: {
-                receptor: { style: 'cartoon', color: 'white', opacity: 1.0 },
+                receptor: { style: 'cartoon', color: 'spectrum', opacity: 1.0 },
                 ligand: { style: 'stick', color: 'greenCarbon', radius: 0.25 },
                 surface: false,
                 hbonds: true
@@ -165,6 +165,24 @@ export default function MoleculeViewer({
         }
     }
 
+    const handleSnapshot = () => {
+        if (!viewerRef.current) return
+        try {
+            const dataURL = viewerRef.current.pngURI()
+            const link = document.createElement('a')
+            link.href = dataURL
+            link.download = `biodockify-structure-${Date.now()}.png`
+            link.click()
+        } catch (e) {
+            console.error("Snapshot failed", e)
+        }
+    }
+
+    const handleResetView = () => {
+        if (!viewerRef.current) return
+        viewerRef.current.zoomTo({ hetflag: true }, 1000)
+    }
+
     return (
         <div className={`relative w-full h-full bg-white rounded-xl overflow-hidden border border-slate-200 shadow-sm group ${isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}`}>
 
@@ -182,47 +200,59 @@ export default function MoleculeViewer({
                 )}
             </div>
 
-            {/* Bottom Floating Toolbar */}
-            <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-10 flex flex-col items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300">
+            {/* Bottom Controls Bar (Always Visible) */}
+            <div className="absolute bottom-0 left-0 right-0 bg-white/95 backdrop-blur border-t border-slate-200 p-3 flex flex-col gap-3 z-20">
 
-                {/* Presets Row */}
-                <div className="flex bg-white/90 backdrop-blur rounded-xl p-1 shadow-lg border border-slate-200">
-                    <button onClick={() => setCurrentPreset('publication')} className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${currentPreset === 'publication' ? 'bg-slate-800 text-white' : 'text-slate-500 hover:bg-slate-100'}`}>
-                        <BookOpen size={14} /> PyMOL View
-                    </button>
-                    <button onClick={() => setCurrentPreset('analysis')} className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${currentPreset === 'analysis' ? 'bg-blue-600 text-white' : 'text-slate-500 hover:bg-slate-100'}`}>
-                        <Palette size={14} /> Analysis
-                    </button>
-                    <button onClick={() => setCurrentPreset('surface')} className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-2 transition-all ${currentPreset === 'surface' ? 'bg-emerald-600 text-white' : 'text-slate-500 hover:bg-slate-100'}`}>
-                        <Layers size={14} /> Surface
-                    </button>
+                {/* Row 1: Main Controls */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <h4 className="text-xs font-bold text-slate-400 uppercase mr-1">View</h4>
+                        <button onClick={() => setCurrentPreset('publication')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${currentPreset === 'publication' ? 'bg-indigo-50 border-indigo-200 text-indigo-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                            Default
+                        </button>
+                        <button onClick={() => setCurrentPreset('surface')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${currentPreset === 'surface' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                            Surface
+                        </button>
+                        <button onClick={() => setCurrentPreset('analysis')} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${currentPreset === 'analysis' ? 'bg-blue-50 border-blue-200 text-blue-700' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                            Analysis
+                        </button>
+                    </div>
+
+                    <div className="flex items-center gap-2">
+                        <button onClick={() => isSpinning ? setIsSpinning(false) : setIsSpinning(true)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all border ${isSpinning ? 'bg-indigo-600 border-indigo-600 text-white' : 'bg-white border-slate-200 text-slate-600 hover:bg-slate-50'}`}>
+                            <RotateCw size={14} className={isSpinning ? 'animate-spin' : ''} />
+                            {isSpinning ? 'Spinning' : 'Spin'}
+                        </button>
+                        <button onClick={handleResetView} className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-colors" title="Reset Camera">
+                            <Focus size={16} />
+                        </button>
+                        <button onClick={handleFullscreen} className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-50 hover:text-indigo-600 transition-colors" title="Fullscreen">
+                            <Maximize size={16} />
+                        </button>
+                    </div>
                 </div>
 
-                {/* Controls Row */}
-                <div className="flex items-center gap-1 bg-slate-900/90 backdrop-blur text-white p-1.5 rounded-xl shadow-xl border border-white/10">
-                    <button onClick={() => isSpinning ? setIsSpinning(false) : setIsSpinning(true)} className={`p-2 rounded-lg transition-colors ${isSpinning ? 'bg-indigo-500 text-white' : 'hover:bg-white/10 text-slate-400'}`} title="Auto-Rotate">
-                        <RotateCw size={18} className={isSpinning ? 'animate-spin' : ''} />
-                    </button>
+                {/* Row 2: Toggles */}
+                <div className="flex items-center gap-4 border-t border-slate-100 pt-2">
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                        <div className={`w-9 h-5 rounded-full p-0.5 transition-colors ${showLabels ? 'bg-indigo-500' : 'bg-slate-200'}`} onClick={() => setShowLabels(!showLabels)}>
+                            <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${showLabels ? 'translate-x-full' : ''}`} />
+                        </div>
+                        <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-600 transition-colors">Labels</span>
+                    </label>
 
-                    <div className="w-px h-6 bg-white/20 mx-1"></div>
+                    <label className="flex items-center gap-2 cursor-pointer group">
+                        <div className={`w-9 h-5 rounded-full p-0.5 transition-colors ${showHBonds ? 'bg-indigo-500' : 'bg-slate-200'}`} onClick={() => setShowHBonds(!showHBonds)}>
+                            <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${showHBonds ? 'translate-x-full' : ''}`} />
+                        </div>
+                        <span className="text-xs font-medium text-slate-600 group-hover:text-indigo-600 transition-colors">H-Bonds</span>
+                    </label>
 
-                    <button onClick={() => { viewerRef.current?.zoomTo({ hetflag: true }, 1000) }} className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors" title="Focus Ligand">
-                        <Focus size={18} />
-                    </button>
-
-                    <button onClick={() => setShowLabels(!showLabels)} className={`p-2 rounded-lg transition-colors ${showLabels ? 'bg-indigo-500 text-white' : 'hover:bg-white/10 text-slate-400'}`} title="Toggle Labels">
-                        <Type size={18} />
-                    </button>
-
-                    <button onClick={() => setShowHBonds(!showHBonds)} className={`p-2 rounded-lg transition-colors ${showHBonds ? 'bg-yellow-500/20 text-yellow-400' : 'hover:bg-white/10 text-slate-400'}`} title="Toggle H-Bonds">
-                        <span className="font-bold text-xs">HB</span>
-                    </button>
-
-                    <div className="w-px h-6 bg-white/20 mx-1"></div>
-
-                    <button onClick={handleFullscreen} className="p-2 rounded-lg hover:bg-white/10 text-slate-400 hover:text-white transition-colors" title="Fullscreen">
-                        <Maximize size={18} />
-                    </button>
+                    <div className="flex-1 text-right">
+                        <button onClick={handleSnapshot} className="text-xs font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-1 justify-end ml-auto">
+                            <Camera size={14} /> Download Image
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>

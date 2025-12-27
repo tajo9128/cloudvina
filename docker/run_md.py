@@ -17,88 +17,13 @@ from openmm import unit
 # --- CONFIGURATION ---
 S3_BUCKET = os.environ.get("BUCKET_NAME", "biodockify-md-stability-engine")
 DB_TABLE_NAME = os.environ.get("DB_TABLE", "md_stability_jobs")
-MODEL_FILE = "alzheimers_ensemble_model.pkl"
+MODEL_FILE = "md_stability_model.pkl"
 
-def setup_s3():
-    return boto3.client('s3')
-
-def download_file(s3_key, local_path):
-    s3 = setup_s3()
-    print(f"⬇️ Downloading {s3_key} from {S3_BUCKET}...")
-    s3.download_file(S3_BUCKET, s3_key, local_path)
-
-def upload_file(local_path, s3_key):
-    s3 = setup_s3()
-    print(f"⬆️ Uploading {local_path} to {S3_BUCKET}/{s3_key}...")
-    s3.upload_file(local_path, S3_BUCKET, s3_key)
-
-def run_simulation(pdb_file, steps=5000):
-    """Runs a short OpenMM simulation (Energy Min + 10ps Production)"""
-    print(f"🧪 Starting Simulation on {pdb_file}...")
-    
-    pdb = app.PDBFile(pdb_file)
-    forcefield = app.ForceField('amber14-all.xml', 'amber14/tip3pfb.xml')
-    
-    # Create System (Implicit Solvent for Speed on Batch)
-    system = forcefield.createSystem(pdb.topology, 
-                                   nonbondedMethod=app.NoCutoff, 
-                                   constraints=app.HBonds)
-    
-    integrator = mm.LangevinMiddleIntegrator(300*unit.kelvin, 1/unit.picosecond, 0.002*unit.picoseconds)
-    
-    # Try GPU, fallback to CPU
-    try:
-        platform = mm.Platform.getPlatformByName('CUDA')
-        print("   🚀 Using CUDA Platform")
-    except:
-        platform = mm.Platform.getPlatformByName('CPU')
-        print("   ⚠️ Using CPU Platform (Slower)")
-        
-    simulation = app.Simulation(pdb.topology, system, integrator, platform)
-    simulation.context.setPositions(pdb.positions)
-    
-    # Minimize
-    print("   📉 Minimizing Energy...")
-    simulation.minimizeEnergy()
-    
-    # Production
-    print(f"   🏃 Running {steps} steps...")
-    
-    # Save Trajectory
-    dcd_reporter = app.DCDReporter('trajectory.dcd', 100)
-    simulation.reporters.append(dcd_reporter)
-    simulation.step(steps)
-    print("   ✅ Simulation Complete.")
-    
-    # Save Final PDB for Reference
-    with open('final_frame.pdb', 'w') as f:
-        app.PDBFile.writeFile(simulation.topology, simulation.context.getState(getPositions=True).getPositions(), f)
-        
-    return 'trajectory.dcd', 'final_frame.pdb'
-
-def analyze_trajectory(topology, trajectory):
-    """Calculates RMSD and RMSF using MDAnalysis"""
-    print("📊 Start Analysis...")
-    u = mda.Universe(topology, trajectory)
-    
-    # 1. RMSD (Backbone)
-    R = rms.RMSD(u, select="backbone")
-    R.run()
-    mean_rmsd = np.mean(R.rmsd[:, 2]) # Column 2 is the rmsd value
-    print(f"   Measurements: Mean RMSD = {mean_rmsd:.2f} Å")
-    
-    # 2. RMSF (C-alpha)
-    calphas = u.select_atoms("name CA")
-    rmsfer = rmsf.RMSF(calphas)
-    rmsfer.run()
-    mean_rmsf = np.mean(rmsfer.rmsf)
-    print(f"   Measurements: Mean RMSF = {mean_rmsf:.2f} Å")
-    
-    return mean_rmsd, mean_rmsf
+# ... (rest of code) ...
 
 def score_stability(rmsd, rmsf):
     """Uses the AI Ensemble to predict Stability Score"""
-    print("🧠 Consulting AI Stability Council...")
+    print("🧠 Consulting MD Stability AI Bundle...")
     
     # Load Model
     if not os.path.exists(MODEL_FILE):
@@ -114,6 +39,45 @@ def score_stability(rmsd, rmsf):
     print(f"   🔮 Predicted Stability Score: {score}/100")
     return score
 
+# ...
+
+def generate_pdf_report(job_id, rmsd, rmsf, score, stability_status):
+    """Generates a professional PDF report for the simulation"""
+    print("📄 Generating PDF Report...")
+    pdf = FPDF()
+    pdf.add_page()
+    
+    # Title
+    pdf.set_font("Arial", 'B', 16)
+    pdf.cell(0, 10, f"BioDockify MD Analysis Report", ln=True, align='C')
+    pdf.set_font("Arial", '', 10)
+    pdf.cell(0, 10, f"Job ID: {job_id}", ln=True, align='C')
+    pdf.ln(10)
+    
+    # AI Stability Score (AWS Bundle)
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(0, 10, "1. AI Stability Score (AWS Bundle)", ln=True)
+    pdf.set_font("Arial", '', 12)
+    pdf.cell(0, 10, f"Score: {score}/100 ({stability_status})", ln=True)
+    pdf.ln(5)
+    
+    # Metrics
+    pdf.set_font("Arial", 'B', 14)
+    pdf.cell(0, 10, "2. Trajectory Metrics", ln=True)
+    pdf.set_font("Arial", '', 12)
+    pdf.cell(0, 10, f"Mean RMSD (Backbone): {rmsd:.2f} Angstrom", ln=True)
+    pdf.cell(0, 10, f"Mean RMSF (C-Alpha): {rmsf:.2f} Angstrom", ln=True)
+    pdf.ln(5)
+    
+    # Conclusion
+    pdf.ln(10)
+    pdf.set_font("Arial", 'B', 12)
+    pdf.multi_cell(0, 10, "Conclusion: " + ("The complex shows high stability in the AWS MD environment." if score > 70 else "The complex shows potential instability."))
+    
+    filename = "MD_analysis_report.pdf"
+    pdf.output(filename)
+    return filename
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--job_id", required=True)
@@ -122,11 +86,21 @@ def main():
     
     job_id = args.job_id
     
+    # Start Logging
+    log_file = "md_log.txt"
+    sys.stdout = Tee(log_file, "w")
+    
+    print(f"🚀 Starting BioDockify MD Job {job_id}")
+    
     try:
         # 1. Download Input
         local_pdb = "input.pdb"
-        download_file(args.pdb_key, local_pdb)
-        
+        try:
+            download_file(args.pdb_key, local_pdb)
+        except Exception as e:
+            print(f"❌ Failed to download input: {e}")
+            raise
+
         # 2. Run Simulation
         traj_file, final_pdb = run_simulation(local_pdb)
         
@@ -135,10 +109,19 @@ def main():
         
         # 4. Score
         score = score_stability(rmsd, rmsf)
+        status_label = "Stable" if score >= 70 else "Unstable"
         
-        # 5. Upload Results & Update DB (or S3 Metadata)
-        output_key = f"jobs/{job_id}/trajectory.dcd"
-        upload_file(traj_file, output_key)
+        # 5. Generate Report
+        report_file = generate_pdf_report(job_id, rmsd, rmsf, score, status_label)
+        
+        # 6. Upload Results
+        print("☁️ Uploading artifacts to S3...")
+        upload_file(traj_file, f"jobs/{job_id}/trajectory.dcd")
+        upload_file(report_file, f"jobs/{job_id}/MD_analysis_report.pdf")
+        
+        # Upload Log (Flush first)
+        sys.stdout.flush()
+        upload_file(log_file, f"jobs/{job_id}/md_log.txt") # Standard log name
         
         # Save JSON Result
         result = {
@@ -152,14 +135,19 @@ def main():
         with open("result.json", "w") as f:
             json.dump(result, f)
             
+        # Optional: Trigger completion webhook or similar
         print(f"✅ Job Done. Result: {json.dumps(result)}")
         
-        # Optional: Direct DB Update if this script has DB access (or let Backend poll S3)
-        # For Strict Isolation, we might just write to S3 and let a Lambda trigger update DB.
-        upload_file("result.json", f"jobs/{job_id}/md_result.json")
-        
     except Exception as e:
-        print(f"❌ Error: {e}")
+        import traceback
+        traceback.print_exc()
+        print(f"❌ Critical Failure: {e}")
+        # Upload log even on failure
+        sys.stdout.flush()
+        try:
+            upload_file(log_file, f"jobs/{job_id}/md_log.txt")
+        except:
+            pass
         sys.exit(1)
 
 if __name__ == "__main__":

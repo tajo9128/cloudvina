@@ -17,9 +17,9 @@ export default function HomePage() {
     return (
         <div className="overflow-hidden bg-slate-50 font-sans text-slate-900">
             <SEOHelmet
-                title="BioDockify | Intelligent Molecular Research Platform"
-                description="Accelerating Drug Discovery Through Intelligent Molecular Research. Simplify and accelerate modern drug discovery research without expensive infrastructure."
-                keywords="drug discovery, molecular analysis, computational pharmacology, virtual screening, medicinal chemistry"
+                title="BioDockify: Cloud-Native Molecular Docking & CADD Platform"
+                description="Integrated AutoDock Vina and Machine Learning workflows for precise virtual screening. Empowering Drug Discovery with Cloud-Native Docking."
+                keywords="drug discovery, molecular analysis, computational pharmacology, virtual screening, medicinal chemistry, CADD, cloud docking"
                 canonical="https://biodockify.com/"
             />
 
@@ -39,15 +39,13 @@ export default function HomePage() {
                                 Major Release v6.0.0: Privacy-First Consensus Docking
                             </div>
 
-                            <h1 className="text-5xl lg:text-7xl font-bold text-white mb-6 leading-[1.1] tracking-tight">
-                                Cloud-Native, <br />
-                                <span className="text-indigo-400">End-to-End</span> <br />
-                                Drug Discovery.
+                            <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
+                                Accelerate Drug Discovery with <span className="text-indigo-400">AI-Powered</span> Molecular Docking
                             </h1>
 
                             <p className="text-lg text-slate-400 mb-10 leading-relaxed max-w-lg">
-                                Accelerate your pipeline from Virtual Screening to Lead Optimization with our high-performance cloud infrastructure.
-                                Scalable, secure, and ready for production.
+                                Integrated AutoDock Vina and Machine Learning workflows for precise virtual screening.
+                                <span className="block mt-2 text-indigo-300 font-medium">Empowering Drug Discovery with Cloud-Native Docking.</span>
                             </p>
 
                             <div className="flex flex-wrap gap-4">
@@ -78,21 +76,25 @@ export default function HomePage() {
                                     </div>
                                 </div>
 
-                                <div className="w-full h-[400px] rounded-2xl bg-gradient-to-br from-indigo-900 via-purple-900 to-blue-900 flex items-center justify-center transform transition-transform duration-700 hover:scale-105">
-                                    <div className="text-center p-8">
-                                        <div className="text-6xl mb-4">🧬</div>
-                                        <div className="text-white text-2xl font-bold mb-2">Molecular Discovery Platform</div>
-                                        <div className="text-indigo-300 text-sm">AI-Powered Drug Discovery Workspace</div>
+                                <div className="relative w-full h-[400px] rounded-2xl overflow-hidden shadow-2xl transform transition-transform duration-700 hover:scale-105 group">
+                                    <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent z-10" />
+                                    <img
+                                        src="/assets/images/hero-molecular-v36.png"
+                                        alt="BioDockify 3D Molecular Interface"
+                                        className="w-full h-full object-cover"
+                                    />
+                                    <div className="absolute bottom-0 left-0 p-8 z-20">
+                                        <div className="text-4xl mb-2 animate-bounce">🧬</div>
+                                        <div className="text-white text-2xl font-bold mb-1 shadow-black drop-shadow-lg">Molecular Discovery Platform</div>
+                                        <div className="text-indigo-200 text-sm font-light">AI-Powered precision docking</div>
+                                    </div>
+                                    <div className="absolute bottom-0 right-0 p-8 text-right z-20">
+                                        <div className="text-2xl font-bold text-white tracking-widest uppercase opacity-80 mix-blend-overlay">Biotech Innovations</div>
                                     </div>
                                 </div>
 
-                                {/* Overlay Text on Image (Bottom Right) */}
-                                <div className="absolute bottom-0 right-0 p-8 text-right bg-gradient-to-t from-slate-900 via-slate-900/50 to-transparent w-full">
-                                    <div className="text-2xl font-bold text-white tracking-widest uppercase opacity-80">Biotech Innovations</div>
-                                </div>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </section>
@@ -124,7 +126,7 @@ export default function HomePage() {
                             number="01"
                             title="AI Virtual Screening"
                             subtitle="Fine Tuned AI Ensemble"
-                            description="Multi-encoder deep learning for CNS targets. Fused ChemBERTa (SMILES) + GNN (Structure) + ProteinCNN architecture trained on Google Colab L4 GPU for affinity prediction."
+                            description="Multi-encoder deep learning for CNS targets. Fused ChemBERta (SMILES) + GNN (Structure) + ProteinCNN architecture trained on Google Colab L4 GPU for affinity prediction."
                             features={[
                                 "ChemBERTa 768-dim Molecular Embeddings",
                                 "GNN (GAT) Structure-Aware Features",
@@ -146,9 +148,9 @@ export default function HomePage() {
                             description="Massive-scale validation with parallel AutoDock Vina and Gnina execution. Secure batch processing with real-time protein preparation and automated grid calculation."
                             features={[
                                 "Consensus Scoring (Vina + Gnina)",
-                                "Automated Protein Prep Pipeline",
+                                "Automated Ligand Preparation",
                                 "Parallel Cloud Execution (5 cores)",
-                                "PDBQT Conversion & Grid Generation",
+                                "Seamless PDB file processing",
                                 "Real-Time Terminal & Progress Logs"
                             ]}
                             icon={<Server className="w-8 h-8 text-white" />}
@@ -184,7 +186,7 @@ export default function HomePage() {
                             description="Consensus-based lead ranking integrating docking scores, MD stability, and AI predictions. Full ADMET toxicity profiling with Lipinski rule validation."
                             features={[
                                 "Consensus Ranking (Docking + MD + AI)",
-                                "ADMET: hERG, Ames, CYP450 Inhibition",
+                                "ADMET Prediction utilizing AI",
                                 "Lipinski Rule of 5 Compliance",
                                 "BBB Penetration Prediction",
                                 "Synthetic Accessibility Score (SAScore)"
@@ -273,24 +275,29 @@ export default function HomePage() {
                         </div>
                         {/* 3D Visual for Section 3 */}
                         <div className="relative">
-                            <div className="absolute inset-0 bg-blue-600 blur-[80px] opacity-10 rounded-full"></div>
-                            <div className="relative w-full h-[500px] rounded-3xl shadow-2xl border border-slate-200 bg-gradient-to-br from-blue-50 via-indigo-50 to-violet-50 transform hover:scale-[1.02] transition-transform duration-500 flex items-center justify-center">
-                                <div className="text-center p-12">
-                                    <div className="text-7xl mb-6">📊</div>
-                                    <div className="text-slate-800 text-3xl font-bold mb-4">Advanced Analysis Dashboard</div>
-                                    <div className="text-slate-600 text-lg mb-8">Real-time computational insights for drug discovery</div>
-                                    <div className="flex gap-4 justify-center">
-                                        <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-slate-200">
-                                            <div className="text-xs text-slate-500">ADMET</div>
-                                            <div className="text-sm font-bold text-emerald-600">✓ Validated</div>
+                            <div className="absolute inset-0 bg-blue-600 blur-[80px] opacity-20 rounded-full"></div>
+                            <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200 transform hover:scale-[1.02] transition-transform duration-500 group">
+                                <img
+                                    src="/assets/images/bridging-gap-v36.png"
+                                    alt="BioDockify Bridging Research and Discovery"
+                                    className="w-full h-full object-cover"
+                                />
+                                <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/40 to-transparent flex flex-col justify-end p-12">
+                                    <div className="text-4xl mb-4">📊</div>
+                                    <div className="text-white text-3xl font-bold mb-2">Advanced Analysis Dashboard</div>
+                                    <div className="text-slate-300 text-lg mb-8">Real-time computational insights for drug discovery</div>
+                                    <div className="flex gap-4">
+                                        <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+                                            <div className="text-xs text-slate-300">ADMET</div>
+                                            <div className="text-sm font-bold text-emerald-400">✓ Validated</div>
                                         </div>
-                                        <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-slate-200">
-                                            <div className="text-xs text-slate-500">Docking</div>
-                                            <div className="text-sm font-bold text-indigo-600">-8.5 kcal/mol</div>
+                                        <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+                                            <div className="text-xs text-slate-300">Docking</div>
+                                            <div className="text-sm font-bold text-indigo-400">-8.5 kcal/mol</div>
                                         </div>
-                                        <div className="px-4 py-2 bg-white rounded-lg shadow-sm border border-slate-200">
-                                            <div className="text-xs text-slate-500">BBB</div>
-                                            <div className="text-sm font-bold text-blue-600">92% Prob</div>
+                                        <div className="px-4 py-2 bg-white/10 backdrop-blur-md rounded-lg border border-white/20">
+                                            <div className="text-xs text-slate-300">BBB</div>
+                                            <div className="text-sm font-bold text-blue-400">92% Prob</div>
                                         </div>
                                     </div>
                                 </div>

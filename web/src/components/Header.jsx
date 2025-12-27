@@ -65,10 +65,7 @@ export default function Header() {
             <div className="container mx-auto px-4 flex justify-between items-center">
                 {/* Logo */}
                 <Link to="/" className="flex items-center space-x-3 group">
-                    <div className="text-3xl transform group-hover:scale-110 transition-transform duration-300">🧬</div>
-                    <h1 className="text-xl font-bold tracking-tight text-slate-900 transition-colors">
-                        Bio<span className="text-primary-600">Dockify</span>
-                    </h1>
+                    <img src="/brand/logo.svg" alt="BioDockify" className="h-14 w-auto transform group-hover:scale-105 transition-transform duration-300" />
                 </Link>
 
                 {/* Desktop Navigation */}

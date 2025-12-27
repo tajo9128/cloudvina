@@ -16,6 +16,11 @@ import sys
 # Force unbuffered output for Render logs
 sys.stdout.reconfigure(line_buffering=True)
 
+# Suppress noisy HTTP libraries
+import logging
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+
 # Import auth and AWS utilities
 from auth import supabase, get_current_user
 from aws_services import (
@@ -32,8 +37,6 @@ from routes.evolution import router as evolution_router
 from routes.batch import router as batch_router
 from routes.jobs import router as jobs_router # NEW: Dedicated Jobs Router
 from routes.feedback import router as feedback_router 
-from services.cavity_detector import CavityDetector
-from services.drug_properties import DrugPropertiesCalculator
 from services.cavity_detector import CavityDetector
 from services.drug_properties import DrugPropertiesCalculator
 # from services.smiles_converter import pdbqt_to_pdb # Moved to function
@@ -54,7 +57,56 @@ async def startup_event():
     print("Optimization: Lazy Loading Enabled")
     print("="*50)
 
+    # --- Start Sentinel Monitoring Loop ---
+    import asyncio
+    
+    # 1. Self-Healing Sentinel (5 min interval)
+    async def start_sentinel_background():
+        """Background loop for Self-Healing"""
+        print("🤖 Sentinel: Background Monitor Started (Interval: 5m)")
+        while True:
+            await asyncio.sleep(300) # Wait 5 minutes
+            try:
+                from services.sentinel import BioDockifySentinel
+                from auth import get_service_client
+                
+                svc_client = get_service_client()
+                sentinel = BioDockifySentinel(svc_client)
+                
+                # Run Scan
+                report = await sentinel.scan_and_heal()
+                
+                if report['anomalies_detected'] > 0:
+                     print(f"🤖 Sentinel: Auto-Healed {report['anomalies_detected']} anomalies.")
+                     
+            except Exception as e:
+                print(f"❌ Sentinel Loop Error: {e}")
+
+    # 2. Zero-Failure Queue Processor (5 sec interval)
+    async def start_queue_processor():
+        """Aggressive Loop to consume QUEUED jobs immediately"""
+        print("⚡ Queue Processor: Started (Interval: 5s)")
+        while True:
+            await asyncio.sleep(5)
+            try:
+                from services.queue_processor import QueueProcessor
+                from auth import get_service_client
+                
+                svc_client = get_service_client()
+                processor = QueueProcessor(svc_client)
+                
+                # Consumes one job per loop to start with
+                await processor.process_queue()
+                
+            except Exception as e:
+                print(f"❌ Queue Loop Error: {e}")
+                
+    # Fire and forget tasks
+    asyncio.create_task(start_sentinel_background())
+    asyncio.create_task(start_queue_processor())
+
 @app.get("/health")
+@app.head("/health")
 async def health_check():
     """Health check endpoint for UptimeRobot"""
     return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
@@ -109,13 +161,12 @@ async def websocket_job_progress(websocket: WebSocket, job_id: str):
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173",
-        "http://localhost:3000",
-        "https://biodockify.com",
         "https://www.biodockify.com",
-        "https://www.biodockify.com/",
+        "https://biodockify.com",
+        "http://localhost:5173",
+        "http://localhost:3000"
     ],
-    allow_origin_regex=r"https://.*\.vercel\.app",
+    allow_origin_regex="https://.*\.biodockify\.com", # Specific subdomains
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

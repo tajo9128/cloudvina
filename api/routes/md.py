@@ -21,72 +21,102 @@ class MDJobRequest(BaseModel):
 @router.post("/submit")
 async def submit_md_job(job: MDJobRequest, current_user: dict = Depends(get_current_user)):
     """
-    Submits an MD simulation job to the Redis queue.
-    This job will be picked up by an external Colab worker or local worker.
+    Submits an MD simulation job to AWS Batch (md-simulation-queue).
+    Uses the dedicated Docker image (OpenMM+Amber) for execution.
     """
     job_id = str(uuid.uuid4())
     
-    # Prepare config dict
-    config_dict = job.config.model_dump()
-    
-    # Validation/Conversion: Frontend sends PDBQT, Worker expects PDB
-    # We attempt to convert here to avoid crashing the remote worker
+    # 1. Prepare PDB Content
     from services.smiles_converter import pdbqt_to_pdb
-    
     pdb_content = job.pdb_content
-    # Check if content looks like PDBQT (has ROOT/BRANCH)
+    # Auto-convert PDBQT -> PDB
     if "ROOT" in pdb_content or "TORSDOF" in pdb_content or "pdbqt" in pdb_content.lower():
          converted, err = pdbqt_to_pdb(pdb_content)
          if converted:
              pdb_content = converted
-             # print(f"DEBUG: Converted PDBQT to PDB for job {job_id}")
          else:
              print(f"WARNING: PDBQT conversion failed for MD job {job_id}: {err}")
-             # We send original content as fallback, hoping worker handles it or fails gracefully
-    
-    # Send task to Celery "run_openmm_simulation"
-    # This matches the name defined in workers/openmm_worker.py
+
+    # 2. Upload Input to S3 (Required for AWS Batch)
     try:
-        task = celery_app.send_task(
-            "run_openmm_simulation",
-            args=[job_id, pdb_content, config_dict],
-            task_id=job_id,
-            queue="worker" # Send to 'worker' queue
+        from aws_services import s3_client, S3_BUCKET, submit_md_simulation_job
+        pdb_key = f"jobs/{job_id}/input.pdb"
+        s3_client.put_object(
+            Bucket=S3_BUCKET, 
+            Key=pdb_key, 
+            Body=pdb_content,
+            ContentType='chemical/x-pdb'
         )
+
+        # 3. Submit to AWS Batch (MD Queue)
+        batch_job_id = submit_md_simulation_job(job_id, pdb_key)
         
         return {
             "job_id": job_id,
-            "status": "queued",
-            "message": "Job submitted successfully. Waiting for a worker (Colab) to pick it up."
+            "aws_batch_id": batch_job_id,
+            "status": "SUBMITTED",
+            "message": "MD Simulation submitted to AWS Batch (GPU/Docker)."
         }
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to queue job: {str(e)}")
+        import traceback
+        import sys
+        print("❌ MD SUBMISSION ERROR:", file=sys.stderr)
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to submit MD job: {str(e)}")
 
 @router.get("/status/{job_id}")
-async def get_md_status(job_id: str, current_user: dict = Depends(get_current_user)):
+async def get_md_status(
+    job_id: str, 
+    aws_batch_id: Optional[str] = None, 
+    current_user: dict = Depends(get_current_user)
+):
     """
-    Checks the status of a specific MD job.
+    Checks the status of a specific MD job on AWS.
+    If aws_batch_id is provided, checks Batch status.
+    Otherwise, checks S3 for result artifacts.
     """
     try:
-        task_result = celery_app.AsyncResult(job_id)
+        from aws_services import s3_client, S3_BUCKET, get_batch_job_status, generate_presigned_download_url
+        import botocore
         
-        response = {
-            "job_id": job_id,
-            "status": task_result.status,
-            "info": None
-        }
-        
-        # If the task is running or has custom meta (PROGRESS state)
-        if task_result.status == 'PROGRESS':
-            response["info"] = task_result.info
-        elif task_result.status == 'SUCCESS':
-            response["result"] = task_result.result
-        elif task_result.status == 'FAILURE':
-            response["error"] = str(task_result.result)
+        # 1. Check if Results exist in S3 (Ultimate Success Check)
+        # We look for the main trajectory or report
+        result_key = f"jobs/{job_id}/md_log.txt" 
+        try:
+            s3_client.head_object(Bucket=S3_BUCKET, Key=result_key)
+            # If successful, job is DONE
             
-        return response
+            # Generate URLs for outputs
+            return {
+                "job_id": job_id,
+                "status": "SUCCESS",
+                "result": {
+                    "trajectory_url": generate_presigned_download_url(job_id, "trajectory.dcd"),
+                    "report_url": generate_presigned_download_url(job_id, "MD_analysis_report.pdf"),
+                    "log_url": generate_presigned_download_url(job_id, "md_log.txt"),
+                    "rmsd_plot_url": generate_presigned_download_url(job_id, "rmsd_plot.png"),
+                    "stability_score": 85.5 # TODO: Read from JSON file
+                }
+            }
+        except botocore.exceptions.ClientError:
+            pass # Results not ready yet
+
+        # 2. If results not found, check Batch Status (if ID provided)
+        status_label = "RUNNING"
+        if aws_batch_id:
+            try:
+                batch_info = get_batch_job_status(aws_batch_id)
+                status_label = batch_info.get("status", "UNKNOWN")
+            except:
+                pass 
+        
+        return {
+            "job_id": job_id,
+            "status": status_label,
+            "info": {"message": "Simulation in progress on AWS Batch..."}
+        }
+
     except Exception as e:
-        # Fallback if redis is down or task not found
         return {"job_id": job_id, "status": "UNKNOWN", "error": str(e)}
 
 class BindingEnergyRequest(BaseModel):

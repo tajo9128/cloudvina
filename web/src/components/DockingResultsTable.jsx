@@ -40,6 +40,12 @@ export default function DockingResultsTable({ poses }) {
                                 RMSD l.b.
                             </th>
                             <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                Consensus
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                                RF Score
+                            </th>
+                            <th className="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">
                                 RMSD u.b.
                             </th>
                         </tr>
@@ -64,6 +70,18 @@ export default function DockingResultsTable({ poses }) {
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-mono">
                                     {pose.rmsd_lb.toFixed(3)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                    {pose.consensus_score ? (
+                                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                            {Number(pose.consensus_score).toFixed(2)}
+                                        </span>
+                                    ) : (
+                                        <span className="text-slate-400 text-xs">-</span>
+                                    )}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-mono">
+                                    {pose.rf_score ? Number(pose.rf_score).toFixed(2) : '-'}
                                 </td>
                                 <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-600 font-mono">
                                     {pose.rmsd_ub.toFixed(3)}

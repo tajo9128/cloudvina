@@ -11,7 +11,7 @@ from typing import Tuple
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
 S3_BUCKET = os.getenv("S3_BUCKET", "cloudvina-jobs-use1-1763775915")
 BATCH_JOB_QUEUE = os.getenv("BATCH_JOB_QUEUE", "cloudvina-fargate-queue")
-BATCH_JOB_DEFINITION = os.getenv("BATCH_JOB_DEFINITION", "cloudvina-fargate-job-v10")  # Reverted to v10 due to all-fixes hang
+BATCH_JOB_DEFINITION = os.getenv("BATCH_JOB_DEFINITION", "biodockify-all-fixes")
 
 # Boto3 timeout configuration to prevent indefinite hangs
 boto_config = Config(
@@ -130,9 +130,9 @@ def submit_batch_job(job_id: str, receptor_key: str, ligand_key: str, engine: st
                     {'name': 'RECEPTOR_S3_KEY', 'value': receptor_key},
                     {'name': 'LIGAND_S3_KEY', 'value': ligand_key},
                     {'name': 'DOCKING_ENGINE', 'value': engine},
-                    # FORCE Gnina to use Vina scoring if engine is gnina/consensus
-                    # This fixes the "0.0 affinity" issue in empty/fixed grids
-                    {'name': 'GNINA_ARGS', 'value': '--scoring vina'} 
+                    # Triscore: Use full CNN scoring for rescoring
+                    # Gnina (Native): Use Vina scoring hack to prevent 0.0 affinity bug
+                    {'name': 'GNINA_ARGS', 'value': '--score_only' if engine == 'triscore' else '--scoring vina'} 
                 ]
             }
         )
