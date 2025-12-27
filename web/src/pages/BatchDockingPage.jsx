@@ -398,14 +398,14 @@ export default function BatchDockingPage() {
                                     <input
                                         type="file"
                                         className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                        accept=".pdb,.pdbqt,.mol2,.cif,.gro,.prmtop,.psf,.xyz"
+                                        accept=".pdb,.pdbqt,.mol2,.cif,.mmcif,.gro,.prmtop,.psf,.xyz,.ent"
                                         onChange={(e) => setReceptorFile(e.target.files[0])}
                                     />
                                     <div className="w-16 h-16 bg-indigo-50 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                         <Database className="w-8 h-8 text-indigo-500" />
                                     </div>
                                     <p className="font-bold text-slate-700 text-lg">Upload Receptor</p>
-                                    <p className="text-sm text-slate-400 mt-2">Max 50MB</p>
+                                    <p className="text-sm text-slate-400 mt-2">.pdb, .mmcif, .mol2</p>
                                 </>
                             ) : (
                                 <div className="w-full">
@@ -430,7 +430,7 @@ export default function BatchDockingPage() {
                                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center font-bold text-xl">2</div>
                                 <div>
                                     <h2 className="text-xl font-bold text-slate-900">Ligand Library</h2>
-                                    <p className="text-slate-500 text-sm">Small molecules</p>
+                                    <p className="text-slate-500 text-sm">Small molecules, Drugs</p>
                                 </div>
                             </div>
 
@@ -459,14 +459,14 @@ export default function BatchDockingPage() {
                                             type="file"
                                             multiple
                                             className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                                            accept=".pdbqt,.sdf,.mol2,.mol,.pdb,.xyz"
+                                            accept=".pdbqt,.sdf,.mol2,.mol,.pdb,.xyz,.smi,.smiles"
                                             onChange={(e) => setLigandFiles(Array.from(e.target.files))}
                                         />
                                         <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                                             <Upload className="w-8 h-8 text-emerald-500" />
                                         </div>
                                         <p className="font-bold text-slate-700 text-lg">Upload Ligands</p>
-                                        <p className="text-sm text-slate-400 mt-2">.pdbqt, .sdf, .mol2</p>
+                                        <p className="text-sm text-slate-400 mt-2">.sdf, .mol2, .smi</p>
                                     </>
                                 ) : (
                                     <div className="w-full h-full flex flex-col">
