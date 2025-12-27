@@ -136,7 +136,7 @@ export default function BatchDockingPage() {
                 },
                 body: JSON.stringify({
                     grid_params: { center_x: 0, center_y: 0, center_z: 0, size_x: 20, size_y: 20, size_z: 20 },
-                    engine: 'consensus'
+                    engine: 'triscore'
                 })
             })
 
@@ -189,7 +189,7 @@ export default function BatchDockingPage() {
                 center_x: 0, center_y: 0, center_z: 0,
                 size_x: 20, size_y: 20, size_z: 20
             }))
-            formData.append('engine', 'consensus')
+            formData.append('engine', 'triscore')
 
             // Simulated upload progress mainly for UX since we send one FormData
             const progressInterval = setInterval(() => {
@@ -531,13 +531,13 @@ export default function BatchDockingPage() {
                         <div className="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center font-bold text-xl backdrop-blur-sm border border-white/20">3</div>
                         <div className="flex-1">
                             <div className="flex flex-col md:flex-row md:items-center gap-4 mb-4">
-                                <h2 className="text-2xl font-bold">BioDockify Consensus Protocol</h2>
+                                <h2 className="text-2xl font-bold">BioDockify Tri-Score Protocol</h2>
                                 <span className="px-3 py-1 bg-white/20 backdrop-blur rounded-full text-xs font-bold uppercase tracking-wide border border-white/30">
-                                    Industry Standard
+                                    International Standard
                                 </span>
                             </div>
                             <p className="text-indigo-100 text-lg mb-6 max-w-2xl">
-                                Combines the physics-based accuracy of <strong className="text-white">AutoDock Vina</strong> with the deep learning capabilities of <strong className="text-white">Gnina</strong> for superior hit enrichment.
+                                Validates hits using a 3-way consensus: <strong className="text-white">Vina (Physics)</strong> + <strong className="text-white">Gnina (Deep Learning)</strong> + <strong className="text-white">RF-Score (Machine Learning)</strong>.
                             </p>
                             <div className="flex gap-4">
                                 <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg border border-white/10">

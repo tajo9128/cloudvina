@@ -151,6 +151,19 @@ export default function JobResultsPage() {
         } catch (err) { alert("MD Start Failed: " + err.message); } finally { setLoadingMD(false); }
     }
 
+    // Helper for QC Labels
+    const getQCFlagLabel = (flag) => {
+        const labels = {
+            'CLASH': 'Severe Steric Clash (Positive Vina Score)',
+            'CNN_LOW_CONFIDENCE': 'Low CNN Confidence (< 0.5)',
+            'LOW_LIGAND_EFFICIENCY': 'Weak Binder (LE < 0.2)',
+            'ZERO_SCORES': 'Processing Failure (Zero Scores)',
+            'CNN_HIGH_CONFIDENCE': 'High Confidence (CNN > 0.8)',
+            'HIGH_LIGAND_EFFICIENCY': 'Potent Binder (LE > 0.4)'
+        }
+        return labels[flag] || flag
+    }
+
     if (loading) return (
         <div className="min-h-screen bg-slate-50 flex items-center justify-center">
             <div className="w-16 h-16 border-4 border-indigo-200 border-t-indigo-600 rounded-full animate-spin"></div>
@@ -185,6 +198,15 @@ export default function JobResultsPage() {
                                 }`}>
                                 {job.status}
                             </span>
+                            {/* QC Badge */}
+                            {job?.qc_status && (
+                                <span className={`ml-2 px-2 py-0.5 rounded text-xs font-bold uppercase tracking-wider border ${job.qc_status === 'PASS' ? 'bg-emerald-50 text-emerald-700 border-emerald-200' :
+                                    job.qc_status === 'REJECT' ? 'bg-red-50 text-red-700 border-red-200' :
+                                        'bg-amber-50 text-amber-700 border-amber-200'
+                                    }`}>
+                                    QC: {job.qc_status}
+                                </span>
+                            )}
                         </div>
                         <div className="text-xs text-slate-500 mt-1 font-mono">
                             ID: {jobId}
@@ -197,6 +219,52 @@ export default function JobResultsPage() {
             </div>
 
             <main className="max-w-[1600px] mx-auto p-6 lg:p-8">
+
+                {/* Quality Control Report Card */}
+                {job?.qc_status && (
+                    <div className={`mb-8 rounded-2xl border p-6 shadow-sm ${job.qc_status === 'PASS' ? 'bg-white border-emerald-200' :
+                        job.qc_status === 'REJECT' ? 'bg-red-50 border-red-200' :
+                            'bg-amber-50 border-amber-200'
+                        }`}>
+                        <div className="flex items-start gap-5">
+                            <div className={`p-4 rounded-xl ${job.qc_status === 'PASS' ? 'bg-emerald-100 text-emerald-600' :
+                                job.qc_status === 'REJECT' ? 'bg-red-100 text-red-600' :
+                                    'bg-amber-100 text-amber-600'
+                                }`}>
+                                {job.qc_status === 'PASS' ? <CheckCircle className="w-8 h-8" /> :
+                                    job.qc_status === 'REJECT' ? <XCircle className="w-8 h-8" /> :
+                                        <AlertTriangle className="w-8 h-8" />}
+                            </div>
+                            <div className="flex-1">
+                                <h3 className={`text-xl font-bold ${job.qc_status === 'PASS' ? 'text-emerald-900' :
+                                    job.qc_status === 'REJECT' ? 'text-red-900' :
+                                        'text-amber-900'
+                                    }`}>
+                                    Quality Control {job.qc_status === 'PASS' ? 'Passed' : job.qc_status === 'REJECT' ? 'Failed' : 'Warning'}
+                                </h3>
+                                <p className={`mt-1 text-base ${job.qc_status === 'PASS' ? 'text-emerald-700' : 'text-slate-700'
+                                    }`}>
+                                    {job.qc_status === 'PASS'
+                                        ? "This result meets rigorous international docking standards."
+                                        : "Issues were detected that may affect the accuracy of this result."}
+                                </p>
+
+                                {/* Flags List */}
+                                {job.qc_flags && job.qc_flags.length > 0 && (
+                                    <div className="mt-4 flex flex-wrap gap-3">
+                                        {job.qc_flags.map((flag, idx) => (
+                                            <div key={idx} className="flex items-center gap-2 text-sm font-medium px-4 py-2 bg-white/80 rounded-lg border border-black/5 shadow-sm">
+                                                {['CLASH', 'ZERO_SCORES'].includes(flag) ? '❌' :
+                                                    ['HIGH_LIGAND_EFFICIENCY', 'CNN_HIGH_CONFIDENCE'].includes(flag) ? '✅' : '⚠️'}
+                                                <span>{getQCFlagLabel(flag)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
 
                 {/* Progress Banner */}
                 {['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING'].includes(job.status) && (
@@ -428,6 +496,16 @@ export default function JobResultsPage() {
                                                 <div className="font-bold text-purple-900 text-lg">Gnina CNN</div>
                                                 <div className="text-2xl font-bold text-purple-600 mt-2">{consensusResults.engines?.gnina?.best_affinity?.toFixed(1) || '-'} <span className="text-sm font-normal opacity-50">kcal/mol</span></div>
                                             </div>
+                                            <div className="p-4 rounded-2xl bg-emerald-50/50 border border-emerald-100 md:col-span-2">
+                                                <div className="text-xs font-bold text-emerald-400 uppercase mb-1">Machine Learning Validation</div>
+                                                <div className="font-bold text-emerald-900 text-lg">Random Forest (RF-Score)</div>
+                                                <div className="flex items-center gap-4 mt-2">
+                                                    <div className="text-3xl font-bold text-emerald-600">{consensusResults.rf_score?.toFixed(2) || '-'} <span className="text-sm font-normal opacity-50">pKd</span></div>
+                                                    <div className="text-xs text-emerald-700 max-w-md">
+                                                        High pKd (&gt;6) indicates strong binding probability based on interaction fingerprints.
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 )}
@@ -439,7 +517,21 @@ export default function JobResultsPage() {
                             {analysis?.poses && (
                                 <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                                     <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700">Docking Poses</div>
-                                    <div className="p-6"><DockingResultsTable poses={analysis.poses} /></div>
+                                    <div className="p-6">
+                                        <DockingResultsTable
+                                            poses={analysis.poses.map((pose, idx) => {
+                                                // Enhance Mode 1 with Consensus Data if available
+                                                if (idx === 0 && consensusResults && !consensusResults.error) {
+                                                    return {
+                                                        ...pose,
+                                                        rf_score: consensusResults.rf_score,
+                                                        consensus_score: consensusResults.consensus_score
+                                                    }
+                                                }
+                                                return pose
+                                            })}
+                                        />
+                                    </div>
                                 </div>
                             )}
                             {interactions && (

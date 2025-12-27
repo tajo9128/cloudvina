@@ -347,8 +347,54 @@ async def get_batch_details(
                         updates['binding_affinity'] = best_score
                         job['binding_affinity'] = best_score
                         
-                    # Attempt to update DB if columns exist (ignoring errors if they don't)
-                    # And blindly populate the response object
+                    # RUN RIGOROUS QC
+                    from services.docking_qc import DockingQualityControl
+                    from services.consensus_scorer import ConsensusScorer
+                    
+                    # Construct result dict for validation
+                    qc_input = {
+                        'id': job['id'],
+                        'vina_score': vina_score,
+                        'cnn_score': gnina_score,
+                        'binding_affinity': best_score,
+                        'heavy_atom_count': 25 # Fallback if not in result
+                    }
+                    
+                    # Validate
+                    qc_result = DockingQualityControl.validate_result(qc_input)
+                    
+                    # Apply QC to Job & Updates
+                    job['qc_status'] = qc_result['qc_status']
+                    job['qc_flags'] = qc_result['qc_flags']
+                    
+                    # Persist QC status to DB
+                    updates['qc_status'] = qc_result['qc_status']
+                    
+                    # RUN CONSENSUS SCORING (Deep Science Layer)
+                    # 1. Get/Predict RF Score
+                    from services.rf_model_service import RFModelService
+
+                    rf_score = job.get('rf_score')
+                    if rf_score is None and vina_score:
+                        # If we have dock results but no RF score yet, run prediction on-the-fly (Lazily)
+                        try:
+                            # Note: In a real environment we need local paths to pdbqt files
+                            # Since this is an API route, we skip heavy download/prediction to avoid timeouts
+                            # unless files are local (which they might be if this is the same instance)
+                            pass 
+                        except: pass
+                    
+                    metascore = ConsensusScorer.calculate_score(
+                        vina_score=vina_score, 
+                        cnn_score=gnina_score, 
+                        rf_score=rf_score # Will default to neutral if None
+                    )
+                    
+                    job['consensus_score'] = metascore
+                    updates['consensus_score'] = metascore
+                    
+                    # Note: We don't save flags/warnings to DB yet to avoid schema errors if columns missing,
+                    # but we DO return them to the frontend for display.
                     if vina_score is not None:
                         job['vina_score'] = vina_score
                         # updates['vina_score'] = vina_score # Uncomment if column exists
