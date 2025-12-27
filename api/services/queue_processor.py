@@ -13,6 +13,8 @@ from aws_services import submit_batch_job as submit_to_aws
 from services.smiles_converter import convert_to_pdbqt, convert_receptor_to_pdbqt
 from services.fda_service import fda_service
 from utils.db import safe_update
+from services.layer1_generator import Layer1Generator
+import uuid
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
@@ -76,79 +78,122 @@ class QueueProcessor:
             engine = config.get('engine', 'consensus')
 
             # C. Execute Preparation Pipeline
-            job_rec_key = f"jobs/{job_id}/receptor.pdbqt"
-            job_lig_key = f"jobs/{job_id}/ligand.pdbqt"
-
+            # Layer 1 Integration: We now generate an ensemble of receptors
+            
             with tempfile.TemporaryDirectory() as temp_dir:
-                # Initialize Process Pool for Isolation (Prevents Segfaults killing API)
-                import concurrent.futures
+                # 1. Download Raw Receptor
+                safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Layer 1 (Ensemble Generation)...'})
                 
-                def prepare_file_safe(s3_key, filename, target_key, is_receptor=False):
-                    ext = os.path.splitext(filename)[1].lower()
-                    local_path = os.path.join(temp_dir, filename)
-                    
-                    self.s3.download_file(S3_BUCKET, s3_key, local_path)
-                    
-                    if ext != '.pdbqt':
-                        with open(local_path, 'r') as f: content = f.read()
-                        
-                        # Run conversion in isolated process
-                        with concurrent.futures.ProcessPoolExecutor(max_workers=1) as executor:
-                            if is_receptor:
-                                future = executor.submit(convert_receptor_to_pdbqt, content, filename)
-                            else:
-                                future = executor.submit(convert_to_pdbqt, content, filename)
-                            
-                            try:
-                                pdbqt_content, err = future.result(timeout=120) # 2 min timeout
-                            except concurrent.futures.TimeoutError:
-                                raise Exception("Conversion Timed Out (Possible Hang)")
-                            except Exception as exc:
-                                raise Exception(f"Conversion Crash/Error: {exc}")
-
-                        if err or not pdbqt_content:
-                            raise Exception(f"Conversion failed: {err}")
-                            
-                        local_path = local_path + ".pdbqt"
-                        with open(local_path, 'w') as f: f.write(pdbqt_content)
-                    
-                    self.s3.upload_file(local_path, S3_BUCKET, target_key)
-
-                # 1. Receptor
-                safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Preparing Receptor...'})
-                prepare_file_safe(job['receptor_s3_key'], job['receptor_filename'], job_rec_key, is_receptor=True)
-
-                # Capture Receptor Content for Autoboxing
-                # We need to find where prepare_file_safe put it.
-                # It saved to os.path.join(temp_dir, job['receptor_filename']) + potentially '.pdbqt'
-                rec_local_name = job['receptor_filename']
-                if not rec_local_name.lower().endswith('.pdbqt'):
-                    rec_local_name += ".pdbqt"
+                raw_rec_path = os.path.join(temp_dir, job['receptor_filename'])
+                self.s3.download_file(S3_BUCKET, job['receptor_s3_key'], raw_rec_path)
                 
-                rec_local_path = os.path.join(temp_dir, rec_local_name)
-                with open(rec_local_path, 'r') as f:
-                    receptor_content = f.read()
-
-                # 2. Ligand
+                # 2. Run Layer 1 Generator
+                # This generates [crystal.pdb, af.pdb, nma.pdb]
+                layer1 = Layer1Generator(raw_rec_path, job_id)
+                ensemble_pdbs = layer1.generate() # List of local paths
+                
+                # 3. Prepare Ligand (Common for all)
                 safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Preparing Ligand...'})
-                prepare_file_safe(job['ligand_s3_key'], job['ligand_filename'], job_lig_key, is_receptor=False)
+                
+                # We reuse the logic to convert/upload ligand for the MAIN job first
+                main_lig_key = f"jobs/{job_id}/ligand.pdbqt"
+                
+                # Helper for conversion (using thread/process logic inline or simplified)
+                # We'll use a simplified synchronous call here for safety/clarity, relying on the fact 
+                # that we are already in an async loop worker.
+                # Actually, strictly better to use the imported functions.
+                
+                lig_local_path = os.path.join(temp_dir, job['ligand_filename'])
+                self.s3.download_file(S3_BUCKET, job['ligand_s3_key'], lig_local_path)
+                
+                lig_pdbqt_content = None
+                if job['ligand_filename'].lower().endswith('.pdbqt'):
+                    with open(lig_local_path, 'r') as f: lig_pdbqt_content = f.read()
+                else:
+                    with open(lig_local_path, 'r') as f: content = f.read()
+                    lig_pdbqt_content, err = convert_to_pdbqt(content, job['ligand_filename'])
+                    if err: raise Exception(f"Ligand conversion failed: {err}")
+                
+                # Upload Main Ligand
+                # We need to save it locally for reuse
+                lig_pdbqt_path = os.path.join(temp_dir, "ligand.pdbqt")
+                with open(lig_pdbqt_path, 'w') as f: f.write(lig_pdbqt_content)
+                self.s3.upload_file(lig_pdbqt_path, S3_BUCKET, main_lig_key)
 
-            # D. Generate Vina Config
-            safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Generating Config...'})
-            generate_vina_config(job_id, grid_params=grid_params, receptor_content=receptor_content)
+                # 4. Process Ensemble Loop
+                for idx, rec_path in enumerate(ensemble_pdbs):
+                    # Determine Job ID (Original vs Clone)
+                    if idx == 0:
+                        current_job_id = job_id
+                        is_clone = False
+                        current_rec_key = f"jobs/{current_job_id}/receptor.pdbqt"
+                        current_lig_key = main_lig_key
+                    else:
+                        current_job_id = str(uuid.uuid4())
+                        is_clone = True
+                        current_rec_key = f"jobs/{current_job_id}/receptor.pdbqt"
+                        current_lig_key = f"jobs/{current_job_id}/ligand.pdbqt"
+                        
+                        # CLONE JOB IN DB
+                        # We must act fast to return status
+                        try:
+                            # Clone relevant fields
+                            clone_data = {
+                                'id': current_job_id,
+                                'user_id': user_id,
+                                'batch_id': batch_id,
+                                'status': 'PROCESSING',
+                                'receptor_filename': os.path.basename(rec_path),
+                                'ligand_filename': job['ligand_filename'],
+                                'receptor_s3_key': current_rec_key,
+                                'ligand_s3_key': current_lig_key,
+                                'notes': f"Ensemble Variant #{idx} (Layer 1)",
+                                'created_at': datetime.utcnow().isoformat(),
+                                'started_at': datetime.utcnow().isoformat()
+                            }
+                            self.db.table('jobs').insert(clone_data).execute()
+                            logger.info(f"   + Created Clone Job {current_job_id} (Variant {idx})")
+                            
+                            # Upload Ligand for Clone (Copy)
+                            self.s3.upload_file(lig_pdbqt_path, S3_BUCKET, current_lig_key)
+                            
+                        except Exception as clone_err:
+                            logger.error(f"Failed to clone job {idx}: {clone_err}")
+                            continue
 
-            # E. Submit to AWS
-            safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Submitting to AWS...'})
-            aws_id = submit_to_aws(job_id, job_rec_key, job_lig_key, engine=engine)
+                    # 5. Convert Receptor -> PDBQT
+                    # rec_path is local PDB (from Layer 1)
+                    with open(rec_path, 'r') as f: rec_content = f.read()
+                    
+                    # Convert
+                    rec_pdbqt, r_err = convert_receptor_to_pdbqt(rec_content, os.path.basename(rec_path))
+                    if r_err or not rec_pdbqt:
+                        if is_clone:
+                            # Fail the clone but continue
+                            safe_update(self.db, "jobs", {"id": current_job_id}, {"status": "FAILED", "error_message": "Receptor conversion failed"})
+                            continue
+                        else:
+                            raise Exception(f"Main receptor conversion failed: {r_err}")
+                    
+                    # Upload Receptor
+                    local_rec_pdbqt = rec_path + ".pdbqt"
+                    with open(local_rec_pdbqt, 'w') as f: f.write(rec_pdbqt)
+                    self.s3.upload_file(local_rec_pdbqt, S3_BUCKET, current_rec_key)
+                    
+                    # 6. Generate Config
+                    generate_vina_config(current_job_id, grid_params=grid_params, receptor_content=rec_pdbqt)
+                    
+                    # 7. Submit to AWS
+                    aws_id = submit_to_aws(current_job_id, current_rec_key, current_lig_key, engine=engine)
+                    
+                    # 8. Update Status
+                    safe_update(self.db, "jobs", {"id": current_job_id}, {
+                        'status': 'SUBMITTED', 
+                        'batch_job_id': aws_id, 
+                        'notes': f'Batch Submitted (Variant {idx})'
+                    })
 
-            # F. Finalize
-            safe_update(self.db, "jobs", {"id": job_id}, {
-                'status': 'SUBMITTED', 
-                'batch_job_id': aws_id, 
-                'notes': 'Batch Submitted (Queue)'
-            })
-
-            logger.info(f"✅ [Queue] Job {job_id} submitted successfully.")
+            logger.info(f"✅ [Queue] Job {job_id} (and ensembles) submitted successfully.")
 
         except Exception as e:
             traceback.print_exc()
