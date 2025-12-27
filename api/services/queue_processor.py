@@ -8,12 +8,12 @@ import tempfile
 import time
 from datetime import datetime
 from supabase import Client
-from services.config_generator import generate_vina_config
-from aws_services import submit_batch_job as submit_to_aws
-from services.smiles_converter import convert_to_pdbqt, convert_receptor_to_pdbqt
-from services.fda_service import fda_service
-from utils.db import safe_update
-from services.layer1_generator import Layer1Generator
+from api.services.config_generator import generate_vina_config
+from api.aws_services import submit_batch_job as submit_to_aws
+from api.services.smiles_converter import convert_to_pdbqt, convert_receptor_to_pdbqt
+from api.services.fda_service import fda_service
+from api.utils.db import safe_update
+from api.services.layer1_generator import Layer1Generator
 import uuid
 
 # Configure Logging

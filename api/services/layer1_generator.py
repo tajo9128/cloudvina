@@ -7,8 +7,8 @@ Does NOT modify existing docking pipeline
 import logging
 import os
 from typing import List, Optional
-from utils.alphafold_fetch import AlphaFoldFetcher
-from utils.nma import generate_nma_conformers
+from api.utils.alphafold_fetch import AlphaFoldFetcher
+from api.utils.nma import generate_nma_conformers
 
 logger = logging.getLogger("layer1_generator")
 

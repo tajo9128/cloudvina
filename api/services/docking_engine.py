@@ -17,6 +17,15 @@ try:
 except ImportError:
     SideChainMinimizer = None
 
+try:
+    from config.scoring_tiers import ScoringTiers
+except ImportError:
+    # If config not in path (e.g. Docker issue), fallback to default classStub?
+    # Better to assume it works if we installed it.
+    # But for safety in this environment:
+    from api.config.scoring_tiers import ScoringTiers
+
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("DockingEngine")
@@ -54,109 +63,126 @@ class DockingEngine:
 
     def _run_consensus(self, receptor: str, ligand: str, output: str, params: Dict) -> Dict:
         """
-        Run Consensus Docking (Vina + Gnina + Random Forest).
-        Returns aggregated results.
+        Run Consensus Docking (Smart Funnel).
+        Sequence: Vina -> RF -> Gate -> (Gnina?) -> (Minimization?)
         """
-        logger.info("Starting CONSENSUS Docking Mode...")
+        logger.info("Starting CONSENSUS Docking Mode (Smart Funnel)...")
         results = {
             "consensus": True,
             "engines": {},
-            "best_affinity": 0.0
+            "best_affinity": 0.0,
+            "analysis_depth": "Unknown"
         }
         
         base_dir = os.path.dirname(output)
         base_name = os.path.splitext(os.path.basename(output))[0]
         
-        # 1. Run Vina (Physics-based)
+        # 1. Run Vina (Physics-based) - ALWAYS RUNS
         try:
             out_vina = os.path.join(base_dir, f"{base_name}_vina.pdbqt")
             res_vina = self._run_vina(receptor, ligand, out_vina, params)
             results["engines"]["vina"] = res_vina
+            vina_aff = res_vina.get("best_affinity", 0.0)
         except Exception as e:
             logger.error(f"Consensus: Vina failed: {e}")
             results["engines"]["vina"] = {"error": str(e)}
+            return results # Critical failure
 
-        # 2. Run Gnina (Deep Learning)
-        try:
-            out_gnina = os.path.join(base_dir, f"{base_name}_gnina.pdbqt")
-            res_gnina = self._run_gnina(receptor, ligand, out_gnina, params)
-            results["engines"]["gnina"] = res_gnina
-        except Exception as e:
-            logger.error(f"Consensus: Gnina failed: {e}")
-            results["engines"]["gnina"] = {"error": str(e)}
-
-        # 3. Run RF Model (Machine Learning Rescoring)
-        rf_pkd = None
+        # 2. Run RF Score (Fast ML Filter) - ALWAYS RUNS
+        rf_pkd = 0.0
         try:
             if RFModelService:
-                # We typically rescore the BEST pose. 
-                # Ideally, rescores the output of Vina or Gnina.
-                # Here we rescore the best Vina pose (out_vina) against receptor.
-                target_ligand = results["engines"].get("vina", {}).get("output_file")
-                if target_ligand and os.path.exists(target_ligand):
-                    rf_pkd = RFModelService.predict_ligand(receptor, target_ligand)
+                # Rescore Vina output
+                if out_vina and os.path.exists(out_vina):
+                    rf_pkd = RFModelService.predict_ligand(receptor, out_vina)
                     results["engines"]["rf"] = {"pKd": rf_pkd}
                     logger.info(f"RF Model Prediction: {rf_pkd} pKd")
                 else:
-                    logger.warning("Skipping RF: Vina output not available for rescoring")
+                    logger.warning("Skipping RF: Vina output missing")
             else:
                 logger.warning("Skipping RF: Service not imported")
         except Exception as e:
             logger.error(f"Consensus: RF failed: {e}")
             results["engines"]["rf"] = {"error": str(e)}
 
-        # 4. Side-Chain Minimization (Stage 4)
-        # Trigger: High RF Confidence (e.g., pKd > 7.0 or user threshold)
-        # Assuming plan asked for "Score > 0.7". If pKd, 7.0 is a good cutoff.
-        minimized_struct = None
-        if SideChainMinimizer and rf_pkd and rf_pkd >= 6.5: # 6.5 pKd ~= 300nM
+        # 3. Gating Logic (Smart Funnel)
+        tier_info = ScoringTiers.get_tier(rf_score=rf_pkd, vina_affinity=vina_aff)
+        results["tier_info"] = tier_info
+        logger.info(f"Ligand Tier: {tier_info['label']} ({tier_info['tier']})")
+        if tier_info.get('is_anomaly'):
+            logger.warning(f"Anomaly Detected: {tier_info.get('anomaly_reason')}")
+
+        # 4. Run Gnina (Deep Learning) - CONDITIONAL
+        gnina_aff = 0.0
+        if tier_info.get('gnina_enabled', True): # Default True if tiering fails
             try:
-                logger.info(f"Triggering Side-Chain Minimization (RF {rf_pkd:.2f} >= 6.5)...")
-                # Need best pose from Vina or Gnina
-                target_ligand = results["engines"].get("vina", {}).get("output_file")
+                out_gnina = os.path.join(base_dir, f"{base_name}_gnina.pdbqt")
+                # Note: We could seed Gnina with Vina pose to speed it up further, 
+                # but for independence we keep standard run or user defined params.
+                res_gnina = self._run_gnina(receptor, ligand, out_gnina, params)
+                results["engines"]["gnina"] = res_gnina
+                gnina_aff = res_gnina.get("best_affinity", 0.0)
+            except Exception as e:
+                logger.error(f"Consensus: Gnina failed: {e}")
+                results["engines"]["gnina"] = {"error": str(e)}
+        else:
+            logger.info("Skipping Gnina (Filtered by Tier)")
+            results["engines"]["gnina"] = {"skipped": True, "reason": tier_info['tier']}
+
+        # 5. Side-Chain Minimization - CONDITIONAL
+        minimized_struct = None
+        if tier_info.get('minimization_enabled', False) and SideChainMinimizer:
+             try:
+                logger.info(f"Triggering Side-Chain Minimization...")
+                # Prefer Gnina output if available (refined), else Vina
+                target_ligand = results["engines"].get("gnina", {}).get("output_file")
+                if not target_ligand or not os.path.exists(target_ligand):
+                     target_ligand = out_vina
                 
                 minimizer = SideChainMinimizer(receptor, target_ligand)
-                # Output dir
                 min_dir = os.path.join(base_dir, "minimized")
                 rel_prot, rel_lig = minimizer.minimize(output_dir=min_dir)
                 
                 results["minimized"] = True
                 results["minimized_receptor"] = rel_prot
                 results["minimized_ligand"] = rel_lig
-                minimized_struct = rel_lig # Use this for output if designated
-            except Exception as min_err:
+                minimized_struct = rel_lig
+             except Exception as min_err:
                  logger.error(f"Minimization failed: {min_err}")
                  results["minimized"] = False
         else:
             results["minimized"] = False
 
-        # Aggregation Logic
-        vina_aff = results["engines"].get("vina", {}).get("best_affinity", 0.0)
-        gnina_aff = results["engines"].get("gnina", {}).get("best_affinity", 0.0)
+        # 6. Aggregation & Output
+        # Primary output file: Vina (or Gnina if better/available?)
+        # Usually checking mainly Vina for compatibility.
         
-        # Calculate Weighted Score (0-10) using ConsensusScorer logic if available locally
-        # Otherwise simple aggregation for reporting
-        
-        # Primary output file: Vina (Best Pose)
+        # Calculate Consensus Confidence
+        # Simple weighted logic for now or specific TriScore if imported
+        results["analysis_depth"] = "Full" if tier_info.get('gnina_enabled') else "Partial"
+
+        # Append Remarks to Output PDBQT
         vina_out = results["engines"].get("vina", {}).get("output_file")
-        
         if vina_out and os.path.exists(vina_out):
             try:
                 with open(vina_out, "r+") as f:
                     content = f.read()
                     f.seek(0, 0)
                     f.write("REMARK 200 ========================================================\n")
-                    f.write(f"REMARK 200 CONSENSUS DOCKING RESULTS (Tri-Score)\n")
+                    f.write(f"REMARK 200 SMART FUNNEL RESULTS\n")
+                    f.write(f"REMARK 200 Tier: {tier_info['tier']} ({tier_info['label']})\n")
                     f.write(f"REMARK 200 Vina (Physics):     {vina_aff:.2f} kcal/mol\n")
-                    f.write(f"REMARK 200 Gnina (CNN):        {gnina_aff:.2f} kcal/mol\n")
-                    f.write(f"REMARK 200 Random Forest (ML): {rf_pkd if rf_pkd else 'N/A'} pKd\n")
+                    f.write(f"REMARK 200 Random Forest (ML): {rf_pkd:.2f} pKd\n")
+                    if tier_info.get('gnina_enabled'):
+                         f.write(f"REMARK 200 Gnina (CNN):        {gnina_aff:.2f} kcal/mol\n")
+                    else:
+                         f.write(f"REMARK 200 Gnina (CNN):        SKIPPED (Tier Filter)\n")
                     f.write("REMARK 200 ========================================================\n")
                     f.write(content) 
             except Exception as e:
-                logger.error(f"Failed to append consensus remarks: {e}")
+                logger.error(f"Failed to append remarks: {e}")
 
         results["output_file"] = vina_out
-        
         return results
 
     def _run_vina(self, receptor: str, ligand: str, output: str, params: Dict) -> Dict:
