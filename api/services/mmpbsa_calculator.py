@@ -155,8 +155,11 @@ class MMPBSACalculator:
             Dictionary with averaged energies and per-residue contributions
         """
         try:
-            import MDAnalysis as mda
-            
+            try:
+                import MDAnalysis as mda
+            except ImportError:
+                return {"error": "MDAnalysis not installed on this server"}
+
             u = mda.Universe(topology_file, trajectory_file)
             
             # Sample evenly spaced frames
@@ -261,6 +264,11 @@ class MMPBSACalculator:
         try:
             from rdkit import Chem
             from rdkit.Chem import AllChem, Descriptors
+        except ImportError:
+            return self._estimate_energy_from_size(pdb_content)
+
+        try:
+            # Parse PDB
             
             # Parse PDB
             mol = Chem.MolFromPDBBlock(pdb_content, removeHs=False)
