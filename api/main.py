@@ -12,9 +12,14 @@ import os
 from datetime import datetime
 import uuid
 import sys
+import os
 
-# Force unbuffered output for Render logs
+# Robust Path Fix: Ensure 'api' module can be imported even if CWD is inside 'api/'
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+# Use unbuffered output for instant logs on Render
 sys.stdout.reconfigure(line_buffering=True)
+sys.stderr.reconfigure(line_buffering=True)
 
 # Suppress noisy HTTP libraries
 import logging
