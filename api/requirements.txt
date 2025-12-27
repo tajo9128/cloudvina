@@ -32,3 +32,8 @@ mdanalysis>=2.7.0
 huggingface-hub>=0.23.0
 shap>=0.44.0
 
+# Sidechain Minimization (Sprint 10)
+openmm>=7.7.0
+mdtraj>=1.9.7
+openmm-forcefields>=0.1.1
+

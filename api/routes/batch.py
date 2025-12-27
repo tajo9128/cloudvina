@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Security, UploadFile, File, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, status, Security, UploadFile, File, BackgroundTasks, Form
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from starlette.concurrency import run_in_threadpool
@@ -31,6 +31,7 @@ class BatchSubmitRequest(BaseModel):
 class BatchStartRequest(BaseModel):
     grid_params: dict
     engine: Optional[str] = "consensus"
+    ensemble_mode: bool = False # Option A Toggle
 
 class CSVBatchSubmitRequest(BaseModel):
     grid_center_x: float = 0.0
@@ -138,7 +139,8 @@ async def start_batch(
         # This ensures the worker has access to parameters even if API restarts
         config_data = {
             "grid_params": request.grid_params,
-            "engine": request.engine
+            "engine": request.engine,
+            "ensemble_mode": request.ensemble_mode
         }
         try:
             s3_client.put_object(
@@ -172,8 +174,9 @@ async def start_batch(
 async def submit_csv_batch(
     receptor_file: UploadFile = File(...),
     csv_file: UploadFile = File(...),
-    grid_params: str = None, # JSON string
-    engine: str = "consensus",
+    grid_params: str = Form(None), # JSON string
+    engine: str = Form("consensus"),
+    ensemble_mode: bool = Form(False),
     current_user: dict = Depends(get_current_user),
     credentials: HTTPAuthorizationCredentials = Security(security)
 ):
@@ -411,7 +414,51 @@ async def get_batch_details(
                     # Log error but don't fail the request
                     print(f"Failed to repair score for job {job['id']}: {e}", flush=True)
 
-        return {"batch_id": batch_id, "jobs": updated_jobs, "stats": {"total": len(updated_jobs)}}
+        # --- VIRTUAL AGGREGATION (Sprint 9) ---
+        # Group jobs by ligand_filename to present "10 Files" instead of "30 Jobs"
+        aggregated_results = []
+        jobs_by_ligand = {}
+
+        for job in updated_jobs:
+            ligand = job.get('ligand_filename')
+            if not ligand: continue
+            if ligand not in jobs_by_ligand: jobs_by_ligand[ligand] = []
+            jobs_by_ligand[ligand].append(job)
+
+        for ligand, variants in jobs_by_ligand.items():
+            if len(variants) == 1:
+                # Standard Mode (Legacy)
+                aggregated_results.append(variants[0])
+            else:
+                # Ensemble Mode (Aggregation)
+                # 1. Sort by Score (Ascending = Better for Affinity)
+                # Filter out None/0
+                valid_variants = [v for v in variants if v.get('binding_affinity') and float(v.get('binding_affinity')) < 0]
+                
+                if valid_variants:
+                    best_variant = min(valid_variants, key=lambda x: float(x.get('binding_affinity')))
+                else:
+                    # If all failed or no scores yet, pick the one that is running or first
+                    best_variant = variants[0]
+
+                # 2. Create Virtual Container (Cloned from Best)
+                virtual_job = best_variant.copy()
+                virtual_job['is_ensemble_root'] = True
+                virtual_job['ensemble_variants'] = variants # Embed all 3
+                
+                # 3. Aggregate Status
+                # If ANY is running, status is RUNNING. If ALL failed, FAILED. If ANY succeeded, SUCCEEDED.
+                statuses = [v['status'] for v in variants]
+                if 'RUNNING' in statuses or 'SUBMITTED' in statuses or 'STARTING' in statuses:
+                    virtual_job['status'] = 'RUNNING'
+                elif 'SUCCEEDED' in statuses:
+                    virtual_job['status'] = 'SUCCEEDED'
+                else:
+                    virtual_job['status'] = best_variant['status'] # FAILED or other
+
+                aggregated_results.append(virtual_job)
+
+        return {"batch_id": batch_id, "jobs": aggregated_results, "stats": {"total": len(aggregated_results), "raw_jobs": len(updated_jobs)}}
         
     except Exception as e:
         raise HTTPException(500, f"Failed to fetch batch details: {str(e)}")

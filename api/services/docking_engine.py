@@ -12,6 +12,11 @@ except ImportError:
     # Handle case where service isn't available in local test env
     RFModelService = None
 
+try:
+    from services.sidechain_minimizer import SideChainMinimizer
+except ImportError:
+    SideChainMinimizer = None
+
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("DockingEngine")
@@ -99,6 +104,31 @@ class DockingEngine:
         except Exception as e:
             logger.error(f"Consensus: RF failed: {e}")
             results["engines"]["rf"] = {"error": str(e)}
+
+        # 4. Side-Chain Minimization (Stage 4)
+        # Trigger: High RF Confidence (e.g., pKd > 7.0 or user threshold)
+        # Assuming plan asked for "Score > 0.7". If pKd, 7.0 is a good cutoff.
+        minimized_struct = None
+        if SideChainMinimizer and rf_pkd and rf_pkd >= 6.5: # 6.5 pKd ~= 300nM
+            try:
+                logger.info(f"Triggering Side-Chain Minimization (RF {rf_pkd:.2f} >= 6.5)...")
+                # Need best pose from Vina or Gnina
+                target_ligand = results["engines"].get("vina", {}).get("output_file")
+                
+                minimizer = SideChainMinimizer(receptor, target_ligand)
+                # Output dir
+                min_dir = os.path.join(base_dir, "minimized")
+                rel_prot, rel_lig = minimizer.minimize(output_dir=min_dir)
+                
+                results["minimized"] = True
+                results["minimized_receptor"] = rel_prot
+                results["minimized_ligand"] = rel_lig
+                minimized_struct = rel_lig # Use this for output if designated
+            except Exception as min_err:
+                 logger.error(f"Minimization failed: {min_err}")
+                 results["minimized"] = False
+        else:
+            results["minimized"] = False
 
         # Aggregation Logic
         vina_aff = results["engines"].get("vina", {}).get("best_affinity", 0.0)

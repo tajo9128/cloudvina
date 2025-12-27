@@ -22,6 +22,7 @@ export default function BatchDockingPage() {
     const [error, setError] = useState(null)
     const [batchId, setBatchId] = useState(null)
     const [uploadMode, setUploadMode] = useState('files') // 'files' or 'csv'
+    const [ensembleMode, setEnsembleMode] = useState(false) // Option A Toggle
 
     // Scroll Terminal to bottom
     const terminalEndRef = useRef(null)
@@ -136,7 +137,8 @@ export default function BatchDockingPage() {
                 },
                 body: JSON.stringify({
                     grid_params: { center_x: 0, center_y: 0, center_z: 0, size_x: 20, size_y: 20, size_z: 20 },
-                    engine: 'triscore'
+                    engine: 'triscore',
+                    ensemble_mode: ensembleMode // Pass toggle to backend
                 })
             })
 
@@ -190,6 +192,9 @@ export default function BatchDockingPage() {
                 size_x: 20, size_y: 20, size_z: 20
             }))
             formData.append('engine', 'triscore')
+            if (ensembleMode) {
+                formData.append('ensemble_mode', 'true')
+            }
 
             // Simulated upload progress mainly for UX since we send one FormData
             const progressInterval = setInterval(() => {
@@ -523,7 +528,7 @@ export default function BatchDockingPage() {
                     </div>
                 </div>
 
-                {/* 3. Engine Selection */}
+                {/* 3. Engine & Mode Selection */}
                 <div className="bg-gradient-to-br from-indigo-900 to-indigo-800 rounded-3xl p-8 text-white shadow-xl relative overflow-hidden mb-12">
                     <div className="absolute top-0 right-0 p-32 bg-white/5 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
 
@@ -536,19 +541,47 @@ export default function BatchDockingPage() {
                                     International Standard
                                 </span>
                             </div>
-                            <p className="text-indigo-100 text-lg mb-6 max-w-2xl">
-                                Validates hits using a 3-way consensus: <strong className="text-white">Vina (Physics)</strong> + <strong className="text-white">Gnina (Deep Learning)</strong> + <strong className="text-white">RF-Score (Machine Learning)</strong>.
-                            </p>
-                            <div className="flex gap-4">
-                                <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg border border-white/10">
-                                    <Cpu size={16} />
-                                    <span className="font-mono text-sm">Vina 1.2.3</span>
-                                </div>
-                                <div className="flex items-center gap-2 px-4 py-2 bg-white/10 rounded-lg border border-white/10">
-                                    <Activity size={16} />
-                                    <span className="font-mono text-sm">Gnina CNN</span>
-                                </div>
+
+                            {/* Ensemble Mode Toggle (NEW) */}
+                            <div className="mb-6 bg-slate-900/40 p-5 rounded-2xl border border-white/10">
+                                <label className="flex items-start gap-4 cursor-pointer group/toggle">
+                                    <div className="relative flex items-center mt-1">
+                                        <input
+                                            type="checkbox"
+                                            className="sr-only peer"
+                                            checked={ensembleMode}
+                                            onChange={(e) => setEnsembleMode(e.target.checked)}
+                                        />
+                                        <div className="w-11 h-6 bg-slate-600 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                                    </div>
+                                    <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <span className="text-white font-bold text-base">Ensemble Mode (Protein Flexibility)</span>
+                                            {ensembleMode && <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-purple-500/80 text-white shadow-sm">ACTIVE</span>}
+                                        </div>
+                                        <p className="text-indigo-200 text-sm mb-2 leading-relaxed">
+                                            Generates 3 receptor variants per job: <b>Crystal</b> (Rigid), <b>AlphaFold</b> (Predicted), and <b>NMA</b> (Flexible).
+                                            Dramatically improves hit rate for difficult targets.
+                                        </p>
+
+                                        {!ensembleMode ? (
+                                            <div className="text-xs text-indigo-300 flex items-center gap-2 bg-indigo-900/40 px-2 py-1 rounded w-fit">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400" />
+                                                Standard Mode: 1 Job per Ligand (1x Cost)
+                                            </div>
+                                        ) : (
+                                            <div className="text-xs text-amber-300 flex items-center gap-2 bg-amber-900/40 px-2 py-1 rounded w-fit border border-amber-500/20 font-bold">
+                                                <AlertCircle className="w-3 h-3" />
+                                                Ensemble Mode: 3 Jobs per Ligand (3x Cost)
+                                            </div>
+                                        )}
+                                    </div>
+                                </label>
                             </div>
+
+                            <p className="text-indigo-100 text-sm mb-4 opacity-80">
+                                Powered by <strong className="text-white">Vina (Physics)</strong> + <strong className="text-white">Gnina (Deep Learning)</strong> + <strong className="text-white">RF-Score (ML)</strong>.
+                            </p>
                         </div>
                     </div>
                 </div>

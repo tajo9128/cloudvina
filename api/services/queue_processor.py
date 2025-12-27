@@ -87,10 +87,15 @@ class QueueProcessor:
                 raw_rec_path = os.path.join(temp_dir, job['receptor_filename'])
                 self.s3.download_file(S3_BUCKET, job['receptor_s3_key'], raw_rec_path)
                 
-                # 2. Run Layer 1 Generator
-                # This generates [crystal.pdb, af.pdb, nma.pdb]
-                layer1 = Layer1Generator(raw_rec_path, job_id)
-                ensemble_pdbs = layer1.generate() # List of local paths
+                # 2. Layer 1: Ensemble vs Standard
+                ensemble_mode = config.get('ensemble_mode', False)
+                if ensemble_mode:
+                    safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Layer 1 (Ensemble Mode)...'})
+                    layer1 = Layer1Generator(raw_rec_path, job_id)
+                    ensemble_pdbs = layer1.generate() # [Crystal, AF, NMA]
+                else:
+                    safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Standard Mode (Crystal Only)...'})
+                    ensemble_pdbs = [raw_rec_path] # Just Crystal
                 
                 # 3. Prepare Ligand (Common for all)
                 safe_update(self.db, "jobs", {"id": job_id}, {'notes': 'Queue: Preparing Ligand...'})
