@@ -12,6 +12,7 @@ from services.config_generator import generate_vina_config
 from aws_services import submit_batch_job as submit_to_aws
 from services.smiles_converter import convert_to_pdbqt, convert_receptor_to_pdbqt
 from services.fda_service import fda_service
+from utils.db import safe_update
 
 # Configure Logging
 logging.basicConfig(level=logging.INFO)
