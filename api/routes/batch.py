@@ -370,28 +370,26 @@ async def get_batch_details(
                     # Persist QC status to DB
                     updates['qc_status'] = qc_result['qc_status']
                     
-                    # RUN CONSENSUS SCORING (Deep Science Layer)
-                    # 1. Get/Predict RF Score
-                    from services.rf_model_service import RFModelService
-
-                    rf_score = job.get('rf_score')
-                    if rf_score is None and vina_score:
-                        # If we have dock results but no RF score yet, run prediction on-the-fly (Lazily)
-                        try:
-                            # Note: In a real environment we need local paths to pdbqt files
-                            # Since this is an API route, we skip heavy download/prediction to avoid timeouts
-                            # unless files are local (which they might be if this is the same instance)
-                            pass 
-                        except: pass
+                    # 1. Get RF Score (Expected from Docker or Previous Step)
+                    # We expect the unified Docker to put 'rf_score' in results.json
+                    rf_score = res_data.get('rf_score') or job.get('rf_score')
                     
-                    metascore = ConsensusScorer.calculate_score(
+                    if rf_score is not None:
+                         updates['rf_score'] = rf_score
+                         job['rf_score'] = rf_score
+
+                    metascore_data = ConsensusScorer.calculate_score(
                         vina_score=vina_score, 
                         cnn_score=gnina_score, 
                         rf_score=rf_score # Will default to neutral if None
                     )
                     
-                    job['consensus_score'] = metascore
-                    updates['consensus_score'] = metascore
+                    # Unpack New Structure
+                    job['consensus_score'] = metascore_data['consensus_score']
+                    job['agreement_confidence'] = metascore_data['agreement_confidence']
+                    
+                    updates['consensus_score'] = metascore_data['consensus_score']
+                    updates['agreement_confidence'] = metascore_data['agreement_confidence']
                     
                     # Note: We don't save flags/warnings to DB yet to avoid schema errors if columns missing,
                     # but we DO return them to the frontend for display.

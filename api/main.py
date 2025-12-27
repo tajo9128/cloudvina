@@ -45,7 +45,7 @@ from services.drug_properties import DrugPropertiesCalculator
 app = FastAPI(
     title="BioDockify API",
     description="Molecular docking as a service with AutoDock Vina",
-    version="6.2.0",
+    version="6.3.0",
     docs_url="/docs",
     redoc_url="/redoc"
 )
@@ -53,7 +53,7 @@ app = FastAPI(
 @app.on_event("startup")
 async def startup_event():
     print("="*50)
-    print("BioDockify API v6.2.0 - Deployed at " + datetime.utcnow().isoformat())
+    print("BioDockify API v6.3.0 - Deployed at " + datetime.utcnow().isoformat())
     print("Optimization: Lazy Loading Enabled")
     print("="*50)
 

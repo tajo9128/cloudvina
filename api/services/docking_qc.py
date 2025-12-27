@@ -42,10 +42,10 @@ class DockingQualityControl:
                 if vina_val > 0.0:
                     status = "REJECT"
                     flags.append("CLASH")
-                    warnings.append(f"❌ Positive Vina Score ({vina_val:.2f} kcal/mol): Severe steric clash detected. Result is INVALID.")
+                    warnings.append(f"[FAIL] Positive Vina Score ({vina_val:.2f} kcal/mol): Severe steric clash detected. Result is INVALID.")
                 elif vina_val > -1.0:
                     flags.append("WEAK_BINDER")
-                    warnings.append(f"⚠️ Near-Zero Affinity ({vina_val:.2f}): Likely surface interaction or decoy.")
+                    warnings.append(f"[WARN] Near-Zero Affinity ({vina_val:.2f}): Likely surface interaction or decoy.")
             except (ValueError, TypeError):
                 pass
         
@@ -56,10 +56,10 @@ class DockingQualityControl:
                 cnn_val = float(cnn_score)
                 if cnn_val < 0.5:
                     flags.append("CNN_LOW_CONFIDENCE")
-                    warnings.append(f"⚠️ Low CNN Score ({cnn_val:.3f}): Deep learning model flags as potential false positive.")
+                    warnings.append(f"[WARN] Low CNN Score ({cnn_val:.3f}): Deep learning model flags as potential false positive.")
                 elif cnn_val > 0.8:
                     flags.append("CNN_HIGH_CONFIDENCE")
-                    logger.info(f"✓ High CNN Confidence ({cnn_val:.3f})")
+                    logger.info(f"[OK] High CNN Confidence ({cnn_val:.3f})")
             except (ValueError, TypeError):
                 pass
         
@@ -77,10 +77,10 @@ class DockingQualityControl:
                 
                 if le < 0.2:
                     flags.append("LOW_LIGAND_EFFICIENCY")
-                    warnings.append(f"⚠️ Low Ligand Efficiency ({le:.3f}): Binding may not translate to real potency.")
+                    warnings.append(f"[WARN] Low Ligand Efficiency ({le:.3f}): Binding may not translate to real potency.")
                 elif le > 0.4:
                     flags.append("HIGH_LIGAND_EFFICIENCY")
-                    logger.info(f"✓ Excellent Ligand Efficiency ({le:.3f})")
+                    logger.info(f"[OK] Excellent Ligand Efficiency ({le:.3f})")
                     
             except (ValueError, TypeError, ZeroDivisionError):
                 pass
@@ -97,7 +97,7 @@ class DockingQualityControl:
         if all_zero:
             status = "ERROR"
             flags.append("ZERO_SCORES")
-            warnings.append("❌ All scores are zero: Likely processing failure or grid box error.")
+            warnings.append("[FAIL] All scores are zero: Likely processing failure or grid box error.")
         
         # Aggregate
         result['qc_status'] = status
@@ -107,11 +107,11 @@ class DockingQualityControl:
         
         # Log summary
         if status == "REJECT":
-            logger.warning(f"🚫 QC REJECT: Job {result.get('id', 'unknown')} - {', '.join(flags)}")
+            logger.warning(f"[FAIL] QC REJECT: Job {result.get('id', 'unknown')} - {', '.join(flags)}")
         elif warnings:
-            logger.info(f"⚠️ QC PASS (with warnings): Job {result.get('id', 'unknown')} - {len(warnings)} warnings")
+            logger.info(f"[WARN] QC PASS (with warnings): Job {result.get('id', 'unknown')} - {len(warnings)} warnings")
         else:
-            logger.info(f"✓ QC PASS: Job {result.get('id', 'unknown')}")
+            logger.info(f"[OK] QC PASS: Job {result.get('id', 'unknown')}")
         
         return result
     
