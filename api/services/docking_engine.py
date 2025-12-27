@@ -23,7 +23,7 @@ except ImportError:
     # If config not in path (e.g. Docker issue), fallback to default classStub?
     # Better to assume it works if we installed it.
     # But for safety in this environment:
-    from api.config.scoring_tiers import ScoringTiers
+    from config.scoring_tiers import ScoringTiers
 
 
 # Configure logging
