@@ -63,13 +63,17 @@ const Dashboard = () => {
         if (showRefresh) setRefreshing(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/dashboard-stats`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            const response = await fetch(`${apiUrl}/admin/dashboard-stats`, {
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
 
             if (response.ok) {
                 const result = await response.json();
                 setData(result);
+                console.log('Dashboard data loaded:', result); // Debug log
+            } else {
+                console.error('Dashboard API error:', response.status, await response.text());
             }
         } catch (error) {
             console.error('Error fetching dashboard:', error);
@@ -83,7 +87,8 @@ const Dashboard = () => {
         if (!confirm('Cancel this job?')) return;
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            await fetch(`${import.meta.env.VITE_API_URL}/admin/jobs/${jobId}/cancel`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            await fetch(`${apiUrl}/admin/jobs/${jobId}/cancel`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
