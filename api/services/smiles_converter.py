@@ -407,38 +407,108 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
             
             # Fall through to Layer 3
 
-    # --- LAYER 3: OpenBabel Fallback (The Heavy Lifter) ---
-    logger.info(f"Engaging Layer 3 (OpenBabel) for {filename}...")
+    # --- LAYER 3: Native Text Fallback (The "Never Fail" Lifter) ---
+    logger.info(f"Engaging Layer 3 (Native Text Fallback) for {filename}...")
     try:
-        import tempfile
-        import os
-        from services.file_converter import convert_format
+        # If RDKit totally failed to load the Mol (even with sanitize=False),
+        # we parse the TEXT directly. This handles valence errors, missing fragments, etc.
+        lines = []
+        atom_map = {
+            'H': 'H', 'C': 'C', 'N': 'N', 'O': 'O', 'F': 'F', 'P': 'P', 'S': 'S', 'CL': 'Cl', 'BR': 'Br', 'I': 'I', 
+            'MG': 'Mg', 'CA': 'Ca', 'FE': 'Fe', 'ZN': 'Zn', 'MN': 'Mn'
+        }
         
-        # Write content
-        suffix = f".{ext}" if not filename.endswith(f".{ext}") else ""
-        with tempfile.NamedTemporaryFile(suffix=f"{suffix}", delete=False, mode='w', encoding='utf-8') as tmp:
-            tmp.write(content)
-            tmp_path = tmp.name
+        raw_lines = content.splitlines()
+        atom_cnt = 0
         
-        # Convert
-        pdbqt_path = convert_format(tmp_path, 'pdbqt')
-        
-        # Read
-        with open(pdbqt_path, 'r', encoding='utf-8') as f:
-            pdbqt_string = f.read()
-            
-        # Cleanup
-        try:
-            os.remove(tmp_path)
-            os.remove(pdbqt_path)
-        except: pass
+        for line in raw_lines:
+            if line.startswith(("ATOM", "HETATM")):
+                # Fixed Width Parsing according to PDB Format
+                # 0-6: Record Name
+                # 6-11: Serial
+                # 12-16: Name
+                # 16: AltLoc
+                # 17-20: ResName
+                # 21: ChainID
+                # 22-26: ResSeq
+                # 30-38: X
+                # 38-46: Y
+                # 46-54: Z
+                # 76-78: Element (Often missing/wrong in old PDBs)
+                
+                try:
+                    name_raw = line[12:16]
+                    name_stripped = name_raw.strip()
+                    
+                    # Improved Element Guessing
+                    # 1. Check cols 76-78 (Official Element)
+                    element = ""
+                    if len(line) >= 78:
+                         element = line[76:78].strip()
+                    
+                    # 2. Heuristic from Name if Element missing
+                    if not element and name_stripped:
+                        # Strip leading numbers (e.g. 1HD1 -> H)
+                        import re
+                        # Common PDB convention: " CA " -> C, "1HD " -> H
+                        # Remove digits
+                        alpha_only = re.sub(r'[^A-Za-z]', '', name_stripped)
+                        if alpha_only:
+                            # Take first 1 or 2 chars? Usually first 1 for organic, but Cl, Br, Fe...
+                            # Heuristic: If 2 letters and 2nd is lower, it's 2 chars (Cl).
+                            # If 2 chars and both upper (CA), it's C.
+                            if len(alpha_only) >= 2 and alpha_only[1].islower():
+                                element = alpha_only[:2]
+                            else:
+                                element = alpha_only[0]
+                        else:
+                            element = "C" # Desperate fallback
+                            
+                    element = element.upper()
+
+                    # Coords
+                    x = float(line[30:38])
+                    y = float(line[38:46])
+                    z = float(line[46:54])
+                    
+                    # AutoDock Type Mapping
+                    # Safe set of Vina defaults
+                    valid_types = {
+                        'H','C','N','O','F','P','S','CL','BR','I','MG','CA','FE','ZN','MN','NA','K'
+                    }
+                    
+                    ad_type = atom_map.get(element, element)
+                    
+                    # Special Case: Carbon (Aromatic vs Aliphatic)
+                    # In text parsing, determining aromaticity is hard. 
+                    # Vina is robust to 'C' (Aliphatic) everywhere, 'A' (Aromatic) is better but requires graph.
+                    # Layer 3 is a fallback, so 'C' is safer than guessing 'A' wrong.
+                    if element == 'C': ad_type = 'C'
+                    
+                    # Validation
+                    if ad_type not in valid_types:
+                        # Remap common weird ones or fallback
+                        if element == 'K': ad_type = 'K' # Potassium? Vina might not have it, usually treated as Ion
+                        else: ad_type = 'C' # Fallback to Carbon for Unknowns to prevent crash
+                        
+                    atom_cnt += 1
+                    
+                    newline = f"{line[:30]}{x:8.3f}{y:8.3f}{z:8.3f}  1.00  0.00    0.000 {ad_type:<2}"
+                    lines.append(newline)
+                except Exception as line_err:
+                    # logger.warning(f"Skipping bad line: {line_err}")
+                    continue # Skip unparseable lines
+
+        pdbqt_string = "\n".join(lines)
         
         # Validate result isn't empty
-        if len(pdbqt_string) > 10:
+        if len(pdbqt_string) > 10 and atom_cnt > 0:
+            logger.info("Layer 3 (Native Text Fallback) Success.")
             return pdbqt_string, None
             
     except Exception as e:
-        logger.error(f"Layer 3 (OpenBabel) failed: {e}")
+        logger.error(f"Layer 3 (Native Text Fallback) failed: {e}")
+        # Final pass through...
 
     # --- LAYER 4: Pass-Through (Last Resort) ---
     # If input was already PDBQT and everything failed (maybe because it has weird ions Meeko/Obabel hate),
