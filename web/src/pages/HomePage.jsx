@@ -79,7 +79,7 @@ export default function HomePage() {
                                 <div className="relative w-full h-[400px] rounded-2xl overflow-hidden shadow-2xl transform transition-transform duration-700 hover:scale-105 group">
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent z-10" />
                                     <img
-                                        src="/assets/images/hero-molecular-v37.png"
+                                        src="/assets/images/hero-molecular-v37.png?v=2"
                                         alt="BioDockify 3D Molecular Interface"
                                         className="w-full h-full object-cover"
                                     />
@@ -278,7 +278,7 @@ export default function HomePage() {
                             <div className="absolute inset-0 bg-blue-600 blur-[80px] opacity-20 rounded-full"></div>
                             <div className="relative w-full h-[500px] rounded-3xl overflow-hidden shadow-2xl border border-slate-200 transform hover:scale-[1.02] transition-transform duration-500 group">
                                 <img
-                                    src="/assets/images/bridging-gap-v37.png"
+                                    src="/assets/images/bridging-gap-v37.png?v=2"
                                     alt="BioDockify Bridging Research and Discovery"
                                     className="w-full h-full object-cover"
                                 />
