@@ -28,6 +28,7 @@ class QueueProcessor:
         self.db = supabase_client
         self.s3 = boto3.client('s3', region_name=AWS_REGION)
         self.config_cache = {} # Cache batch configs to avoid repetitive S3 reads
+        self.failed_jobs = {} # Map job_id -> failure_count to prevent poison loops
 
     async def process_queue(self):
         """
@@ -50,6 +51,14 @@ class QueueProcessor:
                 return # Queue empty
 
             job = jobs[0]
+            
+            # Poison Pill Check: If job failed > 3 times locally, skip it temporarily
+            # (In a real system, we'd dead-letter queue it, but here we just log and skip)
+            fail_count = self.failed_jobs.get(job['id'], 0)
+            if fail_count > 3:
+                logger.warning(f"⚠️ Skipping Poison Job {job['id']} (Failed {fail_count} times locally)")
+                return
+
             await self._process_single_job(job)
 
         except Exception as e:
@@ -203,6 +212,10 @@ class QueueProcessor:
         except Exception as e:
             traceback.print_exc()
             logger.error(f"❌ [Queue] Job {job_id} failed: {e}")
+            
+            # Increment failure counter
+            self.failed_jobs[job_id] = self.failed_jobs.get(job_id, 0) + 1
+            
             safe_update(self.db, "jobs", {"id": job_id}, {
                 "status": "FAILED",
                 "error_message": str(e),
