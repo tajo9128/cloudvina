@@ -15,7 +15,8 @@ const AdminSettings = () => {
         setLoading(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/system/config`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            const res = await fetch(`${apiUrl}/admin/system/config`, {
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
             if (res.ok) {
@@ -34,7 +35,8 @@ const AdminSettings = () => {
         setSaving(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            await fetch(`${import.meta.env.VITE_API_URL}/admin/system/config`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            await fetch(`${apiUrl}/admin/system/config`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
