@@ -19,6 +19,7 @@ async def verify_admin(user: dict = Depends(get_current_user)):
     # Use the user ID to check the profile
     # Use Service Client to see ALL data (bypass RLS)
     service_client = get_service_client()
+    
     # Fix: user is a Supabase User object, access id via attribute
     user_id = getattr(user, "id", None) or user.get("id") if isinstance(user, dict) else user.id
     
@@ -39,23 +40,21 @@ async def get_dashboard_stats(
     # Use Service Client to see ALL data (bypass RLS)
     service_client = get_service_client()
 
-    # 1. Summary Stats (Counts)
+    # 1. Summary Stats (Counts) - ALL TIME
     # Real-time job stats
     jobs_response = service_client.table("jobs") \
         .select("*", count="exact") \
-        .gte("created_at", (datetime.utcnow() - timedelta(hours=hours_back)).isoformat()) \
         .execute()
     
     # User stats
     users_response = service_client.table("profiles") \
         .select("*", count="exact") \
-        .gte("created_at", (datetime.utcnow() - timedelta(hours=hours_back)).isoformat()) \
         .execute()
     
     # 2. Detailed Lists for "All-in-One" View
-    # Recent Jobs (Top 5)
+    # Recent Jobs (Top 5) - Removed profiles join due to missing FK relationship
     recent_jobs = service_client.table("jobs") \
-        .select("*, profiles(email, username)") \
+        .select("*") \
         .order("created_at", desc=True) \
         .limit(5) \
         .execute()
@@ -111,7 +110,7 @@ async def get_dashboard_stats(
             },
             "users": {
                 "total": users_response.count,
-                "active_today": users_response.count,
+                "active_all_time": users_response.count,
             },
             "system": system_metrics
         },
