@@ -280,7 +280,47 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                 return pdbqt_string, None
             else:
                 logger.warning(f"Layer 2 (Meeko) failed: No setups generated")
-                # Fall through to Custom Writer
+                # --- LAYER 2.5: Custom Rigid PDBQT Writer (Native Python) ---
+                try:
+                    logger.info(f"Engaging Layer 2.5 (Native Rigid Writer) for {filename}...")
+                    
+                    # Ensure we have charges
+                    try:
+                        AllChem.ComputeGasteigerCharges(mol)
+                    except:
+                        pass # Use 0.0 if failed
+
+                    lines = []
+                    atom_map = {
+                        1: 'H', 6: 'C', 7: 'N', 8: 'O', 9: 'F', 15: 'P', 16: 'S', 17: 'Cl', 35: 'Br', 53: 'I', 12: 'Mg', 20: 'Ca', 26: 'Fe', 30: 'Zn'
+                    }
+                    
+                    for atom in mol.GetAtoms():
+                        idx = atom.GetIdx() + 1
+                        symbol = atom.GetSymbol()
+                        atomic_num = atom.GetAtomicNum()
+                        pos = mol.GetConformer().GetAtomPosition(atom.GetIdx())
+                        try:
+                            charge = float(atom.GetProp('_GasteigerCharge'))
+                        except:
+                            charge = 0.0
+                            
+                        ad_type = atom_map.get(atomic_num, symbol)
+                        if symbol == 'C' and atom.GetIsAromatic(): ad_type = 'A'
+                        if symbol == 'N' and atom.GetIsAromatic(): ad_type = 'NA'
+
+                        # Minimal PDBQT Atom Line
+                        line = f"ATOM  {idx:>5} {symbol:>4} UNL A   1    {pos.x:8.3f}{pos.y:8.3f}{pos.z:8.3f}  1.00  0.00    {charge:6.3f} {ad_type:<2}"
+                        lines.append(line)
+                    
+                    pdbqt_string = "\n".join(lines)
+                    if len(pdbqt_string) > 10:
+                        logger.info(f"Layer 2.5 (Native Writer) success.")
+                        return pdbqt_string, None
+                except Exception as writer_err:
+                    logger.error(f"Layer 2.5 (Native Writer) failed: {writer_err}")
+                
+                # Fall through to Layer 3
                 
         except Exception as e:
             logger.warning(f"Layer 2 (Preparation) failed: {e}")
