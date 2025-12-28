@@ -20,6 +20,15 @@ const Jobs = () => {
         fetchJobs();
     }, [filter]);
 
+    // Auto-refresh every 60 seconds
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchJobs();
+        }, 60000); // 60 seconds
+
+        return () => clearInterval(interval);
+    }, [filter]);
+
     const fetchJobs = async () => {
         setLoading(true);
         try {
