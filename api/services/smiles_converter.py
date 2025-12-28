@@ -480,9 +480,6 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                     ad_type = atom_map.get(element, element)
                     
                     # Special Case: Carbon (Aromatic vs Aliphatic)
-                    # In text parsing, determining aromaticity is hard. 
-                    # Vina is robust to 'C' (Aliphatic) everywhere, 'A' (Aromatic) is better but requires graph.
-                    # Layer 3 is a fallback, so 'C' is safer than guessing 'A' wrong.
                     if element == 'C': ad_type = 'C'
                     
                     # Validation
@@ -493,7 +490,21 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                         
                     atom_cnt += 1
                     
-                    newline = f"{line[:30]}{x:8.3f}{y:8.3f}{z:8.3f}  1.00  0.00    0.000 {ad_type:<2}"
+                    # Fixed Width PDBQT Formatting (CRITICAL FOR VINA)
+                    # ATOM    368  CA  ILE A  16     -14.920 -15.176  -8.919  1.00  0.00     0.315 C
+                    # 30-38: X (8.3f)
+                    # 38-46: Y (8.3f)
+                    # 46-54: Z (8.3f)
+                    # Note: We must ensure spaces if coords are negative to prevent '-10.000-5.000'
+                    
+                    line_prefix = line[:30] # Up to X
+                    
+                    # Manual formatting to guarantee separation
+                    x_str = f"{x:8.3f}"
+                    y_str = f"{y:8.3f}"
+                    z_str = f"{z:8.3f}"
+                    
+                    newline = f"{line_prefix}{x_str}{y_str}{z_str}  1.00  0.00    0.000 {ad_type:<2}"
                     lines.append(newline)
                 except Exception as line_err:
                     # logger.warning(f"Skipping bad line: {line_err}")
