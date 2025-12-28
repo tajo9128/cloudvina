@@ -27,7 +27,7 @@ async def verify_admin(user: dict = Depends(get_current_user)):
 @router.get("/dashboard-stats")
 async def get_dashboard_stats(
     admin: dict = Depends(verify_admin),
-    hours_back: int = 24
+    hours_back: int = 168  # Changed from 24 to 168 (7 days)
 ):
     """Get comprehensive admin dashboard statistics and recent activity"""
     
