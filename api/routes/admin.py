@@ -19,7 +19,7 @@ async def verify_admin(user: dict = Depends(get_current_user)):
     # Use the user ID to check the profile
     # Use Service Client to see ALL data (bypass RLS)
     service_client = get_service_client()
-    response = service_client.table("profiles").select("is_admin").eq("id", user["id"]).single().execute()
+    response = service_client.table("profiles").select("is_admin").eq("id", user.id).single().execute()
     
     if not response.data or not response.data.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
@@ -36,17 +36,15 @@ async def get_dashboard_stats(
     # Use Service Client to see ALL data (bypass RLS)
     service_client = get_service_client()
 
-    # 1. Summary Stats (Counts)
+    # 1. Summary Stats (Counts) - ALL TIME
     # Real-time job stats
     jobs_response = service_client.table("jobs") \
         .select("*", count="exact") \
-        .gte("created_at", (datetime.utcnow() - timedelta(hours=hours_back)).isoformat()) \
         .execute()
     
     # User stats
     users_response = service_client.table("profiles") \
         .select("*", count="exact") \
-        .gte("created_at", (datetime.utcnow() - timedelta(hours=hours_back)).isoformat()) \
         .execute()
     
     # 2. Detailed Lists for "All-in-One" View
@@ -108,7 +106,7 @@ async def get_dashboard_stats(
             },
             "users": {
                 "total": users_response.count,
-                "active_today": users_response.count,
+                "active_all_time": users_response.count,
             },
             "system": system_metrics
         },
