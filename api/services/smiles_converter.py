@@ -407,38 +407,90 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
             
             # Fall through to Layer 3
 
-    # --- LAYER 3: OpenBabel Fallback (The Heavy Lifter) ---
-    logger.info(f"Engaging Layer 3 (OpenBabel) for {filename}...")
+    # --- LAYER 3: Native Text Fallback (The "Never Fail" Lifter) ---
+    logger.info(f"Engaging Layer 3 (Native Text Fallback) for {filename}...")
     try:
-        import tempfile
-        import os
-        from services.file_converter import convert_format
+        # If RDKit totally failed to load the Mol (even with sanitize=False),
+        # we parse the TEXT directly. This handles valence errors, missing fragments, etc.
+        lines = []
+        atom_map = {
+            'H': 'H', 'C': 'C', 'N': 'N', 'O': 'O', 'F': 'F', 'P': 'P', 'S': 'S', 'CL': 'Cl', 'BR': 'Br', 'I': 'I', 
+            'MG': 'Mg', 'CA': 'Ca', 'FE': 'Fe', 'ZN': 'Zn', 'MN': 'Mn'
+        }
         
-        # Write content
-        suffix = f".{ext}" if not filename.endswith(f".{ext}") else ""
-        with tempfile.NamedTemporaryFile(suffix=f"{suffix}", delete=False, mode='w', encoding='utf-8') as tmp:
-            tmp.write(content)
-            tmp_path = tmp.name
+        raw_lines = content.splitlines()
+        atom_cnt = 0
         
-        # Convert
-        pdbqt_path = convert_format(tmp_path, 'pdbqt')
-        
-        # Read
-        with open(pdbqt_path, 'r', encoding='utf-8') as f:
-            pdbqt_string = f.read()
-            
-        # Cleanup
-        try:
-            os.remove(tmp_path)
-            os.remove(pdbqt_path)
-        except: pass
+        for line in raw_lines:
+            if line.startswith(("ATOM", "HETATM")):
+                # Fixed Width Parsing according to PDB Format
+                # 0-6: Record Name
+                # 6-11: Serial
+                # 12-16: Name
+                # 16: AltLoc
+                # 17-20: ResName
+                # 21: ChainID
+                # 22-26: ResSeq
+                # 30-38: X
+                # 38-46: Y
+                # 46-54: Z
+                # 76-78: Element (Often missing/wrong in old PDBs)
+                
+                try:
+                    name_raw = line[12:16]
+                    name_stripped = name_raw.strip()
+                    element = name_stripped[0] if name_stripped else 'C' # Guess C if empty
+                    
+                    # Try to get real element from col 76-78 if exists
+                    if len(line) >= 78:
+                        elem_col = line[76:78].strip()
+                        if elem_col: element = elem_col
+                        
+                    # Standardize Symbol
+                    symbol = element.upper()
+                    
+                    # Coords
+                    x = float(line[30:38])
+                    y = float(line[38:46])
+                    z = float(line[46:54])
+                    
+                    # AutoDock Type Mapping
+                    # Simple heuristic: N -> N, C -> C (assume non-aromatic to be safe/generic)
+                    # If Gasteiger unavailable, Vina just uses atom type for VdW.
+                    ad_type = atom_map.get(symbol, 'A' if symbol == 'C' else symbol) # Default C to A (aromatic) is risky? No, C is better.
+                    if symbol == 'C': ad_type = 'C' # Use generic C
+                    if symbol == 'N': ad_type = 'N'
+                    if symbol == 'O': ad_type = 'O'
+                    if symbol == 'H': ad_type = 'H'
+
+                    # Construct PDBQT Line (Standard Fixed Width)
+                    # ATOM    368  CA  ILE A  16     -14.920 -15.176  -8.919  1.00  0.00     0.315 C
+                    
+                    atom_cnt += 1
+                    
+                    # Reuse original residue info to preserve chain/res IDs
+                    prefix = line[:30] # Up to X
+                    suffix = f"{x:8.3f}{y:8.3f}{z:8.3f}  1.00  0.00    0.000 {ad_type:<2}"
+                    
+                    # We rebuild the prefix to ensure clean spacing if original was messy
+                    # But keeping original 'line' parts is safer for odd formatting
+                    # Let's clean up just the atomic part
+                    
+                    newline = f"{line[:30]}{x:8.3f}{y:8.3f}{z:8.3f}  1.00  0.00    0.000 {ad_type:<2}"
+                    lines.append(newline)
+                except:
+                    continue # Skip unparseable lines
+
+        pdbqt_string = "\n".join(lines)
         
         # Validate result isn't empty
-        if len(pdbqt_string) > 10:
+        if len(pdbqt_string) > 10 and atom_cnt > 0:
+            logger.info("Layer 3 (Native Text Fallback) Success.")
             return pdbqt_string, None
             
     except Exception as e:
-        logger.error(f"Layer 3 (OpenBabel) failed: {e}")
+        logger.error(f"Layer 3 (Native Text Fallback) failed: {e}")
+        # Final pass through...
 
     # --- LAYER 4: Pass-Through (Last Resort) ---
     # If input was already PDBQT and everything failed (maybe because it has weird ions Meeko/Obabel hate),
