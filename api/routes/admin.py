@@ -48,9 +48,9 @@ async def get_dashboard_stats(
         .execute()
     
     # 2. Detailed Lists for "All-in-One" View
-    # Recent Jobs (Top 5)
+    # Recent Jobs (Top 5) - Removed profiles join due to missing FK relationship
     recent_jobs = service_client.table("jobs") \
-        .select("*, profiles(email, username)") \
+        .select("*") \
         .order("created_at", desc=True) \
         .limit(5) \
         .execute()
