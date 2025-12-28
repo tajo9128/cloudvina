@@ -79,7 +79,7 @@ export default function HomePage() {
                                     </div>
                                 </div>
 
-                                <div className="relative w-full h-[400px] rounded-2xl overflow-hidden shadow-2xl transform transition-transform duration-700 hover:scale-105 group">
+                                <div className="relative w-full h-[500px] lg:h-[600px] rounded-2xl overflow-hidden shadow-2xl transform transition-transform duration-700 hover:scale-105 group">
                                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent z-10" />
                                     <img
                                         src={HERO_IMG_B64}
