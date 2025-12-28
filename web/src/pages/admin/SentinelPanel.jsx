@@ -16,7 +16,8 @@ const SentinelPanel = () => {
         setScanning(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/sentinel/scan`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            const response = await fetch(`${apiUrl}/admin/sentinel/scan`, {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });

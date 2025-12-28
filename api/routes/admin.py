@@ -133,7 +133,7 @@ async def get_all_jobs(
     service_client = get_service_client()
     
     query = service_client.table("jobs") \
-        .select("*, profiles(email, username)") \
+        .select("*") \
         .order("created_at", desc=True) \
         .range(offset, offset + limit - 1)
     
