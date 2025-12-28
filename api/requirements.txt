@@ -20,6 +20,7 @@ numpy
 itsdangerous==2.1.2
 pandas==2.1.4
 httpx==0.24.1
+requests>=2.31.0
 email-validator==2.1.0
 biopython==1.84
 psutil==5.9.7
