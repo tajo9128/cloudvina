@@ -155,7 +155,82 @@ export default function Header() {
                         Start Docking
                     </Link>
                 </div>
+                {/* Mobile Menu Button - FIXED */}
+                <button
+                    className="md:hidden p-2 text-slate-800 hover:bg-slate-100 rounded-lg transition-colors"
+                    onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                >
+                    {mobileMenuOpen ? (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    ) : (
+                        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" /></svg>
+                    )}
+                </button>
             </div>
-        </header>
-    )
+
+            {/* Mobile Dropdown Menu */}
+            {mobileMenuOpen && (
+                <div className="md:hidden bg-white border-t border-slate-100 shadow-xl overflow-y-auto max-h-[80vh] animate-fade-in-down">
+                    <nav className="flex flex-col p-4 space-y-2">
+                        {navConfig.map((item) => (
+                            <div key={item.name}>
+                                {item.dropdown ? (
+                                    <div className="space-y-1">
+                                        <div className="px-4 py-2 font-bold text-slate-900 uppercase tracking-wider text-xs bg-slate-50 rounded-lg">
+                                            {item.name}
+                                        </div>
+                                        <div className="pl-4 space-y-1">
+                                            {item.dropdown.map((subItem) => (
+                                                <Link
+                                                    key={subItem.name}
+                                                    to={subItem.path}
+                                                    className="block px-4 py-2 text-sm text-slate-600 hover:text-primary-600 hover:bg-slate-50 rounded-lg"
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                >
+                                                    {subItem.name}
+                                                </Link>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <Link
+                                        to={item.path}
+                                        className={`block px-4 py-3 font-medium rounded-lg transition-colors ${location.pathname === item.path ? 'bg-primary-50 text-primary-600' : 'text-slate-700 hover:bg-slate-50'
+                                            }`}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                    >
+                                        {item.name}
+                                    </Link>
+                                )}
+                            </div>
+                        ))}
+
+                        {/* Mobile CTA */}
+                        <div className="pt-4 mt-2 border-t border-slate-100">
+                            {user ? (
+                                <div className="space-y-2">
+                                    <div className="px-4 py-2 text-sm font-bold text-slate-400">Signed in as {user.email}</div>
+                                    <Link to="/profile" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Profile</Link>
+                                    <Link to="/dashboard" className="block px-4 py-2 text-sm text-slate-700 hover:bg-slate-50">Dashboard</Link>
+                                    <button
+                                        onClick={async () => {
+                                            await supabase.auth.signOut()
+                                            window.location.href = '/'
+                                        }}
+                                        className="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50"
+                                    >
+                                        Sign Out
+                                    </button>
+                                </div>
+                            ) : (
+                                <div className="flex flex-col gap-3 px-4">
+                                    <Link to="/login" className="w-full text-center py-2.5 font-bold text-slate-700 border border-slate-200 rounded-lg">Log In</Link>
+                                    <Link to="/dock/batch" className="w-full text-center py-2.5 bg-primary-600 text-white font-bold rounded-lg shadow-lg">Start Docking</Link>
+                                </div>
+                            )}
+                        </div>
+                    </nav>
+                </div>
+            )}
+            )
 }
