@@ -55,6 +55,20 @@ app = FastAPI(
     redoc_url="/redoc"
 )
 
+# CORS Configuration - Allow frontend domains
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "https://www.biodockify.com",
+        "https://biodockify.com",
+        "http://localhost:3000",  # Local development
+        "http://127.0.0.1:3000",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],  # Allow all HTTP methods
+    allow_headers=["*"],  # Allow all headers
+)
+
 @app.on_event("startup")
 async def startup_event():
     print("="*50)
