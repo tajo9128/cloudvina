@@ -17,7 +17,9 @@ async def verify_admin(user: dict = Depends(get_current_user)):
     """Verify user is admin by checking the is_admin flag in profiles table"""
     
     # Use the user ID to check the profile
-    response = supabase.table("profiles").select("is_admin").eq("id", user["id"]).single().execute()
+    # Use Service Client to see ALL data (bypass RLS)
+    service_client = get_service_client()
+    response = service_client.table("profiles").select("is_admin").eq("id", user["id"]).single().execute()
     
     if not response.data or not response.data.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
@@ -298,7 +300,7 @@ async def update_system_config(
         .execute()
     
     # Log admin action
-    supabase.table("admin_actions").insert({
+    get_service_client().table("admin_actions").insert({
         "admin_id": admin["id"],
         "action_type": "update_config",
         "target_type": "system",
@@ -331,7 +333,7 @@ async def update_admin_settings(
     updated_config = update_section(section, settings)
     
     # Log admin action
-    supabase.table("admin_actions").insert({
+    get_service_client().table("admin_actions").insert({
         "admin_id": admin["id"],
         "action_type": f"update_{section}",
         "target_type": "settings",
@@ -391,7 +393,7 @@ async def create_user(
             }).eq("id", new_user.id).execute()
         
         # Log action (can use standard client)
-        supabase.table("admin_actions").insert({
+        get_service_client().table("admin_actions").insert({
             "admin_id": admin["id"],
             "action_type": "create_user",
             "target_id": new_user.id,
@@ -433,7 +435,7 @@ async def update_user(
     response = service_client.table("profiles").update(update_dict).eq("id", user_id).execute()
     
     # Log action
-    supabase.table("admin_actions").insert({
+    get_service_client().table("admin_actions").insert({
         "admin_id": admin["id"],
         "action_type": "update_user",
         "target_id": user_id,
@@ -462,7 +464,7 @@ async def delete_user(
         service_client.auth.admin.delete_user(user_id)
         
         # Log action
-        supabase.table("admin_actions").insert({
+        get_service_client().table("admin_actions").insert({
             "admin_id": admin["id"],
             "action_type": "delete_user",
             "target_id": user_id,
@@ -513,7 +515,7 @@ async def assign_role(
     
     # Audit
     if success:
-        supabase.table("admin_actions").insert({
+        get_service_client().table("admin_actions").insert({
             "admin_id": admin["id"],
             "action_type": "assign_role",
             "target_id": user_id,
@@ -534,7 +536,7 @@ async def remove_role(
          
     # Audit
     if success:
-        supabase.table("admin_actions").insert({
+        get_service_client().table("admin_actions").insert({
             "admin_id": admin["id"],
             "action_type": "remove_role",
             "target_id": user_id,
@@ -564,7 +566,8 @@ async def trigger_sentinel(
     report = await sentinel.scan_and_heal()
     
     # Log the scan
-    supabase.table("admin_actions").insert({
+    # Log the scan
+    get_service_client().table("admin_actions").insert({
         "admin_id": admin["id"],
         "action_type": "sentinel_manual_trigger",
         "details": report

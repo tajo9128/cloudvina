@@ -181,13 +181,21 @@ class QueueProcessor:
                     
                     # Convert
                     rec_pdbqt, r_err = convert_receptor_to_pdbqt(rec_content, os.path.basename(rec_path))
-                    if r_err or not rec_pdbqt:
-                        if is_clone:
-                            # Fail the clone but continue
-                            safe_update(self.db, "jobs", {"id": current_job_id}, {"status": "FAILED", "error_message": "Receptor conversion failed"})
-                            continue
-                        else:
-                            raise Exception(f"Main receptor conversion failed: {r_err}")
+                    
+                    # PRE-FLIGHT CHECK: Validate PDBQT
+                    if not rec_pdbqt or len(rec_pdbqt) < 50 or "ATOM" not in rec_pdbqt:
+                         validation_err = r_err or "Generated PDBQT is empty or invalid"
+                         logger.error(f"❌ [Queue] Pre-Flight Check Failed for {current_job_id}: {validation_err}")
+                         
+                         if is_clone:
+                             safe_update(self.db, "jobs", {"id": current_job_id}, {"status": "FAILED", "error_message": f"Validation Failed: {validation_err}"})
+                             continue
+                         else:
+                             raise Exception(f"Main receptor validation failed: {validation_err}")
+
+                    if r_err:
+                        logger.warning(f"⚠️ Receptor converted with warnings: {r_err}")
+                        # Continue if we have valid content
                     
                     # Upload Receptor
                     local_rec_pdbqt = rec_path + ".pdbqt"
