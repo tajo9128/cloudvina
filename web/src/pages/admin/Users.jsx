@@ -42,7 +42,8 @@ const Users = () => {
         setLoading(true);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            const response = await fetch(`${apiUrl}/admin/users`, {
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
 
@@ -61,7 +62,8 @@ const Users = () => {
         e.preventDefault();
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            const response = await fetch(`${apiUrl}/admin/users`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -88,7 +90,8 @@ const Users = () => {
         e.preventDefault();
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/${selectedUser.id}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            const response = await fetch(`${apiUrl}/admin/users/${selectedUser.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -119,7 +122,8 @@ const Users = () => {
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/${userId}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            const response = await fetch(`${apiUrl}/admin/users/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
@@ -149,7 +153,8 @@ const Users = () => {
             const { data: { session } } = await supabase.auth.getSession();
             const newRole = isSuspended ? 'user' : 'suspended';
 
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/users/${user.id}`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            const response = await fetch(`${apiUrl}/admin/users/${user.id}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -306,8 +311,8 @@ const Users = () => {
                                         </td>
                                         <td className="p-4">
                                             <span className={`px-2 py-1 rounded text-xs uppercase font-bold tracking-wider ${user.plan === 'premium' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' :
-                                                    user.plan === 'pro' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' :
-                                                        'bg-slate-700 text-slate-400'
+                                                user.plan === 'pro' ? 'bg-indigo-500/20 text-indigo-400 border border-indigo-500/30' :
+                                                    'bg-slate-700 text-slate-400'
                                                 }`}>
                                                 {user.plan || 'FREE'}
                                             </span>

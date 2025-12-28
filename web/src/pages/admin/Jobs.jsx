@@ -25,7 +25,8 @@ const Jobs = () => {
         try {
             const { data: { session } } = await supabase.auth.getSession();
 
-            let url = `${import.meta.env.VITE_API_URL}/admin/jobs?limit=50`;
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            let url = `${apiUrl}/admin/jobs?limit=50`;
             if (filter !== 'all') {
                 url += `&status=${filter}`;
             }
@@ -52,7 +53,8 @@ const Jobs = () => {
 
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const response = await fetch(`${import.meta.env.VITE_API_URL}/admin/jobs/${jobId}/cancel`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            const response = await fetch(`${apiUrl}/admin/jobs/${jobId}/cancel`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${session?.access_token}`
@@ -112,7 +114,8 @@ const Jobs = () => {
         setJobDetails(null);
         try {
             const { data: { session } } = await supabase.auth.getSession();
-            const res = await fetch(`${import.meta.env.VITE_API_URL}/admin/jobs/${job.id}/details`, {
+            const apiUrl = import.meta.env.VITE_API_URL || 'https://cloudvina-api.onrender.com';
+            const res = await fetch(`${apiUrl}/admin/jobs/${job.id}/details`, {
                 headers: { 'Authorization': `Bearer ${session?.access_token}` }
             });
             if (res.ok) setJobDetails(await res.json());
