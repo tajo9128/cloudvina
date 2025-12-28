@@ -215,15 +215,33 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
             # We aggressively strip non-protein lines to ensure a single chain/fragment if possible.
             lines = content.splitlines()
             cleaned_lines = []
-            for line in lines:
-                if line.startswith("ATOM"):
-                    cleaned_lines.append(line)
-                elif line.startswith("TER"):
-                    cleaned_lines.append(line)
-                # Skip HETATM (waters, ligands, ions) for the Receptor prep if we want just protein
-                # This fixes the "multiple fragments" error in 99% of cases
             
-            cleaned_content = "\n".join(cleaned_lines)
+            # Heuristic: Detect if input already has multiple models or huge header
+            has_protein = False
+            
+            for line in lines:
+                if line.startswith("ATOM  "):
+                     # Check alternate location indicator (column 16, index 16 in 0-indexed string)
+                     # Keep only 'A' or ' ' alternative locations to avoid duplicates
+                     alt_loc = line[16] if len(line) > 16 else ' '
+                     if alt_loc not in [' ', 'A', '1']:
+                         continue
+                     cleaned_lines.append(line)
+                     has_protein = True
+                elif line.startswith("TER"):
+                     cleaned_lines.append(line)
+                # EXPLICITLY SKIP HETATM (Waters, Ligands, Ions) for Receptor Prep
+                # This guarantees we only get the peptide chain, solving the "10 fragments" Meeko crash.
+                elif line.startswith("HETATM"):
+                     continue # Aggressive skip
+            
+            if not has_protein:
+                 # Fallback if we accidentally stripped everything (e.g. valid HETATM protein like peptides?)
+                 # Just use original content
+                 cleaned_content = content
+            else:
+                 cleaned_content = "\n".join(cleaned_lines)
+            
             mol = Chem.MolFromPDBBlock(cleaned_content, removeHs=False)
             
             if not mol:
@@ -386,16 +404,42 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                         resSeq = 1
                         altLoc = ' '
 
-                    # Pad name to 4 chars logic is tricky, usually: " N  " or " CA "
-                    # If name is len 1 (N), " N  "
-                    # If len 4 (HD11), "HD11"
-                    if len(name) < 4:
-                        name_field = f" {name:<3}" 
-                    else:
-                        name_field = f"{name:<4}"
+                        # Ensure strictly PDB compliant formatting
+                        # ATOM      1  N   ALA A   1      10.123  -5.456  20.789  1.00  0.00    -0.274 N
+                        
+                        # Fix Name Field Padding
+                        # "N" -> " N  " (len 1, padded front)
+                        # "CA" -> " CA " (len 2, padded ?)
+                        # "ALA" -> "ALA " (len 3, padded back)
+                        # "HD11" -> "HD11" (len 4, no padding)
+                        
+                        fmt_name = name
+                        if len(name) == 1: fmt_name = f" {name}  "
+                        elif len(name) == 2: fmt_name = f" {name} "
+                        elif len(name) == 3: fmt_name = f" {name}" # Standard PDB usually aligns right for atoms? No, left for atoms.
+                        # Wait, standard PDB:
+                        # 13-16: Atom name. 
+                        # " N  "
+                        # " CA "
+                        # " CB "
+                        # " OH " (Tyr)
+                        # " CZ2" (Trp)
+                        
+                        if len(name) < 4:
+                            # Center-ish alignment for 1-2 chars, Left for 3?
+                            # Standard: 
+                            # 13 14 15 16
+                            #  N           -> " N  "
+                            #  C  A        -> " CA "
+                            if len(name) == 1: fmt_name = f" {name}  "
+                            elif len(name) == 2: fmt_name = f" {name} "
+                            elif len(name) == 3: fmt_name = f"{name} "
+                            else: fmt_name = f"{name:<4}"
+                        else:
+                            fmt_name = name[:4]
 
-                    line = f"ATOM  {idx:>5} {name_field} {resName:<3} {chain}{resSeq:>4}{altLoc}   {pos.x:8.3f}{pos.y:8.3f}{pos.z:8.3f}  1.00  0.00    {charge:6.3f} {ad_type:<2}"
-                    lines.append(line)
+                        line = f"ATOM  {idx:>5} {fmt_name}{resName:>3} {chain}{resSeq:>4}{altLoc}   {pos.x:8.3f}{pos.y:8.3f}{pos.z:8.3f}  1.00  0.00    {charge:6.3f} {ad_type:<2}"
+                        lines.append(line)
                 
                 pdbqt_string = "\n".join(lines)
                 if len(pdbqt_string) > 10:
