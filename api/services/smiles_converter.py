@@ -439,46 +439,64 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                 try:
                     name_raw = line[12:16]
                     name_stripped = name_raw.strip()
-                    element = name_stripped[0] if name_stripped else 'C' # Guess C if empty
                     
-                    # Try to get real element from col 76-78 if exists
+                    # Improved Element Guessing
+                    # 1. Check cols 76-78 (Official Element)
+                    element = ""
                     if len(line) >= 78:
-                        elem_col = line[76:78].strip()
-                        if elem_col: element = elem_col
-                        
-                    # Standardize Symbol
-                    symbol = element.upper()
+                         element = line[76:78].strip()
                     
+                    # 2. Heuristic from Name if Element missing
+                    if not element and name_stripped:
+                        # Strip leading numbers (e.g. 1HD1 -> H)
+                        import re
+                        # Common PDB convention: " CA " -> C, "1HD " -> H
+                        # Remove digits
+                        alpha_only = re.sub(r'[^A-Za-z]', '', name_stripped)
+                        if alpha_only:
+                            # Take first 1 or 2 chars? Usually first 1 for organic, but Cl, Br, Fe...
+                            # Heuristic: If 2 letters and 2nd is lower, it's 2 chars (Cl).
+                            # If 2 chars and both upper (CA), it's C.
+                            if len(alpha_only) >= 2 and alpha_only[1].islower():
+                                element = alpha_only[:2]
+                            else:
+                                element = alpha_only[0]
+                        else:
+                            element = "C" # Desperate fallback
+                            
+                    element = element.upper()
+
                     # Coords
                     x = float(line[30:38])
                     y = float(line[38:46])
                     z = float(line[46:54])
                     
                     # AutoDock Type Mapping
-                    # Simple heuristic: N -> N, C -> C (assume non-aromatic to be safe/generic)
-                    # If Gasteiger unavailable, Vina just uses atom type for VdW.
-                    ad_type = atom_map.get(symbol, 'A' if symbol == 'C' else symbol) # Default C to A (aromatic) is risky? No, C is better.
-                    if symbol == 'C': ad_type = 'C' # Use generic C
-                    if symbol == 'N': ad_type = 'N'
-                    if symbol == 'O': ad_type = 'O'
-                    if symbol == 'H': ad_type = 'H'
-
-                    # Construct PDBQT Line (Standard Fixed Width)
-                    # ATOM    368  CA  ILE A  16     -14.920 -15.176  -8.919  1.00  0.00     0.315 C
+                    # Safe set of Vina defaults
+                    valid_types = {
+                        'H','C','N','O','F','P','S','CL','BR','I','MG','CA','FE','ZN','MN','NA','K'
+                    }
                     
+                    ad_type = atom_map.get(element, element)
+                    
+                    # Special Case: Carbon (Aromatic vs Aliphatic)
+                    # In text parsing, determining aromaticity is hard. 
+                    # Vina is robust to 'C' (Aliphatic) everywhere, 'A' (Aromatic) is better but requires graph.
+                    # Layer 3 is a fallback, so 'C' is safer than guessing 'A' wrong.
+                    if element == 'C': ad_type = 'C'
+                    
+                    # Validation
+                    if ad_type not in valid_types:
+                        # Remap common weird ones or fallback
+                        if element == 'K': ad_type = 'K' # Potassium? Vina might not have it, usually treated as Ion
+                        else: ad_type = 'C' # Fallback to Carbon for Unknowns to prevent crash
+                        
                     atom_cnt += 1
-                    
-                    # Reuse original residue info to preserve chain/res IDs
-                    prefix = line[:30] # Up to X
-                    suffix = f"{x:8.3f}{y:8.3f}{z:8.3f}  1.00  0.00    0.000 {ad_type:<2}"
-                    
-                    # We rebuild the prefix to ensure clean spacing if original was messy
-                    # But keeping original 'line' parts is safer for odd formatting
-                    # Let's clean up just the atomic part
                     
                     newline = f"{line[:30]}{x:8.3f}{y:8.3f}{z:8.3f}  1.00  0.00    0.000 {ad_type:<2}"
                     lines.append(newline)
-                except:
+                except Exception as line_err:
+                    # logger.warning(f"Skipping bad line: {line_err}")
                     continue # Skip unparseable lines
 
         pdbqt_string = "\n".join(lines)
