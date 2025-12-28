@@ -346,111 +346,13 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
             # --- LAYER 2.5: Custom Rigid PDBQT Writer (Native Python) ---
             # Meeko fails on dimers/disconnected chains. But checking '2 fragments' implies RDKit loaded it fine.
             # We can manually write PDBQT atoms without ' ROOT' structure for rigid receptors.
-            try:
-                logger.info(f"Engaging Layer 2.5 (Native Rigid Writer) for {filename}...")
-                
-                # Ensure we have charges
-                try:
-                    AllChem.ComputeGasteigerCharges(mol)
-                except:
-                    pass # Use 0.0 if failed
-
-                lines = []
-                # Write standard PDBQT header-ish info if needed, or just Atoms
-                
-                atom_map = {
-                    1: 'H', 6: 'C', 7: 'N', 8: 'O', 9: 'F', 15: 'P', 16: 'S', 17: 'Cl', 35: 'Br', 53: 'I', 12: 'Mg', 20: 'Ca', 26: 'Fe', 30: 'Zn'
-                }
-                
-                for atom in mol.GetAtoms():
-                    idx = atom.GetIdx() + 1
-                    symbol = atom.GetSymbol()
-                    atomic_num = atom.GetAtomicNum()
-                    
-                    # Get Coords
-                    pos = mol.GetConformer().GetAtomPosition(atom.GetIdx())
-                    
-                    # Get Charge
-                    try:
-                        charge = float(atom.GetProp('_GasteigerCharge'))
-                    except:
-                        charge = 0.0
-                        
-                    # AutoDock Atom Type (Simplified)
-                    ad_type = atom_map.get(atomic_num, symbol)
-                    if symbol == 'C' and atom.GetIsAromatic(): ad_type = 'A'
-                    if symbol == 'N' and atom.GetIsAromatic(): ad_type = 'NA'
-                    # More rules could be added, but minimal set works for Vina usually
-                    
-                    # PDBQT Format:
-                    # ATOM      1  N   ILE A  16      45.248  12.590   6.040  0.00  0.00    -0.274 N
-                    # We reuse PDB formatting mostly
-                    
-                    # Construct PDB line structure
-                    # Name (13-16), ResName (18-20), Chain (22), ResSeq (23-26), X, Y, Z, Occ, Temp, Charge, Type
-                    
-                    # RDKit PDB info
-                    mi = atom.GetPDBResidueInfo()
-                    if mi:
-                        name = mi.GetName().strip()
-                        resName = mi.GetResidueName().strip()
-                        chain = mi.GetChainId().strip()
-                        resSeq = mi.GetResidueNumber()
-                        altLoc = mi.GetAltLoc().strip() or ' '
-                    else:
-                        name = symbol
-                        resName = "UNL"
-                        chain = "A"
-                        resSeq = 1
-                        altLoc = ' '
-
-                        # Ensure strictly PDB compliant formatting
-                        # ATOM      1  N   ALA A   1      10.123  -5.456  20.789  1.00  0.00    -0.274 N
-                        
-                        # Fix Name Field Padding
-                        # "N" -> " N  " (len 1, padded front)
-                        # "CA" -> " CA " (len 2, padded ?)
-                        # "ALA" -> "ALA " (len 3, padded back)
-                        # "HD11" -> "HD11" (len 4, no padding)
-                        
-                        fmt_name = name
-                        if len(name) == 1: fmt_name = f" {name}  "
-                        elif len(name) == 2: fmt_name = f" {name} "
-                        elif len(name) == 3: fmt_name = f" {name}" # Standard PDB usually aligns right for atoms? No, left for atoms.
-                        # Wait, standard PDB:
-                        # 13-16: Atom name. 
-                        # " N  "
-                        # " CA "
-                        # " CB "
-                        # " OH " (Tyr)
-                        # " CZ2" (Trp)
-                        
-                        if len(name) < 4:
-                            # Center-ish alignment for 1-2 chars, Left for 3?
-                            # Standard: 
-                            # 13 14 15 16
-                            #  N           -> " N  "
-                            #  C  A        -> " CA "
-                            if len(name) == 1: fmt_name = f" {name}  "
-                            elif len(name) == 2: fmt_name = f" {name} "
-                            elif len(name) == 3: fmt_name = f"{name} "
-                            else: fmt_name = f"{name:<4}"
-                        else:
-                            fmt_name = name[:4]
-
-                        # Fix Column Order: Name(12-15), AltLoc(16), ResName(17-19), Chain(21), ResSeq(22-25)
-                        line = f"ATOM  {idx:>5} {fmt_name}{altLoc}{resName:>3} {chain}{resSeq:>4}    {pos.x:8.3f}{pos.y:8.3f}{pos.z:8.3f}  1.00  0.00    {charge:6.3f} {ad_type:<2}"
-                        lines.append(line)
-                
-                pdbqt_string = "\n".join(lines)
-                if len(pdbqt_string) > 10:
-                     logger.info(f"Layer 2.5 (Native Writer) success.")
-                     return pdbqt_string, None
-                     
-            except Exception as writer_err:
-                 logger.error(f"Layer 2.5 (Native Writer) failed: {writer_err}")
-            
             # Fall through to Layer 3
+            # --- LAYER 2.5 DISABLED ---
+            # User Feedback: "when protein breaks in pices, run docking job with simple crystaline form"
+            # Layer 2.5 relies on RDKit atoms, which might be "6 fragments".
+            # Layer 3 relies on raw text parsing, which treats everything as one block.
+            # We disable Layer 2.5 to force the simpler, more robust Layer 3.
+            pass
 
     # --- LAYER 3: Native Text Fallback (The "Never Fail" Lifter) ---
     logger.info(f"Engaging Layer 3 (Native Text Fallback) for {filename}...")
