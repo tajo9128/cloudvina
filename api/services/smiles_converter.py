@@ -613,12 +613,34 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
         logger.error(f"Layer 3 (Native Text Fallback) failed: {e}")
         # Final pass through...
 
-    # --- LAYER 4: Pass-Through (Last Resort) ---
-    # If input was already PDBQT and everything failed (maybe because it has weird ions Meeko/Obabel hate),
-    # just return the original content. Vina might handle it better than our parsers.
-    if ext == 'pdbqt' and len(content) > 10:
-        logger.warning(f"All conversion layers failed. Returning original content for {filename}.")
-        return content, None
+    # --- LAYER 4: Pass-Through (The "Just Work" Logic) ---
+    # User Request: "when protein breaks in pices, run docking job with simple crystaline form submitted by user dont give error"
+    # If all sophisticated parsing failed, we assume the user uploaded a valid PDB/PDBQT and just return it (or minimal conversion).
+    
+    logger.warning(f"All conversion layers failed for {filename}. Engaging Layer 4 Pass-Through.")
+    
+    if len(content) > 10:
+        if ext == 'pdbqt':
+            return content, None
+        
+        # If PDB, try to just strip headers and return as PDBQT (Vina often accepts PDB-like atoms if space separated)
+        # Or better, just convert atoms blindly.
+        if ext in ['pdb', 'ent']:
+             # Last ditch: Native Writer on raw text lines without RDKit
+             try:
+                 lines = []
+                 for line in content.splitlines():
+                    if line.startswith("ATOM") or line.startswith("HETATM"):
+                        # Ensure it fits minimum width
+                        if len(line) > 54:
+                             lines.append(line)
+                 
+                 if len(lines) > 0:
+                     return "\n".join(lines), None
+             except:
+                 pass
+
+        return content, None  # Total Hail Mary
 
     return None, f"All conversion layers failed for {filename}. Please check file format."
 
