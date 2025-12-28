@@ -438,7 +438,8 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                         else:
                             fmt_name = name[:4]
 
-                        line = f"ATOM  {idx:>5} {fmt_name}{resName:>3} {chain}{resSeq:>4}{altLoc}   {pos.x:8.3f}{pos.y:8.3f}{pos.z:8.3f}  1.00  0.00    {charge:6.3f} {ad_type:<2}"
+                        # Fix Column Order: Name(12-15), AltLoc(16), ResName(17-19), Chain(21), ResSeq(22-25)
+                        line = f"ATOM  {idx:>5} {fmt_name}{altLoc}{resName:>3} {chain}{resSeq:>4}    {pos.x:8.3f}{pos.y:8.3f}{pos.z:8.3f}  1.00  0.00    {charge:6.3f} {ad_type:<2}"
                         lines.append(line)
                 
                 pdbqt_string = "\n".join(lines)
