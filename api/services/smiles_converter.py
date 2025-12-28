@@ -436,70 +436,118 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                 # 46-54: Z
                 # 76-78: Element (Often missing/wrong in old PDBs)
                 
+                # --- Parsing Strategy: Hybrid (Fixed Width -> Split) ---
+                x, y, z = 0.0, 0.0, 0.0
+                parsing_method = "fixed"
+                
                 try:
-                    name_raw = line[12:16]
-                    name_stripped = name_raw.strip()
+                    # Clean input line
+                    clean_line = line.replace('\t', ' ')
                     
-                    # Improved Element Guessing
-                    # 1. Check cols 76-78 (Official Element)
-                    element = ""
-                    if len(line) >= 78:
-                         element = line[76:78].strip()
-                    
-                    # 2. Heuristic from Name if Element missing
-                    if not element and name_stripped:
-                        # Strip leading numbers (e.g. 1HD1 -> H)
+                    # 1. Try Standard Fixed Width (Most Reliable for metadata)
+                    try:
+                        rec_name = clean_line[0:6].strip()
+                        serial = int(clean_line[6:11].strip()) if clean_line[6:11].strip() else atom_cnt
+                        name = clean_line[12:16].strip()
+                        alt_loc = clean_line[16:17] if len(clean_line) > 16 else ' '
+                        res_name = clean_line[17:20].strip()
+                        chain_id = clean_line[21:22] if len(clean_line) > 21 else 'A'
+                        res_seq = int(clean_line[22:26].strip()) if clean_line[22:26].strip() else 1
+                        icode = clean_line[26:27] if len(clean_line) > 26 else ' '
+                        
+                        x = float(clean_line[30:38])
+                        y = float(clean_line[38:46])
+                        z = float(clean_line[46:54])
+                        
+                        # Official Element
+                        element = ""
+                        if len(clean_line) >= 78:
+                             element = clean_line[76:78].strip()
+                             
+                    except (ValueError, IndexError):
+                        # 2. Fallback: Split Strategy (Handles tabs/shifts)
+                        parsing_method = "split"
+                        parts = line.split()
+                        # ATOM(0) Serial(1) Name(2) Res(3) Chain(4) ResSeq(5) X(6) Y(7) Z(8) ...
+                        # This is risky but often works for messy files
+                        # Heuristic: Scan for 3 consecutive floats
+                        coords_found = False
+                        float_buffer = []
+                        res_name_guess = "UNK"
+                        name_guess = parts[2] if len(parts) > 2 else "C"
+                        
+                        for i, p in enumerate(parts):
+                            try:
+                                val = float(p)
+                                # Check if it looks like a coordinate (-1000 to 1000, usually has dot)
+                                if '.' in p:
+                                    float_buffer.append(val)
+                            except:
+                                float_buffer = [] # Reset on non-float
+                            
+                            if len(float_buffer) == 3:
+                                x, y, z = float_buffer
+                                coords_found = True
+                                # Metadata is hard to guess, stick to defaults/guesses
+                                name = name_guess
+                                res_name = res_name_guess
+                                if i >= 8: # If coords are late, earlier stuff might be valid
+                                    pass 
+                                break
+                        
+                        if not coords_found:
+                            raise ValueError("Could not find coordinates")
+
+                        # Defaults for split mode
+                        serial = atom_cnt
+                        res_seq = 1
+                        chain_id = 'A'
+                        alt_loc = ' '
+                        icode = ' '
+                        element = "" # Will guess later
+
+                    # --- Element Guessing (Shared) ---
+                    # 1. From Official (if fixed parsed)
+                    # 2. Heuristic from Name
+                    if not element and name:
                         import re
-                        # Common PDB convention: " CA " -> C, "1HD " -> H
-                        # Remove digits
-                        alpha_only = re.sub(r'[^A-Za-z]', '', name_stripped)
+                        alpha_only = re.sub(r'[^A-Za-z]', '', name)
                         if alpha_only:
-                            # Take first 1 or 2 chars? Usually first 1 for organic, but Cl, Br, Fe...
-                            # Heuristic: If 2 letters and 2nd is lower, it's 2 chars (Cl).
-                            # If 2 chars and both upper (CA), it's C.
                             if len(alpha_only) >= 2 and alpha_only[1].islower():
-                                element = alpha_only[:2]
+                                element = alpha_only[:2] 
                             else:
                                 element = alpha_only[0]
                         else:
-                            element = "C" # Desperate fallback
+                            element = "C"
                             
                     element = element.upper()
+                    if not element: element = "C"
 
-                    # Coords
-                    x = float(line[30:38])
-                    y = float(line[38:46])
-                    z = float(line[46:54])
-                    
-                    # AutoDock Type Mapping
-                    # Safe set of Vina defaults
+                    # --- AutoDock Type Mapping ---
                     valid_types = {
                         'H','C','N','O','F','P','S','CL','BR','I','MG','CA','FE','ZN','MN','NA','K'
                     }
                     
                     ad_type = atom_map.get(element, element)
+                    if element == 'C': ad_type = 'C' 
                     
-                    # Special Case: Carbon (Aromatic vs Aliphatic)
-                    if element == 'C': ad_type = 'C'
-                    
-                    # Validation
                     if ad_type not in valid_types:
-                        # Remap common weird ones or fallback
-                        if element == 'K': ad_type = 'K' # Potassium? Vina might not have it, usually treated as Ion
-                        else: ad_type = 'C' # Fallback to Carbon for Unknowns to prevent crash
+                         if element == 'K': ad_type = 'K'
+                         else: ad_type = 'C' 
                         
                     atom_cnt += 1
                     
-                    # Fixed Width PDBQT Formatting (CRITICAL FOR VINA)
-                    # ATOM    368  CA  ILE A  16     -14.920 -15.176  -8.919  1.00  0.00     0.315 C
-                    # 30-38: X (8.3f)
-                    # 38-46: Y (8.3f)
-                    # 46-54: Z (8.3f)
-                    # Note: We must ensure spaces if coords are negative to prevent '-10.000-5.000'
+                    # --- Reconstruction ---
+                    fmt_name = f"{name:<3}" if len(name)<4 else name[:4]
+                    if len(name) <= 3 and not name[0].isdigit(): 
+                         fmt_name = f" {name:<3}"
+                    else:
+                         fmt_name = f"{name:<4}"
+
+                    line_prefix = (
+                        f"{'ATOM':<6}{serial:>5} {fmt_name}{alt_loc}{res_name:>3} {chain_id}{res_seq:>4}{icode}   "
+                    )
                     
-                    line_prefix = line[:30] # Up to X
-                    
-                    # Manual formatting to guarantee separation
                     x_str = f"{x:8.3f}"
                     y_str = f"{y:8.3f}"
                     z_str = f"{z:8.3f}"
@@ -507,8 +555,7 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                     newline = f"{line_prefix}{x_str}{y_str}{z_str}  1.00  0.00    0.000 {ad_type:<2}"
                     lines.append(newline)
                 except Exception as line_err:
-                    # logger.warning(f"Skipping bad line: {line_err}")
-                    continue # Skip unparseable lines
+                    continue
 
         pdbqt_string = "\n".join(lines)
         
