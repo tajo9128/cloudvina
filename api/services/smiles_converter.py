@@ -280,10 +280,91 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                 return pdbqt_string, None
             else:
                 logger.warning(f"Layer 2 (Meeko) failed: No setups generated")
-                # Fall through to Layer 3
+                # Fall through to Custom Writer
                 
         except Exception as e:
             logger.warning(f"Layer 2 (Preparation) failed: {e}")
+            
+            # --- LAYER 2.5: Custom Rigid PDBQT Writer (Native Python) ---
+            # Meeko fails on dimers/disconnected chains. But checking '2 fragments' implies RDKit loaded it fine.
+            # We can manually write PDBQT atoms without ' ROOT' structure for rigid receptors.
+            try:
+                logger.info(f"Engaging Layer 2.5 (Native Rigid Writer) for {filename}...")
+                
+                # Ensure we have charges
+                try:
+                    AllChem.ComputeGasteigerCharges(mol)
+                except:
+                    pass # Use 0.0 if failed
+
+                lines = []
+                # Write standard PDBQT header-ish info if needed, or just Atoms
+                
+                atom_map = {
+                    1: 'H', 6: 'C', 7: 'N', 8: 'O', 9: 'F', 15: 'P', 16: 'S', 17: 'Cl', 35: 'Br', 53: 'I', 12: 'Mg', 20: 'Ca', 26: 'Fe', 30: 'Zn'
+                }
+                
+                for atom in mol.GetAtoms():
+                    idx = atom.GetIdx() + 1
+                    symbol = atom.GetSymbol()
+                    atomic_num = atom.GetAtomicNum()
+                    
+                    # Get Coords
+                    pos = mol.GetConformer().GetAtomPosition(atom.GetIdx())
+                    
+                    # Get Charge
+                    try:
+                        charge = float(atom.GetProp('_GasteigerCharge'))
+                    except:
+                        charge = 0.0
+                        
+                    # AutoDock Atom Type (Simplified)
+                    ad_type = atom_map.get(atomic_num, symbol)
+                    if symbol == 'C' and atom.GetIsAromatic(): ad_type = 'A'
+                    if symbol == 'N' and atom.GetIsAromatic(): ad_type = 'NA'
+                    # More rules could be added, but minimal set works for Vina usually
+                    
+                    # PDBQT Format:
+                    # ATOM      1  N   ILE A  16      45.248  12.590   6.040  0.00  0.00    -0.274 N
+                    # We reuse PDB formatting mostly
+                    
+                    # Construct PDB line structure
+                    # Name (13-16), ResName (18-20), Chain (22), ResSeq (23-26), X, Y, Z, Occ, Temp, Charge, Type
+                    
+                    # RDKit PDB info
+                    mi = atom.GetPDBResidueInfo()
+                    if mi:
+                        name = mi.GetName().strip()
+                        resName = mi.GetResidueName().strip()
+                        chain = mi.GetChainId().strip()
+                        resSeq = mi.GetResidueNumber()
+                        altLoc = mi.GetAltLoc().strip() or ' '
+                    else:
+                        name = symbol
+                        resName = "UNL"
+                        chain = "A"
+                        resSeq = 1
+                        altLoc = ' '
+
+                    # Pad name to 4 chars logic is tricky, usually: " N  " or " CA "
+                    # If name is len 1 (N), " N  "
+                    # If len 4 (HD11), "HD11"
+                    if len(name) < 4:
+                        name_field = f" {name:<3}" 
+                    else:
+                        name_field = f"{name:<4}"
+
+                    line = f"ATOM  {idx:>5} {name_field} {resName:<3} {chain}{resSeq:>4}{altLoc}   {pos.x:8.3f}{pos.y:8.3f}{pos.z:8.3f}  1.00  0.00    {charge:6.3f} {ad_type:<2}"
+                    lines.append(line)
+                
+                pdbqt_string = "\n".join(lines)
+                if len(pdbqt_string) > 10:
+                     logger.info(f"Layer 2.5 (Native Writer) success.")
+                     return pdbqt_string, None
+                     
+            except Exception as writer_err:
+                 logger.error(f"Layer 2.5 (Native Writer) failed: {writer_err}")
+            
             # Fall through to Layer 3
 
     # --- LAYER 3: OpenBabel Fallback (The Heavy Lifter) ---

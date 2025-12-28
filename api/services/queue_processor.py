@@ -195,7 +195,9 @@ class QueueProcessor:
                     self.s3.upload_file(local_rec_pdbqt, S3_BUCKET, current_rec_key)
                     
                     # 6. Generate Config
-                    generate_vina_config(current_job_id, grid_params=grid_params, receptor_content=rec_pdbqt)
+                    # CRITICAL OPTIMIZATION: Use 'rec_content' (Original PDB) for Autoboxing
+                    # so we can detect the co-crystallized ligand (HETATM) before we stripped it for Vina.
+                    generate_vina_config(current_job_id, grid_params=grid_params, receptor_content=rec_content)
                     
                     # 7. Submit to AWS
                     aws_id = submit_to_aws(current_job_id, current_rec_key, current_lig_key, engine=engine)
