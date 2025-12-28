@@ -61,6 +61,8 @@ app.add_middleware(
     allow_origins=[
         "https://www.biodockify.com",
         "https://biodockify.com",
+        "https://cloudvina-git-main-tajuddin-shaiks-projects.vercel.app",
+        "https://cloudvina.vercel.app",
         "http://localhost:3000",  # Local development
         "http://127.0.0.1:3000",
     ],
@@ -183,6 +185,8 @@ app.add_middleware(
     allow_origins=[
         "https://www.biodockify.com",
         "https://biodockify.com",
+        "https://cloudvina-git-main-tajuddin-shaiks-projects.vercel.app",
+        "https://cloudvina.vercel.app",
         "http://localhost:5173",
         "http://localhost:3000"
     ],
