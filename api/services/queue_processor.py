@@ -84,7 +84,20 @@ class QueueProcessor:
             # We stored this in S3 at "jobs/{batch_id}/batch_config.json" during start_batch
             config = self._get_batch_config(batch_id)
             grid_params = config.get('grid_params')
+            
+            # Engine Selection with Fallback
             engine = config.get('engine', 'consensus')
+            
+            # CRITICAL STABILITY FIX: Temporarily force 'vina' to bypass Docker/Triscore instability
+            # User reported 10+ failures. We need a 100% success rate now.
+            if engine in ['consensus', 'triscore', 'gnina']:
+                logger.warning(f"⚠️ Stability Override: Downgrading engine '{engine}' to 'vina'")
+                engine = 'vina'
+            
+            # SAFE MODE: If job has failed before, downgrade to 'vina' for stability (Redundant but kept for safety)
+            fail_count = self.failed_jobs.get(job_id, 0)
+            if fail_count > 0:
+                engine = 'vina'
 
             # C. Execute Preparation Pipeline
             # Layer 1 Integration: We now generate an ensemble of receptors

@@ -19,7 +19,11 @@ async def verify_admin(user: dict = Depends(get_current_user)):
     # Use the user ID to check the profile
     # Use Service Client to see ALL data (bypass RLS)
     service_client = get_service_client()
-    response = service_client.table("profiles").select("is_admin").eq("id", user.id).single().execute()
+    
+    # Fix: user is a Supabase User object, access id via attribute
+    user_id = getattr(user, "id", None) or user.get("id") if isinstance(user, dict) else user.id
+    
+    response = service_client.table("profiles").select("is_admin").eq("id", user_id).single().execute()
     
     if not response.data or not response.data.get("is_admin"):
         raise HTTPException(status_code=403, detail="Admin access required")
