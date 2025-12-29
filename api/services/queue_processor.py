@@ -7,6 +7,7 @@ import traceback
 import tempfile
 import time
 from datetime import datetime
+from typing import Tuple
 from supabase import Client
 from services.config_generator import generate_vina_config
 from aws_services import submit_batch_job as submit_to_aws
