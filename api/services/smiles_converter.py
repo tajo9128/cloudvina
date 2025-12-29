@@ -27,7 +27,7 @@ def check_ligand_properties(mol, is_pdb_file: bool = False) -> Tuple[bool, str]:
     if not mol: return False, "Null molecule"
     
     # 1. Atom Count (3-150 heavy atoms is typical for Vina)
-    num_heavy = mol.GetNumHeavyA toms()
+    num_heavy = mol.GetNumHeavyAtoms()
     if num_heavy < 3: return False, "Molecule too small (<3 heavy atoms)"
     if num_heavy > 150: return False, "Molecule too large (>150 heavy atoms)"
     
