@@ -112,9 +112,10 @@ def test_simulation_logic():
     
     # Simulate a job that's 15 seconds old
     import random
+    from datetime import timedelta
     
     current_time = datetime.now(timezone.utc)
-    created_at = datetime.now(timezone.utc).replace(second=current_time.second - 15)
+    created_at = current_time - timedelta(seconds=15)
     age = (current_time - created_at).total_seconds()
     
     print(f"Job created: {created_at}")

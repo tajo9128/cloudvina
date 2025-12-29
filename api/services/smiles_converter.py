@@ -140,7 +140,13 @@ def smiles_to_pdbqt_hardened(smiles: str, name: str = "ligand") -> Tuple[Optiona
         preparator = MoleculePreparation()
         setups = preparator.prepare(mol)
         if setups:
-            return PDBQTWriterLegacy.write_string(setups[0])[0], None
+            pdbqt_out = PDBQTWriterLegacy.write_string(setups[0])[0]
+            # Validate ligand output
+            is_valid, val_msg = validate_pdbqt_quality(pdbqt_out, is_receptor=False)
+            if not is_valid:
+                logger.warning(f"Ligand PDBQT validation failed: {val_msg}")
+                return None, f"Generated PDBQT failed validation: {val_msg}"
+            return pdbqt_out, None
             
         return None, "Meeko preparation failed"
 
@@ -296,6 +302,10 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
         else:
             return None, "Meeko preparation failed to generate a molecule setup"
         
+        # Final validation before returning
+        is_valid, val_msg = validate_pdbqt_quality(pdbqt_string, is_receptor=False)
+        if not is_valid:
+            return None, f"PDBQT validation failed: {val_msg}"
         return pdbqt_string, None
 
     except Exception as e:
