@@ -20,22 +20,18 @@ def smiles_to_pdbqt(smiles: str, name: str = "ligand") -> Tuple[Optional[str], O
 
 # --- NEW: Fix 1 & 2 (Hardened Conversion) ---
 def check_ligand_properties(mol, is_pdb_file: bool = False) -> Tuple[bool, str]:
-    """Validate ligand properties for docking suitability."""
+    """
+    Validate ligand properties for docking suitability.
+    NOTE: Fragment check removed - we now auto-select the largest fragment.
+    """
     if not mol: return False, "Null molecule"
     
-    # Skip fragment check for PDB files (they can have multiple chains/waters/ions)
-    if not is_pdb_file:
-        # 1. Fragment Check (only for SMILES)
-        frags = Chem.GetMolFrags(mol)
-        if len(frags) > 1:
-            return False, f"Molecule has {len(frags)} fragments (must be 1)"
-        
-    # 2. Atom Count (10-120 heavy atoms is typical for Vina)
-    num_heavy = mol.GetNumHeavyAtoms()
+    # 1. Atom Count (3-150 heavy atoms is typical for Vina)
+    num_heavy = mol.GetNumHeavyA toms()
     if num_heavy < 3: return False, "Molecule too small (<3 heavy atoms)"
     if num_heavy > 150: return False, "Molecule too large (>150 heavy atoms)"
     
-    # 3. Net Charge (Vina prefers neutral/near-neutral)
+    # 2. Net Charge (Vina prefers neutral/near-neutral)
     charge = Chem.GetFormalCharge(mol)
     if not (-5 <= charge <= 5):
         return False, f"Net charge {charge} is too extreme"
