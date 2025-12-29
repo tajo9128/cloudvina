@@ -6,7 +6,7 @@ import DockingResultsTable from '../components/DockingResultsTable'
 import InteractionTable from '../components/InteractionTable'
 import DrugPropertiesPanel from '../components/DrugPropertiesPanel'
 import { API_URL } from '../config'
-import MoleculeViewer from '../components/MoleculeViewer'
+import MolstarViewer from '../components/MolstarViewer' // Testing Molstar integration
 import { ArrowRight, Download, FileText, Activity, Clock, Database, Layers, Zap, MoreHorizontal, FlaskConical, Play } from 'lucide-react'
 
 export default function JobResultsPage() {
@@ -534,14 +534,14 @@ export default function JobResultsPage() {
                                     3D Visualization
                                 </div>
                                 {pdbqtData ? (
-                                    <MoleculeViewer
+                                    <MolstarViewer
                                         pdbqtData={pdbqtData}
                                         receptorData={receptorData}
                                         width="100%"
                                         height="100%"
                                         interactions={interactions}
-                                        cavities={detectedPockets}
                                         bindingAffinity={analysis?.best_affinity || job.binding_affinity}
+                                        title="Docking Result"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex flex-col items-center justify-center bg-slate-50 text-slate-400">
