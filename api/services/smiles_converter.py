@@ -354,6 +354,16 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
             AllChem.EmbedMolecule(mol, params)
 
         # 4. Meeko Preparation
+        # CRITICAL: Select largest fragment RIGHT BEFORE Meeko to avoid "10 fragments" error
+        frags_before_meeko = Chem.GetMolFrags(mol, asMols=True)
+        if len(frags_before_meeko) > 1:
+            logger.warning(f"{filename}: Meeko pre-check found {len(frags_before_meeko)} fragments. Selecting largest.")
+            scored_frags = [(score_fragment(f), i, f) for i, f in enumerate(frags_before_meeko)]
+            best_score, frag_idx, mol = max(scored_frags, key=lambda x: x[0])
+            logger.info(f"Pre-Meeko: Selected fragment {frag_idx} ({mol.GetNumAtoms()} atoms, score: {best_score:.1f})")
+            # Re-add hydrogens to selected fragment
+            mol = Chem.AddHs(mol, addCoords=True)
+        
         preparator = MoleculePreparation()
         setups = preparator.prepare(mol)
         if setups:
@@ -451,12 +461,20 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
     # --- LAYER 2: Processing & Meeko ---
     if mol:
         try:
-            # 1. Remove Waters (Optional but recommended)
+            # Remove Waters (Optional but recommended)
             try:
                 water = Chem.MolFromSmarts('[OH2]')
                 if water:
                     mol = Chem.DeleteSubstructs(mol, water)
             except: pass
+
+            # FIX: Select largest fragment if multiple (handles ions/salts)
+            frags = Chem.GetMolFrags(mol, asMols=True)
+            if len(frags) > 1:
+                logger.warning(f"{filename}: {len(frags)} fragments detected. Selecting largest.")
+                scored_frags = [(score_fragment(f), i, f) for i, f in enumerate(frags)]
+                best_score, frag_idx, mol = max(scored_frags, key=lambda x: x[0])
+                logger.info(f"Selected fragment {frag_idx} ({mol.GetNumAtoms()} atoms, score: {best_score:.1f})")
 
             # 2. Add Hydrogens (Critical)
             mol = Chem.AddHs(mol, addCoords=True)
