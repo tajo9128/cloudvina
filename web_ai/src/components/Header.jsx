@@ -95,13 +95,9 @@ export default function Header() {
                 <div className="flex items-center justify-between h-16">
                     {/* Logo */}
                     <div className="flex items-center">
-                        <Link to="/" className="flex items-center space-x-2">
-                            <span className="text-2xl">🧬</span>
-                            <span className="text-xl font-bold font-display">
-                                <span className="text-slate-900">Bio</span>
-                                <span className="text-primary-600">Dockify</span>
-                            </span>
-                            <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-700 rounded border border-primary-200">
+                        <Link to="/" className="flex items-center gap-3">
+                            <img src="/brand/logo.svg" alt="BioDockify" className="h-10 w-auto" />
+                            <span className="px-2 py-0.5 text-xs font-medium bg-primary-100 text-primary-700 rounded border border-primary-200">
                                 AI Hub
                             </span>
                         </Link>

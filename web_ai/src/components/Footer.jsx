@@ -4,17 +4,15 @@ import { Github, Twitter, Linkedin, Mail } from 'lucide-react';
 
 export default function Footer() {
     return (
-        <footer className="bg-slate-950 text-slate-100 font-sans">
+    return (
+        <footer className="bg-slate-950 text-slate-100 font-sans border-t border-slate-900">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                     {/* Brand Column */}
                     <div className="md:col-span-1">
                         <Link to="/" className="flex items-center space-x-2 mb-4">
-                            <span className="text-2xl">🧬</span>
-                            <span className="text-xl font-bold font-display">
-                                <span className="text-white">Bio</span>
-                                <span className="text-primary-500">Dockify</span>
-                            </span>
+                            {/* Invert logo to make it white on dark background */}
+                            <img src="/brand/logo.svg" alt="BioDockify" className="h-10 w-auto brightness-0 invert" />
                         </Link>
                         <p className="text-slate-400 text-sm leading-relaxed">
                             AI-Powered Molecular Docking & QSAR Prediction Platform.
@@ -42,12 +40,12 @@ export default function Footer() {
                             <li>
                                 <a href="https://learn.biodockify.com/courses" className="text-slate-400 hover:text-white transition-colors text-sm">
                                     Courses
-                                </a>
+                                </Link>
                             </li>
                             <li>
                                 <a href="https://learn.biodockify.com/blog" className="text-slate-400 hover:text-white transition-colors text-sm">
                                     Blog
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
@@ -64,7 +62,7 @@ export default function Footer() {
                             <li>
                                 <a href="https://www.biodockify.com/pricing" className="text-slate-400 hover:text-white transition-colors text-sm">
                                     Pricing
-                                </a>
+                                </Link>
                             </li>
                         </ul>
                     </div>
@@ -79,7 +77,7 @@ export default function Footer() {
                 </div>
 
                 {/* Bottom Bar */}
-                <div className="pt-8 border-t border-slate-800">
+                <div className="pt-8 border-t border-slate-900">
                     <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
                         <p className="text-slate-500 text-sm">
                             © 2024 BioDockify. All rights reserved.
@@ -88,5 +86,6 @@ export default function Footer() {
                 </div>
             </div>
         </footer>
+    );
     );
 }
