@@ -9,16 +9,16 @@ export default function FormulationPage() {
     const [dosageForm, setDosageForm] = useState('tablet-ir');
 
     const steps = [
-        { id: 1, label: "Lead Compound Input" },
+        { id: 1, label: "Lead Input (Model 1A)" },
         { id: 2, label: "Dosage Form" },
-        { id: 3, label: "Target Profile (TPP)" },
-        { id: 4, label: "Excipient AI" },
-        { id: 5, label: "Manufacturing" },
-        { id: 6, label: "Stability" },
-        { id: 7, label: "Compatibility" },
-        { id: 8, label: "Cost & Timeline" },
-        { id: 9, label: "Report Export" },
-        { id: 10, label: "BioDockify Link" }
+        { id: 3, label: "Pre-Formulation (Model 2)" },
+        { id: 4, label: "Excipient AI (Model 3)" },
+        { id: 5, label: "Dissolution (Model 4)" },
+        { id: 6, label: "Stability (Model 5)" },
+        { id: 7, label: "QbD (Model 6)" },
+        { id: 8, label: "Cost Analysis" },
+        { id: 9, label: "ANDA Readiness (Model 7)" },
+        { id: 10, label: "Back to Main" }
     ];
 
     const switchComponent = (stepId) => {
@@ -28,8 +28,8 @@ export default function FormulationPage() {
     return (
         <div className="bg-[#f9faf8] min-h-screen text-[#134252] font-sans p-8">
             <div className="max-w-[1400px] mx-auto">
-                <h1 className="text-3xl font-normal mb-3">⚗️ AI Formulation Optimization</h1>
-                <p className="text-[#5c6b72] mb-8">Transform your lead compounds (from BioDockify docking) into manufacturing-ready pharmaceutical formulations</p>
+                <h1 className="text-3xl font-normal mb-3">⚗️ BioDockify-Formulate™: 7-Model Stack</h1>
+                <p className="text-[#5c6b72] mb-8">Federated AI Architecture for ANDA Readiness & Pharmaceutical Formulation</p>
 
                 <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr_300px] gap-6">
                     {/* LEFT SIDEBAR: COMPONENTS */}
@@ -59,8 +59,8 @@ export default function FormulationPage() {
                         {activeStep === 1 && (
                             <div className="animate-fadeIn">
                                 <div className="bg-[rgba(33,128,141,0.1)] px-3 py-2 rounded text-xs text-[#218081] font-bold mb-4 w-fit">Step 1 of 10</div>
-                                <h2 className="text-lg font-semibold mb-5 text-[#134252]">① Lead Compound Input</h2>
-                                <p className="mb-5 text-[#5c6b72]">Select or upload your lead compounds from the BioDockify screening results.</p>
+                                <h2 className="text-lg font-semibold mb-5 text-[#134252]">① Lead Compound Input (Model 1A: ChemBERTa)</h2>
+                                <p className="mb-5 text-[#5c6b72]">Initialize API Representation with ChemBERTa + GNN embeddings.</p>
 
                                 <div className="mb-6">
                                     <label className="block font-medium mb-2 text-sm">Method 1: Select from Previous Results</label>

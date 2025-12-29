@@ -96,7 +96,7 @@ export default function Header() {
                     {/* Logo */}
                     <div className="flex items-center">
                         <Link to="/" className="flex items-center space-x-2">
-                            <span className="text-2xl">🧬</span>
+                            <img src="/brand/logo.svg" alt="BioDockify Logo" className="h-8 w-auto" />
                             <span className="text-xl font-bold font-display">
                                 <span className="text-slate-900">Bio</span>
                                 <span className="text-primary-600">Dockify</span>

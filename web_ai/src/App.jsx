@@ -5,6 +5,8 @@ import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import QSARPage from './pages/QSARPage';
 import FormulationPage from './pages/FormulationPage';
+import PlanAPage from './pages/PlanAPage';
+import PlanBPage from './pages/PlanBPage';
 
 function App() {
     return (
@@ -13,6 +15,8 @@ function App() {
                 <Routes>
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/dashboard" element={<DashboardPage />} />
+                    <Route path="/project/cns" element={<PlanAPage />} />
+                    <Route path="/project/phytochemicals" element={<PlanBPage />} />
                     <Route path="/project/:projectId" element={<QSARPage />} />
                     <Route path="/formulation" element={<FormulationPage />} />
                 </Routes>

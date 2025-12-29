@@ -10,9 +10,9 @@ export default function Footer() {
                     {/* Brand Column */}
                     <div className="md:col-span-1">
                         <Link to="/" className="flex items-center space-x-2 mb-4">
-                            <span className="text-2xl">🧬</span>
+                            <img src="/brand/logo.svg" alt="BioDockify Logo" className="h-8 w-auto" />
                             <span className="text-xl font-bold font-display">
-                                <span className="text-white">Bio</span>
+                                <img src="/brand/logo.svg" alt="BioDockify Logo" className="h-8 w-auto" />
                                 <span className="text-primary-500">Dockify</span>
                             </span>
                         </Link>
