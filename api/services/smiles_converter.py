@@ -214,17 +214,24 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
             logger.info(f"RDKit parsing failed for {filename}, trying OpenBabel fallback...")
             # ... (OpenBabel Fallback logic remains same) ...
         
-        # FIX 1: Validate Properties for Files too (if RDKit worked)
+        # FIX 1: Strip salts and validate for Files (same as SMILES)
         if mol:
+             try:
+                  remover = SaltRemover.SaltRemover()
+                  mol = remover.StripMol(mol, dontRemoveEverything=True)
+                  logger.info(f"Salt removal applied to {filename}")
+             except Exception as e:
+                  logger.warning(f"Salt removal failed for {filename}: {e}")
+             
              valid, msg = check_ligand_properties(mol)
              if not valid:
-                  # If validation fails, we might still want to try OpenBabel or Native?
-                  # But "Fragment" error is critical.
-                  # Let's log warning but continue if small issues, fail on big ones?
-                  # User wants GUARDRAILS. 
-                  if "fragments" in msg:
-                       return None, f"File Validation Failed: {msg}"
+                  # Log warning but don't fail - let Vina handle edge cases
                   logger.warning(f"File Validation Warning for {filename}: {msg}")
+                  # Only hard-fail on extreme cases (>5 fragments suggests corruption)
+                  if "fragments" in msg:
+                       frag_count = len(Chem.GetMolFrags(mol))
+                       if frag_count > 5:
+                            return None, f"File Validation Failed: {msg} (likely corrupted file)"
 
         # 2. Add Hydrogens (3D requires them, usually)
         mol = Chem.AddHs(mol, addCoords=True)
