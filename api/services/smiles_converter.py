@@ -83,6 +83,26 @@ def validate_pdbqt_quality(pdbqt_string: str, is_receptor: bool = False) -> Tupl
         return False, f"Validation error: {e}"
 
 
+def score_fragment(mol) -> float:
+    """
+    Score fragment quality (higher = better).
+    Prefers larger, more connected fragments.
+    Adapted from Universal Ligand Toolkit.
+    """
+    if not mol:
+        return 0.0
+    
+    score = 0.0
+    score += mol.GetNumAtoms() * 2  # Prioritize larger fragments
+    score += mol.GetNumBonds()  # Prefer more connected structures
+    
+    # Bonus for non-hydrogen heavy atoms
+    heavy_atoms = sum(1 for atom in mol.GetAtoms() if atom.GetSymbol() != 'H')
+    score += heavy_atoms
+    
+    return score
+
+
 def smiles_to_pdbqt_hardened(smiles: str, name: str = "ligand") -> Tuple[Optional[str], Optional[str]]:
     """
     Hardened 4-Stage Fallback Pipeline for Ligands.
@@ -273,10 +293,11 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
                   # If still multiple fragments after salt removal, select largest
                   frags = Chem.GetMolFrags(mol, asMols=True)
                   if len(frags) > 1:
-                       logger.warning(f"{filename} has {len(frags)} fragments after salt removal. Selecting largest fragment.")
-                       # Select largest fragment by atom count
-                       mol = max(frags, key=lambda m: m.GetNumAtoms())
-                       logger.info(f"Selected fragment with {mol.GetNumAtoms()} atoms")
+                       logger.warning(f"{filename} has {len(frags)} fragments after salt removal. Selecting best fragment.")
+                       # Score and select best fragment
+                       scored_frags = [(score_fragment(f), f) for f in frags]
+                       best_score, mol = max(scored_frags, key=lambda x: x[0])
+                       logger.info(f"Selected fragment with {mol.GetNumAtoms()} atoms (score: {best_score:.1f})")
                        
              except Exception as e:
                   logger.warning(f"Salt removal/fragment selection failed for {filename}: {e}")
