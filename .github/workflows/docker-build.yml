@@ -24,12 +24,12 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Install AWS CLI
-      run: |
-        curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-        unzip -q awscliv2.zip
-        sudo ./aws/install --update
-        aws --version
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
     
     - name: Debug - Check secrets exist
       run: |
@@ -47,20 +47,16 @@ jobs:
         else
           echo "✅ AWS_SECRET_ACCESS_KEY exists"
         fi
+        
+        # Test AWS credentials
+        aws sts get-caller-identity
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
     
     - name: Login to Amazon ECR
       id: login-ecr
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_DEFAULT_REGION: ${{ env.AWS_REGION }}
-      run: |
-        echo "Attempting ECR login..."
-        aws ecr get-login-password --region ${{ env.AWS_REGION }} | docker login --username AWS --password-stdin 558179385425.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com
-        echo "registry=558179385425.dkr.ecr.${{ env.AWS_REGION }}.amazonaws.com" >> $GITHUB_OUTPUT
+      uses: aws-actions/amazon-ecr-login@v2
     
     - name: Build Docker image
       env:
