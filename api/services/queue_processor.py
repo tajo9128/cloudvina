@@ -208,7 +208,19 @@ class QueueProcessor:
 
                     if r_err:
                         logger.warning(f"⚠️ Receptor converted with warnings: {r_err}")
-                        # Continue if we have valid content
+                        
+                    # FIX 4: Run Guardrails
+                    is_valid, val_msg = self._validate_preflight(rec_pdbqt, lig_pdbqt_content, grid_params)
+                    if not is_valid:
+                        logger.error(f"❌ [Queue] Guardrail Failed for {current_job_id}: {val_msg}")
+                        safe_update(self.db, "jobs", {"id": current_job_id}, {
+                            "status": "FAILED", 
+                            "error_message": f"Pre-Flight Check Failed: {val_msg}",
+                            "notes": "Job Rejected by Guardrails"
+                        })
+                        continue
+
+                    # If Valid, proceed to upload
                     
                     # Upload Receptor
                     local_rec_pdbqt = rec_path + ".pdbqt"
@@ -244,6 +256,38 @@ class QueueProcessor:
                 "error_message": str(e),
                 "notes": "Queue Processing Failed"
             })
+
+    def _validate_preflight(self, rec_pdbqt, lig_pdbqt, grid_params) -> Tuple[bool, str]:
+        """
+        Fix 4: Pre-Flight Guardrails.
+        Ensures we don't submit garbage to AWS Batch.
+        """
+        # 1. Ligand Checks
+        lig_atoms = [l for l in lig_pdbqt.splitlines() if l.startswith("ATOM") or l.startswith("HETATM")]
+        if len(lig_atoms) < 5:
+            return False, f"Ligand too small ({len(lig_atoms)} atoms). Minimum 5."
+        if len(lig_atoms) > 200:
+            return False, f"Ligand too large ({len(lig_atoms)} atoms). Max 200."
+            
+        # 2. Receptor Checks
+        rec_atoms = 0
+        for l in rec_pdbqt.splitlines():
+             if l.startswith("ATOM"): rec_atoms += 1
+        
+        if rec_atoms < 100:
+             return False, f"Receptor too small ({rec_atoms} atoms). Is this a protein?"
+        
+        # 3. Box Volume Checks
+        if grid_params:
+            sx = float(grid_params.get('size_x', 20))
+            sy = float(grid_params.get('size_y', 20))
+            sz = float(grid_params.get('size_z', 20))
+            volume = sx * sy * sz
+            
+            if volume > 125000: # 50x50x50
+                return False, f"Search space too large ({sx}x{sy}x{sz} = {volume} A^3). Max 50x50x50."
+                
+        return True, ""
 
     def _get_batch_config(self, batch_id):
         """Fetches batch config from S3, with caching"""

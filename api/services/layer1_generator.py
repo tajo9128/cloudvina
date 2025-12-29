@@ -83,9 +83,28 @@ class Layer1Generator:
             logger.warning(f"[{self.job_id}] AlphaFold step failed: {e}")
             return None
     
+    def _has_ligand(self) -> bool:
+        """Check if PDB has a crystalline ligand (HETATM that isn't water/ion)"""
+        try:
+            with open(self.pdb_file, 'r') as f:
+                for line in f:
+                    if line.startswith("HETATM"):
+                        # Skip Waters (HOH, WAT) and common Ions (NA, CL, MG, ZN, CA, FE, MN, K)
+                        res_name = line[17:20].strip()
+                        if res_name not in ['HOH', 'WAT', 'NA', 'CL', 'MG', 'ZN', 'CA', 'FE', 'MN', 'K', 'IOD', 'SO4', 'PO4']:
+                            return True
+            return False
+        except:
+            return False
+
     def _add_nma(self) -> Optional[str]:
         """Generate NMA conformer (isolated, non-intrusive)"""
         try:
+            # FIX 3: Constrain Layer 1 - Do not generate blind NMA
+            if not self._has_ligand():
+                logger.warning(f"[{self.job_id}] Layer 1: No crystal ligand found (HETATM). Skipping NMA to avoid blind docking failure.")
+                return None
+
             logger.info(f"[{self.job_id}] Layer 1: Generating NMA conformer...")
             
             # Simple perturbation

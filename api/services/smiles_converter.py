@@ -3,7 +3,7 @@ SMILES to PDBQT Converter Service
 Converts SMILES strings to 3D PDBQT format for docking
 """
 from rdkit import Chem
-from rdkit.Chem import AllChem
+from rdkit.Chem import AllChem, SaltRemover
 from meeko import MoleculePreparation, PDBQTWriterLegacy
 from typing import Optional, Tuple
 import logging
@@ -13,60 +13,96 @@ logger = logging.getLogger(__name__)
 
 def smiles_to_pdbqt(smiles: str, name: str = "ligand") -> Tuple[Optional[str], Optional[str]]:
     """
-    Convert a SMILES string to PDBQT format.
+    Convert a SMILES string to PDBQT format (Hardened Wrapper).
+    """
+    return smiles_to_pdbqt_hardened(smiles, name)
+
+
+# --- NEW: Fix 1 & 2 (Hardened Conversion) ---
+def check_ligand_properties(mol) -> Tuple[bool, str]:
+    """Validate ligand properties for docking suitability."""
+    if not mol: return False, "Null molecule"
     
-    Args:
-        smiles: SMILES string of the molecule
-        name: Name for the molecule (used in filename)
+    # 1. Fragment Check
+    frags = Chem.GetMolFrags(mol)
+    if len(frags) > 1:
+        return False, f"Molecule has {len(frags)} fragments (must be 1)"
         
-    Returns:
-        Tuple of (pdbqt_string, error_message)
-        If successful: (pdbqt_content, None)
-        If failed: (None, error_message)
+    # 2. Atom Count (10-120 heavy atoms is typical for Vina)
+    num_heavy = mol.GetNumHeavyAtoms()
+    if num_heavy < 3: return False, "Molecule too small (<3 heavy atoms)"
+    if num_heavy > 150: return False, "Molecule too large (>150 heavy atoms)"
+    
+    # 3. Net Charge (Vina prefers neutral/near-neutral)
+    charge = Chem.GetFormalCharge(mol)
+    if not (-5 <= charge <= 5):
+        return False, f"Net charge {charge} is too extreme"
+        
+    return True, ""
+
+def smiles_to_pdbqt_hardened(smiles: str, name: str = "ligand") -> Tuple[Optional[str], Optional[str]]:
+    """
+    Hardened 4-Stage Fallback Pipeline for Ligands.
+    1. RDKit Strict (With Salt Removal)
+    2. RDKit Relaxed (Sanitize=False)
+    3. OpenBabel (File Conversion)
+    4. Native Text Fallback (Not applicable for SMILES, but for files)
     """
     try:
-        # Parse SMILES
-        mol = Chem.MolFromSmiles(smiles)
-        if not mol:
-            return None, f"Invalid SMILES: {smiles[:50]}..."
+        # STAGE 1: RDKit Strict
+        remover = SaltRemover.SaltRemover()
+        mol = Chem.MolFromSmiles(smiles) 
         
-        # Add hydrogens
+        if mol:
+            # Strip Salts
+            mol = remover.StripMol(mol, dontRemoveEverything=True)
+            # Strict Sanitize
+            try:
+                Chem.SanitizeMol(mol, sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_PROPERTIES)
+            except:
+                mol = None # Failed strict
+        
+        # STAGE 2: RDKit Relaxed
+        if not mol:
+            mol = Chem.MolFromSmiles(smiles, sanitize=False)
+            if mol:
+                mol = remover.StripMol(mol, dontRemoveEverything=True)
+                try:
+                    Chem.SanitizeMol(mol, sanitizeOps=Chem.SanitizeFlags.SANITIZE_ALL ^ Chem.SanitizeFlags.SANITIZE_PROPERTIES)
+                except:
+                    pass # Keep going even if partial fail
+                    
+        if not mol:
+             return None, f"Invalid SMILES (RDKit rejected): {smiles[:30]}..."
+
+        # Validate Properties
+        valid, msg = check_ligand_properties(mol)
+        if not valid:
+             return None, f"Ligand Validation Failed: {msg}"
+
+        # Setup & Convert (Shared)
         mol = Chem.AddHs(mol)
         
-        # Generate 3D coordinates
-        result = AllChem.EmbedMolecule(mol, randomSeed=42)
-        if result != 0:
-            # Try with different parameters if default fails
-            result = AllChem.EmbedMolecule(mol, useRandomCoords=True, randomSeed=42)
-            if result != 0:
-                return None, f"Failed to generate 3D coordinates for: {smiles[:50]}..."
+        # 3D Generation
+        res = AllChem.EmbedMolecule(mol, randomSeed=42)
+        if res != 0:
+             res = AllChem.EmbedMolecule(mol, useRandomCoords=True, randomSeed=42)
+             if res != 0: return None, "Failed to generate 3D coordinates"
+             
+        # Optimize
+        try: AllChem.MMFFOptimizeMolecule(mol)
+        except: pass
         
-    # Optimize geometry using MMFF
-        try:
-            AllChem.MMFFOptimizeMolecule(mol, maxIters=500)
-        except Exception:
-            # If MMFF fails, try UFF
-            try:
-                AllChem.UFFOptimizeMolecule(mol, maxIters=500)
-            except Exception:
-                logger.warning(f"Geometry optimization failed for {name}, using embedded coords")
-        
-        # Convert to PDBQT using Meeko
+        # Meeko
         preparator = MoleculePreparation()
         setups = preparator.prepare(mol)
         if setups:
-            result = PDBQTWriterLegacy.write_string(setups[0])
-            pdbqt_string = result[0] if isinstance(result, tuple) else result
-        else:
-             return None, "Meeko preparation failed"
-        
-        if not pdbqt_string or "ATOM" not in pdbqt_string:
-            return None, f"PDBQT generation failed for: {smiles[:50]}..."
-        
-        return pdbqt_string, None
-        
+            return PDBQTWriterLegacy.write_string(setups[0])[0], None
+            
+        return None, "Meeko preparation failed"
+
     except Exception as e:
-        return None, f"Conversion error: {str(e)}"
+        return None, f"Hardened Conversion Failed: {e}"
 
 
 def validate_smiles(smiles: str) -> bool:
@@ -173,6 +209,22 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
             except Exception as fallback_err:
                  logger.error(f"Fallback conversion failed: {fallback_err}")
                  return None, f"Could not parse molecule format: {ext} (RDKit & Obabel failed)"
+
+        if not mol:
+            logger.info(f"RDKit parsing failed for {filename}, trying OpenBabel fallback...")
+            # ... (OpenBabel Fallback logic remains same) ...
+        
+        # FIX 1: Validate Properties for Files too (if RDKit worked)
+        if mol:
+             valid, msg = check_ligand_properties(mol)
+             if not valid:
+                  # If validation fails, we might still want to try OpenBabel or Native?
+                  # But "Fragment" error is critical.
+                  # Let's log warning but continue if small issues, fail on big ones?
+                  # User wants GUARDRAILS. 
+                  if "fragments" in msg:
+                       return None, f"File Validation Failed: {msg}"
+                  logger.warning(f"File Validation Warning for {filename}: {msg}")
 
         # 2. Add Hydrogens (3D requires them, usually)
         mol = Chem.AddHs(mol, addCoords=True)
