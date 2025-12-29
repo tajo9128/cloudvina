@@ -4,6 +4,7 @@ import Layout from './Layout';
 import LandingPage from './pages/LandingPage';
 import DashboardPage from './pages/DashboardPage';
 import QSARPage from './pages/QSARPage';
+import FormulationPage from './pages/FormulationPage';
 
 function App() {
     return (
@@ -13,6 +14,7 @@ function App() {
                     <Route path="/" element={<LandingPage />} />
                     <Route path="/dashboard" element={<DashboardPage />} />
                     <Route path="/project/:projectId" element={<QSARPage />} />
+                    <Route path="/formulation" element={<FormulationPage />} />
                 </Routes>
             </Layout>
         </BrowserRouter>
