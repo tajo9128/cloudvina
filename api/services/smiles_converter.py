@@ -103,6 +103,40 @@ def score_fragment(mol) -> float:
     return score
 
 
+def clean_protein_aggressive(content: str) -> str:
+    """
+    Aggressively clean protein structure before RDKit parsing.
+    Removes waters, ions, alternate locations, and duplicates.
+    Adapted from Universal Protein Handler.
+    """
+    lines = []
+    seen_atoms = set()
+    
+    for line in content.splitlines():
+        # Skip water molecules (HOH, WAT, TIP3, H2O, SOL)
+        if any(water in line for water in ['HOH', 'WAT', 'TIP3', 'H2O', 'SOL']):
+            continue
+        
+        # Skip common ions (Na, K, Cl, Br, Mg, Ca, Zn, Fe, Cu)
+        if any(ion in line for ion in ['NA ', 'K  ', 'CL ', 'BR ', 'MG ', 'CA ', 'ZN ', 'FE ', 'CU ']):
+            continue
+        
+        # Process ATOM/HETATM lines
+        if line.startswith(('ATOM', 'HETATM')):
+            # Skip alternate locations (keep only A or blank)
+            if len(line) > 16 and line[16] not in [' ', 'A', '1']:
+                continue
+            
+            # Deduplicate atoms by residue + atom name
+            atom_key = line[5:26] if len(line) > 26 else line
+            if atom_key not in seen_atoms:
+                seen_atoms.add(atom_key)
+                lines.append(line)
+    
+    logger.info(f"Protein cleaning: {len(seen_atoms)} unique atoms retained")
+    return '\n'.join(lines)
+
+
 def smiles_to_pdbqt_hardened(smiles: str, name: str = "ligand") -> Tuple[Optional[str], Optional[str]]:
     """
     Hardened 4-Stage Fallback Pipeline for Ligands.
