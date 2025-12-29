@@ -19,14 +19,16 @@ def smiles_to_pdbqt(smiles: str, name: str = "ligand") -> Tuple[Optional[str], O
 
 
 # --- NEW: Fix 1 & 2 (Hardened Conversion) ---
-def check_ligand_properties(mol) -> Tuple[bool, str]:
+def check_ligand_properties(mol, is_pdb_file: bool = False) -> Tuple[bool, str]:
     """Validate ligand properties for docking suitability."""
     if not mol: return False, "Null molecule"
     
-    # 1. Fragment Check
-    frags = Chem.GetMolFrags(mol)
-    if len(frags) > 1:
-        return False, f"Molecule has {len(frags)} fragments (must be 1)"
+    # Skip fragment check for PDB files (they can have multiple chains/waters/ions)
+    if not is_pdb_file:
+        # 1. Fragment Check (only for SMILES)
+        frags = Chem.GetMolFrags(mol)
+        if len(frags) > 1:
+            return False, f"Molecule has {len(frags)} fragments (must be 1)"
         
     # 2. Atom Count (10-120 heavy atoms is typical for Vina)
     num_heavy = mol.GetNumHeavyAtoms()
@@ -116,8 +118,8 @@ def smiles_to_pdbqt_hardened(smiles: str, name: str = "ligand") -> Tuple[Optiona
         if not mol:
              return None, f"Invalid SMILES (RDKit rejected): {smiles[:30]}..."
 
-        # Validate Properties
-        valid, msg = check_ligand_properties(mol)
+        # Validate Properties (SMILES mode - strict validation)
+        valid, msg = check_ligand_properties(mol, is_pdb_file=False)
         if not valid:
              return None, f"Ligand Validation Failed: {msg}"
 
@@ -264,7 +266,7 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
              except Exception as e:
                   logger.warning(f"Salt removal failed for {filename}: {e}")
              
-             valid, msg = check_ligand_properties(mol)
+             valid, msg = check_ligand_properties(mol, is_pdb_file=True)
              if not valid:
                   # Log warning but don't fail - let Vina handle edge cases
                   logger.warning(f"File Validation Warning for {filename}: {msg}")
