@@ -40,6 +40,47 @@ def check_ligand_properties(mol) -> Tuple[bool, str]:
         
     return True, ""
 
+def validate_pdbqt_quality(pdbqt_string: str, is_receptor: bool = False) -> Tuple[bool, str]:
+    """
+    Validate PDBQT output quality before returning.
+    Prevents malformed PDBQT from reaching Vina.
+    """
+    if not pdbqt_string:
+        return False, "Empty PDBQT string"
+    
+    try:
+        lines = pdbqt_string.splitlines()
+        atom_lines = [l for l in lines if l.startswith(("ATOM", "HETATM"))]
+        
+        # 1. Minimum atom count
+        min_atoms = 100 if is_receptor else 3
+        if len(atom_lines) < min_atoms:
+            return False, f"Only {len(atom_lines)} atoms (expected >{min_atoms})"
+        
+        # 2. Check coordinate columns are parseable
+        try:
+            first_atom = atom_lines[0]
+            x = float(first_atom[30:38].strip())
+            y = float(first_atom[38:46].strip())
+            z = float(first_atom[46:54].strip())
+            
+            # Sanity check coordinates (should be reasonable protein/ligand coords)
+            if abs(x) > 10000 or abs(y) > 10000 or abs(z) > 10000:
+                return False, f"Extreme coordinates detected: ({x}, {y}, {z})"
+        except (ValueError, IndexError) as e:
+            return False, f"Malformed coordinate columns: {e}"
+        
+        # 3. Check for required PDBQT components
+        has_atom_types = any("ATOM" in l or "HETATM" in l for l in lines)
+        if not has_atom_types:
+            return False, "Missing ATOM/HETATM records"
+        
+        return True, ""
+    
+    except Exception as e:
+        return False, f"Validation error: {e}"
+
+
 def smiles_to_pdbqt_hardened(smiles: str, name: str = "ligand") -> Tuple[Optional[str], Optional[str]]:
     """
     Hardened 4-Stage Fallback Pipeline for Ligands.
