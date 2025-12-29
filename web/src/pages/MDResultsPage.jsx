@@ -13,6 +13,7 @@ import {
     Legend
 } from 'chart.js';
 import { Activity, Play, Pause, Zap, Database, ArrowRight, Layers, FileText, Download } from 'lucide-react';
+import MolstarViewer from '../components/MolstarViewer';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -23,8 +24,7 @@ const MDResultsPage = () => {
     const [currentFrame, setCurrentFrame] = useState(0);
     const [isPlaying, setIsPlaying] = useState(false);
     const [loadingEnergy, setLoadingEnergy] = useState(false); // Legacy support logic
-    const viewerRef = useRef(null);
-    const [viewer, setViewer] = useState(null);
+    // Removed: viewerRef and viewer - now using MolstarViewer component
 
     // Initial Data Load
     useEffect(() => {
@@ -53,26 +53,7 @@ const MDResultsPage = () => {
         }
     };
 
-    // Viewer Initialization
-    useEffect(() => {
-        if (jobData?.status === 'SUCCESS' && viewerRef.current && window.$3Dmol && !viewer) {
-            try {
-                const v = window.$3Dmol.createViewer(viewerRef.current, { backgroundColor: '#0f172a' }); // Slate-900
-                setViewer(v);
-
-                // If trajectory URL exists, load it
-                if (jobData.result.trajectory_url) {
-                    // Note: 3Dmol might need CORS enabled on S3 or a proxy. 
-                    // Ideally we load the PDB first then DCD. For now we just init viewer.
-                    v.addModel("HEADER    placeholder\n", "pdb");
-                    v.zoomTo();
-                    v.render();
-                }
-            } catch (e) {
-                console.error("Viewer init failed", e);
-            }
-        }
-    }, [jobData]);
+    // Removed: 3DMol viewer initialization - now using MolstarViewer component
 
     const chartOptions = {
         responsive: true,
