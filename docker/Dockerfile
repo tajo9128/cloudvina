@@ -19,9 +19,9 @@ RUN wget https://github.com/ccsb-scripps/AutoDock-Vina/releases/download/v1.2.5/
     && mv vina_1.2.5_linux_x86_64 /usr/local/bin/vina
 
 # Install Python dependencies
-# Keeping it lightweight: Only boto3 needed.
-# rDock runs via binary, Vina runs via binary.
-RUN pip install --no-cache-dir boto3==1.34.0
+# Batch container imports api/services which require FastAPI dependencies
+COPY api/requirements.txt /app/requirements.txt
+RUN pip install --no-cache-dir -r /app/requirements.txt
 
 # Copy runner script
 ARG CACHEBUST=1
