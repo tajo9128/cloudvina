@@ -269,8 +269,17 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
                   remover = SaltRemover.SaltRemover()
                   mol = remover.StripMol(mol, dontRemoveEverything=True)
                   logger.info(f"Salt removal applied to {filename}")
+                  
+                  # If still multiple fragments after salt removal, select largest
+                  frags = Chem.GetMolFrags(mol, asMols=True)
+                  if len(frags) > 1:
+                       logger.warning(f"{filename} has {len(frags)} fragments after salt removal. Selecting largest fragment.")
+                       # Select largest fragment by atom count
+                       mol = max(frags, key=lambda m: m.GetNumAtoms())
+                       logger.info(f"Selected fragment with {mol.GetNumAtoms()} atoms")
+                       
              except Exception as e:
-                  logger.warning(f"Salt removal failed for {filename}: {e}")
+                  logger.warning(f"Salt removal/fragment selection failed for {filename}: {e}")
              
              valid, msg = check_ligand_properties(mol, is_pdb_file=True)
              if not valid:
