@@ -32,6 +32,7 @@ import PrivacyPage from './pages/PrivacyPage'
 import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
 import PricingPage from './pages/PricingPage'
+import DockingStudioPage from './pages/DockingStudioPage'
 import DeveloperPage from './pages/DeveloperPage' // [NEW] Sprint 4
 import RefundsPage from './pages/RefundsPage'
 import ProfilePage from './pages/ProfilePage'
@@ -218,6 +219,7 @@ function AppRoutes() {
                 <Route path="/refunds" element={<RefundsPage />} />
                 <Route path="/molecular-docking-online" element={<MolecularDockingPage />} />
                 <Route path="/contact" element={<ContactPage />} />
+                <Route path="/docking-studio" element={<DockingStudioPage />} />
 
                 {/* User System Routes */}
                 <Route path="/profile" element={session ? <ProfilePage /> : <Navigate to="/login" />} />

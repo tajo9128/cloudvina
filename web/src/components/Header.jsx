@@ -50,6 +50,13 @@ export default function Header() {
             ]
         },
         { name: 'Pricing', path: '/pricing' },
+        {
+            name: 'Downloads',
+            path: '#',
+            dropdown: [
+                { name: 'Docking Studio', path: '/docking-studio' }
+            ]
+        },
         { name: 'Tools', path: '/tools/converter' },
         { name: 'Blog', path: '/blog' },
         { name: 'Contact', path: '/contact' },
