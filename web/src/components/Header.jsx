@@ -54,7 +54,8 @@ export default function Header() {
             name: 'Downloads',
             path: '#',
             dropdown: [
-                { name: 'Docking Studio', path: '/docking-studio' }
+                { name: 'Docking Studio', path: '/docking-studio' },
+                { name: 'BioDockViz', path: '/biodockviz' }
             ]
         },
         { name: 'Tools', path: '/tools/converter' },
