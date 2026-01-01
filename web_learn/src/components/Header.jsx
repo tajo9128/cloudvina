@@ -95,11 +95,11 @@ export default function Header() {
                     {/* Logo */}
                     <div className="flex items-center">
                         <Link to="/" className="flex items-center space-x-2">
-                            <span className="text-2xl">🧬</span>
-                            <span className="text-xl font-bold font-display">
-                                <span className="text-slate-900">Bio</span>
-                                <span className="text-primary-600">Dockify</span>
-                            </span>
+                            <img
+                                src="/brand/logo.svg"
+                                alt="BioDockify"
+                                className="h-14 w-auto"
+                            />
                             <span className="ml-2 px-2 py-0.5 text-xs font-medium bg-slate-100 text-slate-700 rounded">
                                 Learn
                             </span>

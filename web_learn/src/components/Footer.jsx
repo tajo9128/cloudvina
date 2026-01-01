@@ -10,11 +10,11 @@ export default function Footer() {
                     {/* Brand Column */}
                     <div className="md:col-span-1">
                         <Link to="/" className="flex items-center space-x-2 mb-4">
-                            <span className="text-2xl">🧬</span>
-                            <span className="text-xl font-bold font-display">
-                                <span className="text-white">Bio</span>
-                                <span className="text-primary-500">Dockify</span>
-                            </span>
+                            <img
+                                src="/brand/logo.svg"
+                                alt="BioDockify"
+                                className="h-16 w-auto brightness-0 invert opacity-90"
+                            />
                         </Link>
                         <p className="text-slate-400 text-sm leading-relaxed">
                             Master molecular docking with comprehensive courses, tutorials, and community support.
