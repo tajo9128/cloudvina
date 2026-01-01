@@ -134,8 +134,8 @@ export default function AdminCoursesPage() {
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px - 2 py - 1 rounded text - xs font - bold uppercase tracking - wider ${course.difficulty === 'beginner' ? 'bg-green-100 text-green-700' :
-                                                    course.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
-                                                        'bg-red-100 text-red-700'
+                                                course.difficulty === 'intermediate' ? 'bg-yellow-100 text-yellow-700' :
+                                                    'bg-red-100 text-red-700'
                                                 } `}>
                                                 {course.difficulty || 'All Levels'}
                                             </span>
@@ -167,9 +167,10 @@ export default function AdminCoursesPage() {
                                         </td >
                                     </tr >
                                 ))}
-                            </tbody >
-                        </table >
-                </div >
+                            </tbody>
+                        </table>
+                    )}
+                </div>
             </div >
         </div >
     );
