@@ -256,7 +256,7 @@ function RedirectToNewBatchUrl() {
     return <Navigate to={`/dock/batch/${batchId}`} replace />
 }
 
-import AgentZeroWidget from './components/AgentZeroWidget' // NEW: Agent Zero AI
+import AgentZeroWidget from './components/AgentZeroWidget' // NEW: BioDockify AI Agent
 
 function App() {
     return (

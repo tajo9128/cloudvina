@@ -114,7 +114,7 @@ export default function BioactivityPage() {
                                 }))}
                                 className="text-rose-600 font-bold hover:underline flex items-center gap-2"
                             >
-                                Compare with Agent Zero 🤖
+                                Compare with BioDockify AI Agent 🤖
                             </button>
                         </div>
                     </div>

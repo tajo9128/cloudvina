@@ -146,24 +146,24 @@ export default function ToolsPage() {
                     ))}
                 </div>
 
-                {/* Banner for Agent Zero */}
+                {/* Banner for BioDockify AI Agent */}
                 <div className="mt-20 bg-gradient-to-r from-slate-900 to-slate-800 rounded-3xl p-10 md:p-16 text-center shadow-2xl relative overflow-hidden">
                     <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-primary-600 rounded-full blur-[100px] opacity-20 animate-pulse"></div>
                     <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-purple-600 rounded-full blur-[100px] opacity-20 animate-pulse"></div>
 
                     <div className="relative z-10 max-w-2xl mx-auto">
                         <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-                            Powered by Agent Zero
+                            Powered by BioDockify AI Agent
                         </h2>
                         <p className="text-slate-300 text-lg mb-8">
                             These tools are also integrated directly into our AI assistant.
-                            You can ask Agent Zero to run these analysis steps for you in plain English!
+                            You can ask BioDockify AI Agent to run these analysis steps for you in plain English!
                         </p>
                         <button
                             onClick={() => window.dispatchEvent(new CustomEvent('agent-zero-trigger', { detail: { prompt: "What tools can you use?" } }))}
                             className="bg-white text-slate-900 px-8 py-3 rounded-full font-bold hover:bg-primary-50 transition-colors shadow-lg hover:shadow-xl"
                         >
-                            Ask Agent Zero
+                            Ask BioDockify AI Agent
                         </button>
                     </div>
                 </div>

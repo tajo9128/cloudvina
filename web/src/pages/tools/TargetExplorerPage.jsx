@@ -104,7 +104,7 @@ export default function TargetExplorerPage() {
                                 }))}
                                 className="text-emerald-600 font-bold hover:underline flex items-center gap-2"
                             >
-                                Ask Agent Zero about this Result 🤖
+                                Ask BioDockify AI Agent about this Result 🤖
                             </button>
                         </div>
                     </div>

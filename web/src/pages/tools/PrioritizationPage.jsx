@@ -93,8 +93,8 @@ export default function PrioritizationPage() {
                                             key={r}
                                             onClick={() => setRisk(r)}
                                             className={`py-2 rounded-lg text-sm font-bold capitalize transition-colors ${risk === r
-                                                    ? 'bg-indigo-600 text-white'
-                                                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                                                ? 'bg-indigo-600 text-white'
+                                                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                                 }`}
                                         >
                                             {r}
@@ -185,7 +185,7 @@ export default function PrioritizationPage() {
                                         }))}
                                         className="w-full text-indigo-600 font-bold hover:bg-indigo-50 py-3 rounded-xl transition-colors"
                                     >
-                                        Request Agent Zero Audit 🤖
+                                        Request BioDockify AI Agent Audit 🤖
                                     </button>
                                 </div>
                             </div>

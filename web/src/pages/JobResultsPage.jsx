@@ -356,7 +356,7 @@ export default function JobResultsPage() {
                                     </div>
                                     <div className="text-lg font-medium text-slate-400">kcal/mol</div>
 
-                                    {/* Agent Zero Trigger Button */}
+                                    {/* BioDockify AI Agent Trigger Button */}
                                     <button
                                         onClick={() => {
                                             const affinity = consensusResults?.best_affinity || analysis?.best_affinity || job.binding_affinity;
@@ -402,8 +402,8 @@ export default function JobResultsPage() {
                             {peerReview && (
                                 <div className="animate-fade-in-up">
                                     <div className={`p-4 rounded-xl mb-6 border ${peerReview.summary_verdict.includes("Reject") ? "bg-red-50 border-red-100 text-red-900" :
-                                            peerReview.summary_verdict.includes("Major") ? "bg-amber-50 border-amber-100 text-amber-900" :
-                                                "bg-emerald-50 border-emerald-100 text-emerald-900"
+                                        peerReview.summary_verdict.includes("Major") ? "bg-amber-50 border-amber-100 text-amber-900" :
+                                            "bg-emerald-50 border-emerald-100 text-emerald-900"
                                         }`}>
                                         <div className="font-bold text-xs uppercase tracking-wider mb-1">Board Verdict</div>
                                         <div className="text-2xl font-bold">{peerReview.summary_verdict}</div>
@@ -420,8 +420,8 @@ export default function JobResultsPage() {
                                                     <div className="flex items-center gap-3 mb-1">
                                                         <span className="font-bold text-slate-900">{review.reviewer}</span>
                                                         <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${review.status.includes("Accept") ? "bg-green-100 text-green-700" :
-                                                                review.status.includes("Minor") ? "bg-blue-100 text-blue-700" :
-                                                                    "bg-red-100 text-red-700"
+                                                            review.status.includes("Minor") ? "bg-blue-100 text-blue-700" :
+                                                                "bg-red-100 text-red-700"
                                                             }`}>{review.status}</span>
                                                     </div>
                                                     <p className="text-slate-600 text-sm leading-relaxed">"{review.comment}"</p>

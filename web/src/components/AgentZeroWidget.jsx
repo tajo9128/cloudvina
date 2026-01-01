@@ -5,7 +5,7 @@ import ReactMarkdown from 'react-markdown';
 export default function AgentZeroWidget() {
     const [isOpen, setIsOpen] = useState(false);
     const [messages, setMessages] = useState([
-        { role: 'assistant', text: "Hello! I am **Agent Zero**. I can help you interpret docking results or suggest next steps. How can I help?" }
+        { role: 'assistant', text: "Hello! I am **BioDockify AI Agent**. I can help you interpret docking results or suggest next steps. How can I help?" }
     ]);
     const [input, setInput] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -83,7 +83,7 @@ export default function AgentZeroWidget() {
                         }
                     }
                 } catch (err) {
-                    console.warn("Agent Zero: Could not fetch job context", err);
+                    console.warn("BioDockify AI Agent: Could not fetch job context", err);
                 }
             }
 
@@ -122,7 +122,7 @@ export default function AgentZeroWidget() {
                     <div className="bg-gradient-to-r from-indigo-600 to-purple-600 p-4 flex justify-between items-center text-white">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse"></div>
-                            <h3 className="font-bold text-sm">Agent Zero (v7.0)</h3>
+                            <h3 className="font-bold text-sm">BioDockify AI Agent (v7.0)</h3>
                         </div>
                         <button onClick={() => setIsOpen(false)} className="hover:bg-white/20 rounded p-1">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
@@ -161,7 +161,7 @@ export default function AgentZeroWidget() {
                             type="text"
                             value={input}
                             onChange={(e) => setInput(e.target.value)}
-                            placeholder="Ask Agent Zero..."
+                            placeholder="Ask BioDockify AI Agent..."
                             className="flex-1 text-sm border border-slate-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                         />
                         <button

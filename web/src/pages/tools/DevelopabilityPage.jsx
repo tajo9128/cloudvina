@@ -131,7 +131,7 @@ export default function DevelopabilityPage() {
                             </div>
                         </div>
 
-                        {/* Agent Zero Integration */}
+                        {/* BioDockify AI Agent Integration */}
                         <div className="mt-8 text-center">
                             <button
                                 onClick={() => window.dispatchEvent(new CustomEvent('agent-zero-trigger', {
@@ -139,7 +139,7 @@ export default function DevelopabilityPage() {
                                 }))}
                                 className="text-indigo-600 font-bold hover:text-indigo-800 transition-colors"
                             >
-                                Ask Agent Zero for a Second Opinion 🤖
+                                Ask BioDockify AI Agent for a Second Opinion 🤖
                             </button>
                         </div>
                     </div>

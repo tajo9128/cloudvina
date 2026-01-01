@@ -111,7 +111,7 @@ const DockingStudioPage = () => {
                         <FeatureCard
                             icon={<Activity className="w-8 h-8 text-indigo-600" />}
                             title="Intelligent Recovery"
-                            desc="Agent Zero detects failures (grid errors, interruptions) and automatically applies repair strategies to resume jobs."
+                            desc="BioDockify AI Agent detects failures (grid errors, interruptions) and automatically applies repair strategies to resume jobs."
                         />
                         <FeatureCard
                             icon={<Cpu className="w-8 h-8 text-indigo-600" />}

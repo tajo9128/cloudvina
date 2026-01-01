@@ -111,7 +111,7 @@ export default function PocketDetectPage() {
                                 }))}
                                 className="text-orange-600 font-bold hover:underline flex items-center gap-2"
                             >
-                                Analyze via Agent Zero 🤖
+                                Analyze via BioDockify AI Agent 🤖
                             </button>
                         </div>
                     </div>
