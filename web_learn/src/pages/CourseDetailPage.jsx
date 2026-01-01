@@ -1,4 +1,4 @@
-```javascript
+
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Play, CheckCircle, Clock, BarChart, BookOpen, Star, Share2, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
@@ -23,13 +23,13 @@ export default function CourseDetailPage() {
             const { data, error } = await supabase
                 .from('lms_courses')
                 .select(`
-    *,
-    lms_profiles: instructor_id(display_name, avatar_url, bio),
-        lms_modules(
-            id, title, order_index,
-            lms_lessons(id, title, ordering: order_index, duration_minutes, type: video_url)
-        )
-            `)
+                    *,
+                    lms_profiles: instructor_id(display_name, avatar_url, bio),
+                    lms_modules(
+                        id, title, order_index,
+                        lms_lessons(id, title, ordering: order_index, duration_minutes, type: video_url)
+                    )
+                `)
                 .eq('id', courseId)
                 .single();
 
@@ -132,7 +132,7 @@ export default function CourseDetailPage() {
                                 ) : (
                                     course.lms_modules.map((module) => (
                                         <div key={module.id} className="bg-slate-50">
-                                            <button 
+                                            <button
                                                 onClick={() => setActiveModule(activeModule === module.id ? null : module.id)}
                                                 className="w-full flex items-center justify-between p-4 text-left hover:bg-slate-100 transition-colors"
                                             >
@@ -161,8 +161,8 @@ export default function CourseDetailPage() {
                                                             </div>
                                                             {/* Preview or Lock logic could go here */}
                                                             {/* If enrolled, link to lesson view */}
-                                                            <Link to={`/ lesson / ${ course.id }/${lesson.id}`} className = "px-3 py-1 text-xs font-bold text-primary-600 bg-primary-50 rounded hover:bg-primary-100 transition-colors" >
-    Watch
+                                                            <Link to={`/ lesson / ${course.id}/${lesson.id}`} className="px-3 py-1 text-xs font-bold text-primary-600 bg-primary-50 rounded hover:bg-primary-100 transition-colors" >
+                                                                Watch
                                                             </Link >
                                                         </div >
                                                     ))}
@@ -175,58 +175,58 @@ export default function CourseDetailPage() {
                         </div >
                     </div >
 
-    {/* Sidebar */ }
-    < div className = "lg:col-span-1" >
-        <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 sticky top-28">
-            <div className="aspect-video rounded-lg bg-slate-900 mb-6 relative group cursor-pointer overflow-hidden">
-                {course.thumbnail_url ? (
-                    <img src={course.thumbnail_url} alt="" className="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity" />
-                ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-500">No Preview</div>
-                )}
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Play className="w-6 h-6 text-white fill-white ml-1" />
-                    </div>
-                </div>
-            </div>
+                    {/* Sidebar */}
+                    < div className="lg:col-span-1" >
+                        <div className="bg-white rounded-xl shadow-lg border border-slate-200 p-6 sticky top-28">
+                            <div className="aspect-video rounded-lg bg-slate-900 mb-6 relative group cursor-pointer overflow-hidden">
+                                {course.thumbnail_url ? (
+                                    <img src={course.thumbnail_url} alt="" className="w-full h-full object-cover opacity-80 group-hover:opacity-60 transition-opacity" />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center text-slate-500">No Preview</div>
+                                )}
+                                <div className="absolute inset-0 flex items-center justify-center">
+                                    <div className="w-16 h-16 bg-white/20 backdrop-blur rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                        <Play className="w-6 h-6 text-white fill-white ml-1" />
+                                    </div>
+                                </div>
+                            </div>
 
-            <div className="mb-6">
-                <div className="flex items-end gap-2 mb-2">
-                    <span className="text-3xl font-bold text-slate-900">
-                        {course.price === 0 ? 'Free' : `$${course.price}`}
-                    </span>
-                    {course.price > 0 && <span className="text-lg text-slate-400 line-through mb-1">$99.99</span>}
-                </div>
-                <button className="w-full py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:shadow-xl hover:translate-y-[-1px] transition-all mb-3">
-                    Enroll Now
-                </button>
-                <p className="text-center text-xs text-slate-500">30-Day Money-Back Guarantee</p>
-            </div>
+                            <div className="mb-6">
+                                <div className="flex items-end gap-2 mb-2">
+                                    <span className="text-3xl font-bold text-slate-900">
+                                        {course.price === 0 ? 'Free' : `$${course.price}`}
+                                    </span>
+                                    {course.price > 0 && <span className="text-lg text-slate-400 line-through mb-1">$99.99</span>}
+                                </div>
+                                <button className="w-full py-3 bg-primary-600 text-white font-bold rounded-xl shadow-lg shadow-primary-600/20 hover:bg-primary-700 hover:shadow-xl hover:translate-y-[-1px] transition-all mb-3">
+                                    Enroll Now
+                                </button>
+                                <p className="text-center text-xs text-slate-500">30-Day Money-Back Guarantee</p>
+                            </div>
 
-            <div className="space-y-4 pt-6 border-t border-slate-100">
-                <div className="flex items-center gap-3 text-sm text-slate-600">
-                    <Clock className="w-5 h-5 text-slate-400" />
-                    <span>Self-paced learning</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-slate-600">
-                    <BookOpen className="w-5 h-5 text-slate-400" />
-                    <span>{totalLessons} lessons & exercises</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-slate-600">
-                    <CheckCircle className="w-5 h-5 text-slate-400" />
-                    <span>Certificate of completion</span>
-                </div>
-                <div className="flex items-center gap-3 text-sm text-slate-600">
-                    <Share2 className="w-5 h-5 text-slate-400" />
-                    <span>Full lifetime access</span>
-                </div>
-            </div>
-        </div>
+                            <div className="space-y-4 pt-6 border-t border-slate-100">
+                                <div className="flex items-center gap-3 text-sm text-slate-600">
+                                    <Clock className="w-5 h-5 text-slate-400" />
+                                    <span>Self-paced learning</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm text-slate-600">
+                                    <BookOpen className="w-5 h-5 text-slate-400" />
+                                    <span>{totalLessons} lessons & exercises</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm text-slate-600">
+                                    <CheckCircle className="w-5 h-5 text-slate-400" />
+                                    <span>Certificate of completion</span>
+                                </div>
+                                <div className="flex items-center gap-3 text-sm text-slate-600">
+                                    <Share2 className="w-5 h-5 text-slate-400" />
+                                    <span>Full lifetime access</span>
+                                </div>
+                            </div>
+                        </div>
                     </div >
                 </div >
             </div >
         </div >
     );
 }
-```
+
