@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, PlayCircle, CheckCircle, Circle, Menu, X, FileText, Download, MessageSquare, CheckSquare, Loader2 } from 'lucide-react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '../lib/supabase';
 import { useProgressStore } from '../stores/useProgressStore';
 import ReactMarkdown from 'react-markdown'; // Ensure this is installed or handle simple text if not
 
