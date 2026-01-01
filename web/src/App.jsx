@@ -34,6 +34,15 @@ import ContactPage from './pages/ContactPage'
 import PricingPage from './pages/PricingPage'
 import DockingStudioPage from './pages/DockingStudioPage'
 import BioDockVizPage from './pages/BioDockVizPage'
+// New Tools Routes
+import ToolsPage from './pages/ToolsPage'
+import TargetExplorerPage from './pages/tools/TargetExplorerPage'
+import StructureCheckPage from './pages/tools/StructureCheckPage'
+import BioactivityPage from './pages/tools/BioactivityPage'
+import PocketDetectPage from './pages/tools/PocketDetectPage'
+import PrioritizationPage from './pages/tools/PrioritizationPage'
+import DevelopabilityPage from './pages/tools/DevelopabilityPage'
+
 import DeveloperPage from './pages/DeveloperPage' // [NEW] Sprint 4
 import RefundsPage from './pages/RefundsPage'
 import ProfilePage from './pages/ProfilePage'
@@ -221,8 +230,17 @@ function AppRoutes() {
                 <Route path="/molecular-docking-online" element={<MolecularDockingPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/docking-studio" element={<DockingStudioPage />} />
+                <Route path="/docking-studio" element={<DockingStudioPage />} />
                 <Route path="/biodockviz" element={<BioDockVizPage />} />
 
+                {/* New Tools Hub & Individual Tools */}
+                <Route path="/tools" element={<ToolsPage />} />
+                <Route path="/tools/target-explorer" element={<TargetExplorerPage />} />
+                <Route path="/tools/structure-search" element={<StructureCheckPage />} />
+                <Route path="/tools/bioactivity" element={<BioactivityPage />} />
+                <Route path="/tools/pockets" element={<PocketDetectPage />} />
+                <Route path="/tools/prioritization" element={<PrioritizationPage />} />
+                <Route path="/tools/developability" element={<DevelopabilityPage />} />
                 {/* User System Routes */}
                 <Route path="/profile" element={session ? <ProfilePage /> : <Navigate to="/login" />} />
                 <Route path="/billing" element={session ? <BillingPage /> : <Navigate to="/login" />} />

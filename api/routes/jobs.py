@@ -381,7 +381,7 @@ async def _generate_job_export(job_id, current_user, credentials, format_type):
     analysis = job_data.get('docking_results') or {}
     interactions = job_data.get('interaction_results') or {}
     
-    if format_type == 'pdf': return ExportService.export_job_pdf(job_data, analysis, interactions)
+    if format_type == 'pdf': return await ExportService.export_job_pdf(job_data, analysis, interactions)
     elif format_type == 'csv': return ExportService.export_jobs_csv([job_data])
     elif format_type == 'json': return ExportService.export_jobs_json([job_data])
     elif format_type == 'pymol':

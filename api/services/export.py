@@ -130,12 +130,15 @@ class ExportService:
         )
     
     @staticmethod
-    def export_job_pdf(job: Dict, analysis: Dict = None, interactions: Dict = None) -> StreamingResponse:
+    async def export_job_pdf(job: Dict, analysis: Dict = None, interactions: Dict = None) -> StreamingResponse:
         """Export comprehensive job report as PDF using ReportGenerator"""
         from services.report_generator import ReportGenerator
         
-        generator = ReportGenerator()
-        pdf_buffer = generator.generate_job_report(job, analysis or {}, interactions or {})
+        # Instantiate with data required by new constructor
+        generator = ReportGenerator(job, analysis or {})
+        
+        # Await the async generation (calls Agent Zero)
+        pdf_buffer = await generator.generate_pdf()
         
         return StreamingResponse(
             pdf_buffer,

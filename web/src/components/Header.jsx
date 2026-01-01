@@ -58,8 +58,7 @@ export default function Header() {
                 { name: 'BioDockViz', path: '/biodockviz' }
             ]
         },
-        { name: 'Tools', path: '/tools/converter' },
-        { name: 'Blog', path: '/blog' },
+        { name: 'Tools', path: '/tools' },
         { name: 'Contact', path: '/contact' },
         { name: 'Dashboard', path: '/dashboard' },
     ]

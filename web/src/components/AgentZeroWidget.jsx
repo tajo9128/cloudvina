@@ -19,11 +19,32 @@ export default function AgentZeroWidget() {
         scrollToBottom();
     }, [messages, isOpen]);
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        if (!input.trim()) return;
+    // NEW: Listen for external triggers (e.g., from JobResultsPage)
+    useEffect(() => {
+        const handleTrigger = (event) => {
+            const { prompt, autoSend } = event.detail;
+            setIsOpen(true);
+            if (prompt) {
+                setInput(prompt);
+                if (autoSend) {
+                    // Slight delay to ensure state updates
+                    setTimeout(() => {
+                        handleSubmit(null, prompt);
+                    }, 100);
+                }
+            }
+        };
 
-        const userMsg = { role: 'user', text: input };
+        window.addEventListener('agent-zero-trigger', handleTrigger);
+        return () => window.removeEventListener('agent-zero-trigger', handleTrigger);
+    }, []);
+
+    const handleSubmit = async (e, forcedInput = null) => {
+        if (e) e.preventDefault();
+        const textToSend = forcedInput || input;
+        if (!textToSend.trim()) return;
+
+        const userMsg = { role: 'user', text: textToSend };
         setMessages(prev => [...prev, userMsg]);
         setInput("");
         setIsLoading(true);
@@ -32,8 +53,39 @@ export default function AgentZeroWidget() {
             const { data: { session } } = await supabase.auth.getSession();
             const token = session?.access_token;
 
-            // Get current context (simplified - can be expanded to read page URL/state)
-            const contextData = { page: window.location.pathname };
+            // 1. Detect Context (Job Results)
+            let contextData = { page: window.location.pathname };
+            let contextType = 'general';
+
+            // Check if we are on a job page
+            const jobMatch = window.location.pathname.match(/\/dock\/([a-zA-Z0-9-]+)/);
+            if (jobMatch && jobMatch[1] && jobMatch[1] !== 'new' && jobMatch[1] !== 'batch') {
+                const jobId = jobMatch[1];
+                try {
+                    // Fetch minimal job details for context
+                    const jobRes = await fetch(`${import.meta.env.VITE_API_URL}/jobs/${jobId}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    if (jobRes.ok) {
+                        const jobJson = await jobRes.json();
+                        contextData = {
+                            job_id: jobId,
+                            ligand: jobJson.ligand_filename,
+                            receptor: jobJson.receptor_filename,
+                            affinity: jobJson.binding_affinity,
+                            status: jobJson.status
+                        };
+                        // If user asks "explain", switch mode
+                        if (input.toLowerCase().includes('explain') || input.toLowerCase().includes('interpret')) {
+                            contextType = 'result_explanation';
+                        } else if (input.toLowerCase().includes('next') || input.toLowerCase().includes('now what')) {
+                            contextType = 'next_steps';
+                        }
+                    }
+                } catch (err) {
+                    console.warn("Agent Zero: Could not fetch job context", err);
+                }
+            }
 
             const response = await fetch(`${import.meta.env.VITE_API_URL}/agent/consult`, {
                 method: 'POST',
@@ -42,8 +94,8 @@ export default function AgentZeroWidget() {
                     'Authorization': `Bearer ${token}`
                 },
                 body: JSON.stringify({
-                    query: input,
-                    context_type: 'general',
+                    query: textToSend,
+                    context_type: contextType,
                     data: contextData
                 })
             });
@@ -82,8 +134,8 @@ export default function AgentZeroWidget() {
                         {messages.map((msg, idx) => (
                             <div key={idx} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
                                 <div className={`max-w-[85%] rounded-lg p-3 text-sm ${msg.role === 'user'
-                                        ? 'bg-indigo-600 text-white rounded-br-none'
-                                        : 'bg-white border border-slate-200 text-slate-700 shadow-sm rounded-bl-none'
+                                    ? 'bg-indigo-600 text-white rounded-br-none'
+                                    : 'bg-white border border-slate-200 text-slate-700 shadow-sm rounded-bl-none'
                                     }`}>
                                     <ReactMarkdown className="prose prose-sm max-w-none dark:prose-invert">
                                         {msg.text}
