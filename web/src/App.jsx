@@ -238,10 +238,13 @@ function RedirectToNewBatchUrl() {
     return <Navigate to={`/dock/batch/${batchId}`} replace />
 }
 
+import AgentZeroWidget from './components/AgentZeroWidget' // NEW: Agent Zero AI
+
 function App() {
     return (
         <QueryClientProvider client={queryClient}>
             <AppRoutes />
+            <AgentZeroWidget />
         </QueryClientProvider>
     )
 }

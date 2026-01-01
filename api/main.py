@@ -227,7 +227,12 @@ from routes.user_system import router as user_router
 app.include_router(user_router)
 
 from routes.reporting import router as reporting_router
+from routes.reporting import router as reporting_router
 app.include_router(reporting_router)
+
+# BioDockify v7.0.0 - Agent Zero Router (NEW)
+from routes.agent import router as agent_router
+app.include_router(agent_router)
 
 # ============================================================================
 # Configuration
