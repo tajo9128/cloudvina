@@ -273,12 +273,22 @@ export const blogPosts = [
 
 // Category counts
 export const categoryCounts = {
-    'Technology': 1,
-    'Tutorials': 2,
-    'Industry Insights': 3,
+    // New Categories
+    'Bioinformatics': 0,
+    'Molecular Docking': 0,
+    'Molecular Dynamics': 0,
+    'AI in Drug Discovery': 0,
     'Workflows': 1,
-    'Comparisons': 2,
+    'Tutorials': 2,
     'Case Studies': 1,
+    'Phytochemical Research': 0,
+    'Comparisons': 2,
+    'Platform Updates': 0,
+    'Beginner’s Corner': 0,
+
+    // Legacy Categories (Preserved for existing posts)
+    'Technology': 1,
+    'Industry Insights': 3,
     'Emerging Research': 2,
     'Cost Analysis': 1,
     'Drug Discovery': 7
