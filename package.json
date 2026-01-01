@@ -2,7 +2,8 @@
     "name": "gravitic-mariner-root",
     "private": true,
     "workspaces": [
-        "web"
+        "web",
+        "web_learn"
     ],
     "dependencies": {
         "lucide-react": "^0.468.0"
