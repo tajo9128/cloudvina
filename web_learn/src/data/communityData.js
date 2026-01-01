@@ -15,6 +15,8 @@ export const users = {
     'newbie': { id: 'newbie', name: 'BioStudent24', role: 'Member', avatar: null, reputation: 10, joinDate: '2024-11-20', posts: 5 }
 };
 
+export const members = Object.values(users);
+
 export const categories = [
     {
         id: 'main',
