@@ -27,7 +27,7 @@ import AdminCoursesPage from './pages/admin/AdminCoursesPage';
 import AdminCourseEditorPage from './pages/admin/AdminCourseEditorPage';
 import AdminUsersPage from './pages/admin/AdminUsersPage';
 
-const ProfilePage = () => <div className="min-h-screen p-8"><h1 className="text-3xl font-bold">Profile - Coming Soon</h1></div>;
+
 const SettingsPage = () => <div className="min-h-screen p-8"><h1 className="text-3xl font-bold">Settings - Coming Soon</h1></div>;
 const SupportPage = () => <div className="min-h-screen p-8"><h1 className="text-3xl font-bold">Support - Coming Soon</h1></div>;
 
