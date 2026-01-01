@@ -224,6 +224,23 @@ export default function BlogPage() {
                                 ))}
                             </div>
 
+                            {/* Categories */}
+                            <h3 className="font-bold text-slate-900 mb-4">Categories</h3>
+                            <div className="space-y-2 mb-8">
+                                {Object.keys(categories).map(category => (
+                                    <button
+                                        key={category}
+                                        onClick={() => setSelectedCategory(category)}
+                                        className={`block w-full text-left px-4 py-2 rounded-lg text-sm transition-colors ${selectedCategory === category
+                                                ? 'bg-primary-50 text-primary-700 font-medium'
+                                                : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                                            }`}
+                                    >
+                                        {category}
+                                    </button>
+                                ))}
+                            </div>
+
                             {/* Recent Posts - Updated to show actual recent ones */}
                             <h3 className="font-bold text-slate-900 mb-4">Recent Posts</h3>
                             <div className="space-y-4">
