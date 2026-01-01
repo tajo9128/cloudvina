@@ -69,8 +69,8 @@ export default function DevelopabilityPage() {
                     <div className="animate-fade-in-up">
                         {/* HEADER CARD */}
                         <div className={`rounded-2xl p-6 mb-6 shadow-md border-l-8 flex items-center justify-between ${result.risk_level === 'Low' ? 'bg-white border-green-500' :
-                                result.risk_level === 'Medium' ? 'bg-white border-yellow-500' :
-                                    'bg-white border-red-500'
+                            result.risk_level === 'Medium' ? 'bg-white border-yellow-500' :
+                                'bg-white border-red-500'
                             }`}>
                             <div>
                                 <h2 className="text-2xl font-bold text-slate-800 border-none">Risk Level: <span className={
@@ -93,12 +93,12 @@ export default function DevelopabilityPage() {
                                     🧪 Molecular Properties
                                 </h3>
                                 <div className="space-y-3">
-                                    <PropRow label="Molecular Weight" value={result.properties.mw} limit="< 500" />
-                                    <PropRow label="LogP (Lipophilicity)" value={result.properties.logp} limit="< 5" />
-                                    <PropRow label="H-Bond Donors" value={result.properties.hbd} limit="< 5" />
-                                    <PropRow label="H-Bond Acceptors" value={result.properties.hba} limit="< 10" />
-                                    <PropRow label="TPSA" value={result.properties.tpsa} limit="< 140" />
-                                    <PropRow label="Rotatable Bonds" value={result.properties.rotatable_bonds} limit="< 10" />
+                                    <PropRow label="Molecular Weight" value={result.properties.mw} limit="&lt; 500" />
+                                    <PropRow label="LogP (Lipophilicity)" value={result.properties.logp} limit="&lt; 5" />
+                                    <PropRow label="H-Bond Donors" value={result.properties.hbd} limit="&lt; 5" />
+                                    <PropRow label="H-Bond Acceptors" value={result.properties.hba} limit="&lt; 10" />
+                                    <PropRow label="TPSA" value={result.properties.tpsa} limit="&lt; 140" />
+                                    <PropRow label="Rotatable Bonds" value={result.properties.rotatable_bonds} limit="&lt; 10" />
                                 </div>
                             </div>
 

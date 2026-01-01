@@ -41,7 +41,7 @@ export default function StructureCheckPage() {
 
                 <h1 className="text-3xl font-bold text-slate-900 mb-2">Structure Quality Checker 🏗️</h1>
                 <p className="text-slate-600 mb-8">
-                    Validate PDB files before docking. Ensure high resolution (< 2.5Å) and check experimental methods.
+                    Validate PDB files before docking. Ensure high resolution (&lt; 2.5Å) and check experimental methods.
                 </p>
 
                 <div className="bg-white rounded-2xl shadow-sm p-6 mb-8">
