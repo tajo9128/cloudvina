@@ -71,7 +71,7 @@ export default function CoursesPage() {
                             <button
                                 key={level}
                                 onClick={() => setSelectedLevel(level)}
-                                className={`px - 4 py - 2 rounded - lg text - sm font - bold whitespace - nowrap transition - colors ${selectedLevel === level
+                                className={`px-4 py-2 rounded-lg text-sm font-bold whitespace-nowrap transition-colors ${selectedLevel === level
                                     ? 'bg-slate-900 text-white'
                                     : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
                                     } `}
@@ -94,7 +94,7 @@ export default function CoursesPage() {
                 ) : (
                     <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                         {filteredCourses.map((course) => (
-                            <Link to={`/ courses / ${course.id} `} key={course.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow group flex flex-col">
+                            <Link to={`/courses/${course.id}`} key={course.id} className="bg-white rounded-xl border border-slate-200 overflow-hidden hover:shadow-lg transition-shadow group flex flex-col">
                                 <div className="aspect-video bg-slate-200 relative overflow-hidden">
                                     {course.thumbnail_url ? (
                                         <img
@@ -141,7 +141,7 @@ export default function CoursesPage() {
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </Link>
                         ))}
                     </div>
                 ) : (
