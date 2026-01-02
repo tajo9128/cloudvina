@@ -22,4 +22,4 @@ services:
       - key: BATCH_JOB_QUEUE
         value: cloudvina-fargate-queue
       - key: BATCH_JOB_DEFINITION
-        value: cloudvina-fargate-job-v10
+        value: cloudvina-job

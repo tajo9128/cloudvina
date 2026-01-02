@@ -8,13 +8,16 @@ from typing import Dict, Optional
 # These must be copied to /app/services in Docker
 try:
     from services.rf_model_service import RFModelService
-except ImportError:
-    # Handle case where service isn't available in local test env
+    logger.info("✅ RF Model Service loaded successfully")
+except ImportError as e:
+    logger.warning(f"⚠️ RF Model Service not available: {e}")
     RFModelService = None
 
 try:
     from services.sidechain_minimizer import SideChainMinimizer
-except ImportError:
+    logger.info("✅ SideChain Minimizer loaded successfully")
+except ImportError as e:
+    logger.warning(f"⚠️ SideChain Minimizer not available: {e}")
     SideChainMinimizer = None
 
 try:

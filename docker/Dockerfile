@@ -35,6 +35,14 @@ COPY api/services /app/services
 COPY api/config /app/config
 WORKDIR /app
 
+# Diagnostic: Verify services were copied correctly
+RUN echo "=== Services Directory Contents ===" && ls -la /app/services/ || echo "❌ Services directory missing"
+RUN echo "=== Config Directory Contents ===" && ls -la /app/config/ || echo "❌ Config directory missing"
+
+# Diagnostic: Test critical imports
+RUN python -c "from services.docking_engine import DockingEngine; print('✅ DockingEngine import OK')" || echo "❌ DockingEngine import failed"
+RUN python -c "from config.scoring_tiers import ScoringTiers; print('✅ ScoringTiers import OK')" || echo "❌ ScoringTiers import failed"
+
 # SKIPPING rDock: Repository structure changed, build from source no longer works
 # rDock would require significant rework to install. For now, using Vina + Gnina.
 # TODO: Add rDock via conda or pre-built binary when available
