@@ -20,9 +20,9 @@ export default function HomePage() {
     return (
         <div className="overflow-hidden bg-slate-50 font-sans text-slate-900">
             <SEOHelmet
-                title="BioDockify: Cloud-Native Molecular Docking & CADD Platform"
-                description="Integrated AutoDock Vina and Machine Learning workflows for precise virtual screening. Empowering Drug Discovery with Cloud-Native Docking."
-                keywords="drug discovery, molecular analysis, computational pharmacology, virtual screening, medicinal chemistry, CADD, cloud docking"
+                title="BioDockify: In-Silico NAM Platform for Early Nonclinical Screening"
+                description="Integrated mechanistic docking, MD simulation, and toxicity prediction for lead prioritization. Reduce animal testing with transparent in-silico evidence."
+                keywords="NAM, non-animal methodology, in-silico toxicology, molecular docking, drug discovery, virtual screening, reduction, decision support"
                 canonical="https://biodockify.com/"
             />
 
@@ -39,16 +39,16 @@ export default function HomePage() {
                         <div className="max-w-2xl mb-12 lg:mb-0">
                             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-900/50 border border-indigo-700/50 text-indigo-300 text-[10px] font-bold uppercase tracking-wider mb-8 animate-fade-in">
                                 <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-                                Major Release v6.0.0: Privacy-First Consensus Docking
+                                Major Update: Non-Animal Methodology (NAM) Platform v1.0
                             </div>
 
                             <h1 className="text-4xl lg:text-6xl font-bold text-white mb-6 leading-tight tracking-tight">
-                                Accelerate Drug Discovery with <span className="text-indigo-400">AI-Powered</span> Molecular Docking
+                                AI-Powered <span className="text-indigo-400">In-Silico Screening</span> for Early Nonclinical Risk Assessment
                             </h1>
 
                             <p className="text-lg text-slate-400 mb-10 leading-relaxed max-w-lg">
-                                Integrated AutoDock Vina and Machine Learning workflows for precise virtual screening.
-                                <span className="block mt-2 text-indigo-300 font-medium">Empowering Drug Discovery with Cloud-Native Docking.</span>
+                                Integrate mechanistic docking, molecular dynamics, and toxicity prediction to prioritize compounds and reduce unnecessary animal testing.
+                                <span className="block mt-2 text-indigo-300 font-medium">Decision Support for Early-Stage Discovery.</span>
                             </p>
 
                             <div className="flex flex-wrap gap-4">
@@ -186,13 +186,13 @@ export default function HomePage() {
                             number="04"
                             title="Lead Discovery Workspace"
                             subtitle="Phases 6-7: Multi-Parameter"
-                            description="Consensus-based lead ranking integrating docking scores, MD stability, and AI predictions. Full ADMET toxicity profiling with Lipinski rule validation."
+                            description="Consensus-based lead ranking prioritizing compounds via our Weight-of-Evidence (WoE) engine. Integrates docking reliability, MD stability, and safety profile."
                             features={[
-                                "Consensus Ranking (Docking + MD + AI)",
-                                "ADMET Prediction utilizing AI",
+                                "WoE Confidence Scoring (0-100%)",
+                                "NAM Evidence Reporting",
                                 "Lipinski Rule of 5 Compliance",
-                                "BBB Penetration Prediction",
-                                "Synthetic Accessibility Score (SAScore)"
+                                "Early Toxicity Flagging",
+                                "Strategic Prioritization"
                             ]}
                             icon={<Search className="w-8 h-8 text-white" />}
                             color="violet"
