@@ -118,11 +118,17 @@ def submit_batch_job(job_id: str, receptor_key: str, ligand_key: str, engine: st
         identity = sts.get_caller_identity()
         print(f"DEBUG: AWS Identity: {identity['Account']}, Region: {batch_client.meta.region_name}")
         
-        print(f"DEBUG: Submitting job {job_id} to Queue: {BATCH_JOB_QUEUE}, Definition: {BATCH_JOB_DEFINITION} Engine: {engine}")
+        # FIX: Handle malformed definition (e.g. ":latest")
+        job_def = BATCH_JOB_DEFINITION
+        if job_def.startswith(":"):
+            print(f"WARNING: Malformed Job Definition '{job_def}'. Prepending default name.")
+            job_def = f"biodockify-all-fixes{job_def}"
+        
+        print(f"DEBUG: Submitting job {job_id} to Queue: {BATCH_JOB_QUEUE}, Definition: {job_def} Engine: {engine}")
         response = batch_client.submit_job(
             jobName=f'BioDockify-{engine}-{job_id}',
             jobQueue=BATCH_JOB_QUEUE,
-            jobDefinition=BATCH_JOB_DEFINITION,
+            jobDefinition=job_def,
             containerOverrides={
                 'environment': [
                     {'name': 'JOB_ID', 'value': job_id},

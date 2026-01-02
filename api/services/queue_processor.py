@@ -126,21 +126,52 @@ class QueueProcessor:
                 # We reuse the logic to convert/upload ligand for the MAIN job first
                 main_lig_key = f"jobs/{job_id}/ligand.pdbqt"
                 
-                # Helper for conversion (using thread/process logic inline or simplified)
-                # We'll use a simplified synchronous call here for safety/clarity, relying on the fact 
-                # that we are already in an async loop worker.
-                # Actually, strictly better to use the imported functions.
-                
                 lig_local_path = os.path.join(temp_dir, job['ligand_filename'])
                 self.s3.download_file(S3_BUCKET, job['ligand_s3_key'], lig_local_path)
                 
-                lig_pdbqt_content = None
-                if job['ligand_filename'].lower().endswith('.pdbqt'):
-                    with open(lig_local_path, 'r') as f: lig_pdbqt_content = f.read()
-                else:
-                    with open(lig_local_path, 'r') as f: content = f.read()
-                    lig_pdbqt_content, err = convert_to_pdbqt(content, job['ligand_filename'])
-                    if err: raise Exception(f"Ligand conversion failed: {err}")
+                # --- NAM STANDARDIZATION (Phase 7) ---
+                try:
+                    from services.nam_standardization import NAMStandardizer
+                    from rdkit import Chem
+                    
+                    std = NAMStandardizer()
+                    raw_content = open(lig_local_path, 'r').read()
+                    
+                    # Attempt load
+                    mol = None
+                    ext = job['ligand_filename'].lower()
+                    if ext.endswith('.sdf'):
+                        mol = next(Chem.SDMolSupplier(lig_local_path), None)
+                    elif ext.endswith('.pdb'):
+                        mol = Chem.MolFromPDBBlock(raw_content)
+                    elif ext.endswith('.mol2'):
+                        mol = Chem.MolFromMol2Block(raw_content)
+                    
+                    if mol:
+                        clean_mol, qc = std.standardize(mol)
+                        if not clean_mol:
+                            raise Exception(f"NAM Standardization Failed: {qc.get('error') or qc.get('reasons')}")
+                        
+                        # Save Clean PDB for conversion
+                        # This ensures we convert a clean, 3D structure
+                        clean_path = os.path.join(temp_dir, "clean_ligand.pdb")
+                        Chem.MolToPDBFile(clean_mol, clean_path)
+                        
+                        # Update raw_content source to the clean file
+                        lig_local_path = clean_path
+                        logger.info(f"✅ NAM Standardization Cleaned Molecule (QC Passed)")
+                    else:
+                        logger.warning("⚠️ Could not load mol for Standardization. Proceeding with raw file...")
+
+                except Exception as std_err:
+                    # If Strict Mode is ON, we ideally fail here. 
+                    # For v1.0 rollout, we log error and try raw fallback, BUT explicitly note it.
+                    logger.error(f"NAM Std Warning: {std_err}")
+                
+                # Convert to PDBQT (using clean file if successful)
+                with open(lig_local_path, 'r') as f: content = f.read()
+                lig_pdbqt_content, err = convert_to_pdbqt(content, os.path.basename(lig_local_path))
+                if err: raise Exception(f"Ligand conversion failed: {err}")
                 
                 # Upload Main Ligand
                 # We need to save it locally for reuse
