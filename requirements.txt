@@ -22,6 +22,7 @@ python-jose[cryptography]
 pydantic
 pydantic-settings
 python-dotenv>=1.0.0
+itsdangerous>=2.0.0
 
 # Optional - comment out if causing issues
 # torch  # Will use CPU-only transformers
