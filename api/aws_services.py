@@ -63,6 +63,12 @@ def generate_presigned_upload_urls(job_id: str, receptor_filename: str, ligand_f
     receptor_type = content_types.get(receptor_ext, 'application/octet-stream')
     ligand_type = content_types.get(ligand_ext, 'application/octet-stream')
     
+    # Dynamic Timeout Logic
+    # 15 mins for potentially large protein files
+    receptor_timeout = 900 if receptor_ext in ['.pdb', '.mmcif', '.pdbml', '.cif', '.gz'] else 300
+    # 10 mins for complex ligand files
+    ligand_timeout = 600 if ligand_ext in ['.sdf', '.mol2'] else 300
+    
     try:
         receptor_url = s3_client.generate_presigned_url(
             'put_object',
@@ -71,7 +77,7 @@ def generate_presigned_upload_urls(job_id: str, receptor_filename: str, ligand_f
                 'Key': receptor_key,
                 'ContentType': receptor_type
             },
-            ExpiresIn=300  # 5 minutes
+            ExpiresIn=receptor_timeout
         )
         
         ligand_url = s3_client.generate_presigned_url(
@@ -81,7 +87,7 @@ def generate_presigned_upload_urls(job_id: str, receptor_filename: str, ligand_f
                 'Key': ligand_key,
                 'ContentType': ligand_type
             },
-            ExpiresIn=300
+            ExpiresIn=ligand_timeout
         )
         
         return receptor_url, ligand_url, receptor_key, ligand_key
