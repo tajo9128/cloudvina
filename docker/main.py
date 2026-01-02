@@ -289,7 +289,27 @@ class DockingRunner:
         except Exception as e:
             print(f"CRITICAL ERROR: {e}")
             import traceback
+            error_trace = traceback.format_exc()
             traceback.print_exc()
+            
+            # Upload error details to S3 for debugging
+            try:
+                error_log_path = self.work_dir / 'ERROR_LOG.txt'
+                with open(error_log_path, 'w') as f:
+                    f.write(f"ERROR: {str(e)}\n\n")
+                    f.write(f"Job ID: {self.job_id}\n")
+                    f.write(f"Engine: {self.engine_type}\n")
+                    f.write(f"Receptor: {self.receptor_key}\n")
+                    f.write(f"Ligand: {self.ligand_key}\n\n")
+                    f.write("TRACEBACK:\n")
+                    f.write(error_trace)
+                
+                # Upload using specific key format
+                self.upload_to_s3(error_log_path, f'jobs/{self.job_id}/ERROR_LOG.txt')
+                print("Error details uploaded to S3")
+            except Exception as upload_err:
+                print(f"Failed to upload error log: {upload_err}")
+            
             sys.exit(1)
 
         print("\nPipeline Completed Successfully.")
