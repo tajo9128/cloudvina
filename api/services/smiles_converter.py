@@ -11,6 +11,55 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+# --- RETRY HELPER ---
+import time
+from functools import wraps
+
+def convert_with_retry(conversion_func, content: str, filename: str, max_retries: int = 3):
+    """
+    Retry wrapper for conversion functions.
+    Handles transient failures with exponential backoff.
+    
+    Args:
+        conversion_func: Function that takes (content, filename) and returns (result, error)
+        content: File content to convert
+        filename: Original filename
+        max_retries: Maximum retry attempts (default 3)
+    
+    Returns:
+        Tuple[Optional[str], Optional[str]]: (converted_content, error_message)
+    """
+    last_error = None
+    
+    for attempt in range(max_retries):
+        try:
+            result, err = conversion_func(content, filename)
+            
+            if not err and result:
+                if attempt > 0:
+                    logger.info(f"✅ Conversion succeeded on attempt {attempt + 1}")
+                return result, None
+            
+            # Conversion returned an error
+            last_error = err or "Conversion returned empty result"
+            
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 0.5  # 0.5s, 1s, 1.5s
+                logger.warning(f"⚠️ Conversion attempt {attempt + 1} failed: {last_error}. Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+                
+        except Exception as e:
+            last_error = str(e)
+            if attempt < max_retries - 1:
+                wait_time = (attempt + 1) * 0.5
+                logger.warning(f"⚠️ Conversion exception on attempt {attempt + 1}: {e}. Retrying in {wait_time}s...")
+                time.sleep(wait_time)
+            else:
+                logger.error(f"❌ Conversion failed after {max_retries} attempts: {e}")
+    
+    return None, f"Conversion failed after {max_retries} attempts: {last_error}"
+
+
 def smiles_to_pdbqt(smiles: str, name: str = "ligand") -> Tuple[Optional[str], Optional[str]]:
     """
     Convert a SMILES string to PDBQT format (Hardened Wrapper).

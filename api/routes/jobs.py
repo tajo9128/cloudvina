@@ -136,35 +136,57 @@ async def start_job(
         
         if rec_ext != 'pdbqt':
              try:
-                 from services.smiles_converter import convert_receptor_to_pdbqt
+                 from services.smiles_converter import convert_receptor_to_pdbqt, convert_with_retry
                  pdb_obj = s3.get_object(Bucket=S3_BUCKET, Key=job_data['receptor_s3_key'])
                  rec_content = pdb_obj['Body'].read().decode('utf-8')
-                 pdbqt_content, err = convert_receptor_to_pdbqt(rec_content, job_data['receptor_filename'])
-                 if err or not pdbqt_content: raise Exception(f"Receptor conversion failed: {err}")
+                 
+                 # Use retry wrapper for robustness
+                 pdbqt_content, err = convert_with_retry(
+                     convert_receptor_to_pdbqt, 
+                     rec_content, 
+                     job_data['receptor_filename'],
+                     max_retries=3
+                 )
+                 if err or not pdbqt_content: 
+                     raise Exception(f"Receptor conversion failed: {err}")
                  
                  new_rec_key = f"jobs/{job_id}/receptor_input_converted.pdbqt"
                  s3.put_object(Bucket=S3_BUCKET, Key=new_rec_key, Body=pdbqt_content.encode('utf-8'))
                  job_receptor_key = new_rec_key
              except Exception as rx:
                  print(f"Receptor Prep Error: {rx}")
-                 raise HTTPException(status_code=400, detail=f"Receptor conversion failed: {str(rx)}")
+                 raise HTTPException(
+                     status_code=400, 
+                     detail=f"Receptor conversion failed: {str(rx)}. Please ensure your PDB file is valid."
+                 )
 
         # 2. Ligand Preparation
         final_ligand_key = job_data['ligand_s3_key']
         if not final_ligand_key.lower().endswith('.pdbqt'):
             try:
-                from services.smiles_converter import convert_to_pdbqt
+                from services.smiles_converter import convert_to_pdbqt, convert_with_retry
                 obj = s3.get_object(Bucket=S3_BUCKET, Key=final_ligand_key)
                 content = obj['Body'].read().decode('utf-8')
-                pdbqt_content, err = convert_to_pdbqt(content, job_data['ligand_filename'])
-                if err: raise Exception(f"Conversion failed: {err}")
+                
+                # Use retry wrapper for robustness
+                pdbqt_content, err = convert_with_retry(
+                    convert_to_pdbqt, 
+                    content, 
+                    job_data['ligand_filename'],
+                    max_retries=3
+                )
+                if err: 
+                    raise Exception(f"Conversion failed: {err}")
                 
                 new_key = f"jobs/{job_id}/ligand_input_converted.pdbqt"
                 s3.put_object(Bucket=S3_BUCKET, Key=new_key, Body=pdbqt_content.encode('utf-8'))
                 final_ligand_key = new_key
             except Exception as lx:
                  print(f"Ligand Prep Error: {lx}")
-                 raise HTTPException(status_code=400, detail=f"Ligand conversion failed: {str(lx)}")
+                 raise HTTPException(
+                     status_code=400, 
+                     detail=f"Ligand conversion failed: {str(lx)}. Please check your molecule file format."
+                 )
         
         # Submit to AWS
         batch_job_id = submit_batch_job(
