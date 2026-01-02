@@ -32,6 +32,7 @@ COPY docker/main.py /app/main.py
 # But import paths need to match.
 # If we copy to /app/services, inside main.py we can `import services.docking_engine`
 COPY api/services /app/services
+COPY api/config /app/config
 WORKDIR /app
 
 # SKIPPING rDock: Repository structure changed, build from source no longer works
