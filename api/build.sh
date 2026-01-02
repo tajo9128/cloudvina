@@ -12,5 +12,6 @@ pip install six
 
 # Install dependencies with no build isolation to ensure six is visible to oddt
 pip install --no-build-isolation -r requirements.txt
+pip install itsdangerous
 
 echo "Build completed successfully!"
