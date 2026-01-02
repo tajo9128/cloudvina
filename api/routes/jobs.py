@@ -201,11 +201,83 @@ async def start_job(
             'batch_job_id': batch_job_id
         }).eq('id', job_id).execute()
         
-        return {"job_id": job_id, "status": "SUBMITTED"}
-        
-    except HTTPException: raise
+        return {"job_id": job_id, "batch_job_id": batch_job_id, "status": "SUBMITTED"}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Start failed: {str(e)}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to start job: {str(e)}")
+
+
+@router.get("/{job_id}/status")
+async def get_job_status(
+    job_id: str,
+    current_user: dict = Depends(get_current_user),
+    credentials: HTTPAuthorizationCredentials = Security(security)
+):
+    """
+    Get job status and sync with AWS Batch if running
+    """
+    try:
+        from aws_services import get_batch_job_status
+        from datetime import datetime
+        
+        auth_client = get_authenticated_client(credentials.credentials)
+        job = auth_client.table('jobs').select('*').eq('id', job_id).eq('user_id', current_user.id).single().execute()
+        
+        if not job.data:
+            raise HTTPException(status_code=404, detail="Job not found")
+            
+        job_data = job.data
+        
+        # Sync Status with AWS Batch if active
+        if job_data.get('status') in ['SUBMITTED', 'RUNNABLE', 'STARTING', 'RUNNING']:
+            if job_data.get('batch_job_id'):
+                try:
+                    batch_status = get_batch_job_status(job_data['batch_job_id'])
+                    
+                    # If status changed, update DB
+                    if batch_status['status'] != job_data['status']:
+                        print(f"Syncing Job {job_id}: {job_data['status']} -> {batch_status['status']}")
+                        
+                        update_data = {
+                            'status': batch_status['status'],
+                            'updated_at': datetime.utcnow().isoformat()
+                        }
+                        
+                        # Capture failure reason
+                        if batch_status['status'] == 'FAILED':
+                            reason = batch_status.get('status_reason', 'Unknown AWS Batch error')
+                            update_data['error_message'] = reason
+                            # Also update local object for return
+                            job_data['error_message'] = reason
+                        
+                        auth_client.table('jobs').update(update_data).eq('id', job_id).execute()
+                        job_data['status'] = batch_status['status']
+                        
+                except Exception as sync_err:
+                    print(f"Warning: AWS Batch sync failed for {job_id}: {sync_err}")
+        
+        return {
+            "job_id": job_id,
+            "status": job_data.get('status'),
+            "error_message": job_data.get('error_message'),
+            "created_at": job_data.get('created_at'),
+            "batch_job_id": job_data.get('batch_job_id'),
+            "results": {
+                "binding_affinity": job_data.get('binding_affinity'),
+                "docking_score": job_data.get('docking_score'),
+                "vina_score": job_data.get('vina_score'),
+                "consensus_score": job_data.get('consensus_score')
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Status check error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to check status: {str(e)}")
 
 @router.get("", response_model=list) # /jobs
 async def list_jobs(
