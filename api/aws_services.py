@@ -15,9 +15,12 @@ BATCH_JOB_DEFINITION = os.getenv("BATCH_JOB_DEFINITION", "cloudvina-job")
 
 # Boto3 timeout configuration to prevent indefinite hangs
 boto_config = Config(
-    connect_timeout=10,  # 10 seconds to establish connection
-    read_timeout=30,     # 30 seconds to read response
-    retries={'max_attempts': 2}  # Retry failed requests twice
+    connect_timeout=30,   # Increased for robust AWS connectivity
+    read_timeout=120,     # Increased for long-poll Batch operations
+    retries={
+        'max_attempts': 5,  # More retries for transient failures
+        'mode': 'adaptive'  # Adaptive throttling handling
+    }
 )
 
 # Initialize clients with timeout configuration
