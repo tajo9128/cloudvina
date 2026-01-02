@@ -100,14 +100,21 @@ export default function AgentZeroWidget() {
                 })
             });
 
-            if (!response.ok) throw new Error("Agent busy");
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.detail || "Agent busy");
+            }
 
             const data = await response.json();
             const replyText = data.analysis || data.suggestion || JSON.stringify(data);
 
             setMessages(prev => [...prev, { role: 'assistant', text: replyText }]);
         } catch (error) {
-            setMessages(prev => [...prev, { role: 'assistant', text: "⚠️ I'm having trouble connecting to my brain. Please check if the backend is running." }]);
+            console.error("Agent Zero Error:", error);
+            const errorMsg = error.message.includes("Failed to fetch")
+                ? "⚠️ Cannot connect to backend. Is the server running?"
+                : `⚠️ Error: ${error.message}`;
+            setMessages(prev => [...prev, { role: 'assistant', text: errorMsg }]);
         } finally {
             setIsLoading(false);
         }

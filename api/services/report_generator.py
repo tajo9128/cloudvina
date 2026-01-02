@@ -13,6 +13,54 @@ from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT
 from api.agent_zero.hf_client import AgentZeroClient
 # For NAM we might want simpler static text or specific templates, but we keep Agent Zero for dynamic summaries
 
+class ReportGenerator:
+    """
+    Legacy/Generic Report Generator for Batch/Ranking reports and PyMOL exports.
+    Maintained for backward compatibility with reporting.py
+    """
+    def __init__(self):
+        self.buffer = io.BytesIO()
+
+    def generate_pymol_export(self, job_id, receptor_url, ligand_url):
+        """Generates a .pml script for PyMOL"""
+        script = f"""
+# BioDockify PyMOL Script for Job {job_id}
+load {receptor_url}, receptor
+load {ligand_url}, ligand
+hide all
+show cartoon, receptor
+show sticks, ligand
+util.cba(33,"ligand")
+center ligand
+zoom ligand, 5
+        """
+        return io.BytesIO(script.encode('utf-8'))
+
+    def generate_report(self, hits, project_name):
+        """Generates a simple summary PDF for batch hits"""
+        doc = SimpleDocTemplate(self.buffer, pagesize=letter)
+        styles = getSampleStyleSheet()
+        Story = []
+        Story.append(Paragraph(f"Project: {project_name}", styles['Title']))
+        Story.append(Paragraph(f"Date: {datetime.now().strftime('%Y-%m-%d')}", styles['Normal']))
+        Story.append(Spacer(1, 12))
+        
+        # Simple Table
+        data = [['Ligand', 'Affinity', 'RMSD']]
+        for hit in hits:
+             data.append([str(hit.get('name','-')), str(hit.get('affinity','-')), str(hit.get('rmsd','-'))])
+             
+        t = Table(data)
+        t.setStyle(TableStyle([
+            ('BACKGROUND', (0,0), (-1,0), colors.grey),
+            ('GRID', (0,0), (-1,-1), 1, colors.black),
+        ]))
+        Story.append(t)
+        
+        doc.build(Story)
+        self.buffer.seek(0)
+        return self.buffer
+
 class NAMReportGenerator:
     """
     BioDockify NAM Evidence Report Generator (v1.0)
