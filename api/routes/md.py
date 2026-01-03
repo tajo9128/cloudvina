@@ -158,30 +158,7 @@ async def analyze_binding_energy(job_id: str, request: BindingEnergyRequest, cur
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to queue analysis: {str(e)}")
 
-@router.post("/start-from-docking/{job_id}")
-async def start_md_from_docking(job_id: str, current_user: dict = Depends(get_current_user)):
-    """
-    Pipeline: Starts an MD simulation using the best pose from a completed docking job.
-    """
-    try:
-        from auth import get_authenticated_client
-        from aws_services import s3_client, S3_BUCKET, submit_md_simulation_job
-        from services.smiles_converter import pdbqt_to_pdb
-        
-        # 1. Fetch Docking Job
-        # We need the credentials to access the DB
-        # Note: We don't have the user's credentials here directly if not passed.
-        # But we can use the service role or pass credentials. 
-        # For now, simplistic approach: verify ownership via simple query if possible or assume user context
-        # Actually, best to pass credentials... but for "One Click" inside the app, the token is there.
-        # We'll use a direct DB query for now assuming we are in the same reliable backend environment.
-        # (Ideal would be passing 'credentials' in dependency)
-        
-        # FIX: We need 'credentials' to use get_authenticated_client properly or use service key.
-        # Let's import the dependency in the function signature.
-        pass
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.post("/start-from-docking/{job_id}")
 async def start_md_from_docking(
