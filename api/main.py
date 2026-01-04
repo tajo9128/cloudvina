@@ -51,8 +51,8 @@ app = FastAPI(
     title="BioDockify API",
     description="Molecular docking as a service with AutoDock Vina",
     version="6.4.0",
-    docs_url="/docs",
-    redoc_url="/redoc"
+    docs_url=None if os.getenv("ENVIRONMENT") == "production" else "/docs",
+    redoc_url=None if os.getenv("ENVIRONMENT") == "production" else "/redoc"
 )
 
 # CORS Configuration - Allow frontend domains
