@@ -131,13 +131,17 @@ class ExportService:
     
     @staticmethod
     async def export_job_pdf(job: Dict, analysis: Dict = None, interactions: Dict = None) -> StreamingResponse:
-        """Export comprehensive job report as PDF using ReportGenerator"""
-        from services.report_generator import ReportGenerator
+        """Export comprehensive job report as PDF using NAMReportGenerator"""
+        from services.report_generator import NAMReportGenerator
         
-        # Instantiate with data required by new constructor
-        generator = ReportGenerator(job, analysis or {})
+        # Mock Missing Data for now (WoE and Tox services are premium)
+        mock_woe = {'total_score': 85, 'tier': 'HIGH', 'breakdown': {'docking_contribution': 40, 'md_contribution': 30, 'tox_contribution': 15}}
+        mock_tox = {'hERG': {'risk': 'Low', 'confidence': 'High'}, 'ames': {'risk': 'Negative', 'confidence': 'High'}, 'dili': {'risk': 'Low', 'confidence': 'Medium'}}
         
-        # Await the async generation (calls Agent Zero)
+        # Instantiate with correct signature: job, analysis, woe, tox
+        generator = NAMReportGenerator(job, analysis or {}, mock_woe, mock_tox)
+        
+        # Await the async generation
         pdf_buffer = await generator.generate_pdf()
         
         return StreamingResponse(
