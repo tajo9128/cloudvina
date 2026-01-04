@@ -23,3 +23,5 @@ services:
         value: cloudvina-fargate-queue
       - key: BATCH_JOB_DEFINITION
         value: cloudvina-job
+      - key: PYTHONUNBUFFERED
+        value: "1"
