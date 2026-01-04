@@ -58,7 +58,7 @@ class DockingEngine:
             return self._run_rdock(receptor_path, ligand_path, output_path, params)
         elif self.engine_type == 'gnina':
             return self._run_gnina(receptor_path, ligand_path, output_path, params)
-        elif self.engine_type == 'consensus':
+        elif self.engine_type == 'consensus' or self.engine_type == 'triscore':
             return self._run_consensus(receptor_path, ligand_path, output_path, params)
         else:
             raise ValueError(f"Unsupported docking engine: {self.engine_type}")
