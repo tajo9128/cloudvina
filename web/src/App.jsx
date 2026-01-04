@@ -33,9 +33,10 @@ import TermsPage from './pages/TermsPage'
 import ContactPage from './pages/ContactPage'
 import PricingPage from './pages/PricingPage'
 import DockingStudioPage from './pages/DockingStudioPage'
-import BioDockVizPage from './pages/BioDockVizPage'
-// New Tools Routes
-import ToolsPage from './pages/ToolsPage'
+import PharmaResearchAIPage from './pages/PharmaResearchAIPage'
+// ... (imports)
+                <Route path="/docking-studio" element={<DockingStudioPage />} />
+                <Route path="/pharma-research-ai" element={<PharmaResearchAIPage />} />
 import TargetExplorerPage from './pages/tools/TargetExplorerPage'
 import StructureCheckPage from './pages/tools/StructureCheckPage'
 import BioactivityPage from './pages/tools/BioactivityPage'

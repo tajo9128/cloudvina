@@ -55,7 +55,7 @@ export default function Header() {
             path: '#',
             dropdown: [
                 { name: 'Docking Studio', path: '/docking-studio' },
-                { name: 'BioDockViz', path: '/biodockviz' }
+                { name: 'Pharma Research AI', path: '/pharma-research-ai' }
             ]
         },
         { name: 'Tools', path: '/tools' },
