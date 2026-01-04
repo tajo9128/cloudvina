@@ -3,6 +3,7 @@
 # Target: AWS Batch (Free Tier t2.micro initially, c6i.large Spot for production)
 
 FROM python:3.11-slim
+ENV PYTHONUNBUFFERED=1
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
