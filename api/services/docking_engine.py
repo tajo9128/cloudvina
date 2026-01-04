@@ -4,6 +4,10 @@ import subprocess
 import logging
 from typing import Dict, Optional
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger("DockingEngine")
+
 # Import helper services
 # These must be copied to /app/services in Docker
 try:
@@ -27,11 +31,6 @@ except ImportError:
     # Better to assume it works if we installed it.
     # But for safety in this environment:
     from config.scoring_tiers import ScoringTiers
-
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("DockingEngine")
 
 class DockingEngine:
     """
