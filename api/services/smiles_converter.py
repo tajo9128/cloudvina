@@ -551,12 +551,26 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
             mol = Chem.AddHs(mol, addCoords=True)
             
             # 3. Preparation
+            # 3. Preparation - Meeko (Robust Atom Typing)
             preparator = MoleculePreparation()
+            
+            # Setup for Rigid Receptor (if possible in newer Meeko) or stripped downstream
             setups = preparator.prepare(mol)
+            
             if setups:
                 result = PDBQTWriterLegacy.write_string(setups[0])
                 pdbqt_string = result[0] if isinstance(result, tuple) else result
-                return pdbqt_string, None
+                
+                # CRITICAL FIX for Receptors: Strip ROOT/BRANCH/TORSDOF tags
+                # Meeko generates "Flexible Ligand" format by default.
+                # Vina requires "Rigid Receptor" format (just ATOMs) for the --receptor argument.
+                rigid_lines = []
+                for line in pdbqt_string.splitlines():
+                    if line.startswith(('ROOT', 'ENDROOT', 'BRANCH', 'ENDBRANCH', 'TORSDOF')):
+                        continue
+                    rigid_lines.append(line)
+                
+                return "\n".join(rigid_lines), None
             else:
                 logger.warning(f"Layer 2 (Meeko) failed: No setups generated")
                 # --- LAYER 2.5: Custom Rigid PDBQT Writer (Native Python) ---
