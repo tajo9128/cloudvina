@@ -117,6 +117,9 @@ async def startup_event():
                 svc_client = get_service_client()
                 processor = QueueProcessor(svc_client)
                 
+                # Rescue stranded jobs on first run (or if this loop restarts)
+                await processor.rescue_stuck_jobs()
+                
                 # Consumes one job per loop to start with
                 await processor.process_queue()
                 

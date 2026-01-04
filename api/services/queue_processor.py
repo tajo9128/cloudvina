@@ -31,6 +31,24 @@ class QueueProcessor:
         self.config_cache = {} # Cache batch configs to avoid repetitive S3 reads
         self.failed_jobs = {} # Map job_id -> failure_count to prevent poison loops
 
+    async def rescue_stuck_jobs(self):
+        """
+        On Startup: Reset any 'PROCESSING' jobs that were left stranded by a crash.
+        """
+        try:
+            logger.info("🚑 [Rescue] Checking for stranded PROCESSING jobs...")
+            response = self.db.table("jobs").select("id").eq("status", "PROCESSING").execute()
+            if response.data:
+                ids = [j['id'] for j in response.data]
+                logger.warning(f"⚠️ [Rescue] Found {len(ids)} stranded jobs. Resetting to QUEUED: {ids}")
+                
+                self.db.table("jobs").update({
+                    "status": "QUEUED",
+                    "notes": "Rescued from crash (Reset to Queue)"
+                }).in_("id", ids).execute()
+        except Exception as e:
+            logger.error(f"❌ [Rescue] Failed to reset jobs: {e}")
+
     async def process_queue(self):
         """
         Main Loop: Consumes jobs from the 'QUEUED' state.
