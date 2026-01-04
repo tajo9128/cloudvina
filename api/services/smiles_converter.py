@@ -323,9 +323,22 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
             mol = Chem.MolFromMol2Block(content, removeHs=False)
             if not mol:
                 mol = Chem.MolFromMol2Block(content, removeHs=False, sanitize=False)
+        elif ext == 'pdbqt':
+            # Treat PDBQT as PDB for RDKit parsing (often works for atoms)
+            logger.info(f"Parsing PDBQT input: {filename}")
+            stripped_content = ""
+            for line in content.splitlines():
+                if line.startswith(('ATOM', 'HETATM')):
+                     stripped_content += line[:66] + "\n"
+            mol = Chem.MolFromPDBBlock(stripped_content, removeHs=False)
+            if not mol:
+                mol = Chem.MolFromPDBBlock(stripped_content, removeHs=False, sanitize=False)
 
-        # --- FALLBACK: If RDKit failed, try OpenBabel via file_converter ---
-        if not mol:
+        # --- FALLBACK: If RDKit failed, try OpenBabel via file_converter (ONLY IF INSTALLED) ---
+        import shutil
+        has_obabel = shutil.which('obabel') is not None
+        
+        if not mol and has_obabel:
             logger.info(f"RDKit parsing failed for {filename}, trying OpenBabel fallback...")
             try:
                 import tempfile
@@ -356,11 +369,20 @@ def convert_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str], Option
                 
             except Exception as fallback_err:
                  logger.error(f"Fallback conversion failed: {fallback_err}")
-                 return None, f"Could not parse molecule format: {ext} (RDKit & Obabel failed)"
+                 # Don't fail yet, try pass-through for PDBQT
+                 pass
 
+        # --- FINAL FALLBACK: Pass-Through for PDBQT ---
+        if not mol and ext == 'pdbqt':
+             logger.warning(f"All parsers failed for {filename}. Attempting pass-through validation.")
+             valid, msg = validate_pdbqt_quality(content)
+             if valid:
+                  return content, None
+             else:
+                  return None, f"Could not parse PDBQT and validation failed: {msg}"
+        
         if not mol:
-            logger.info(f"RDKit parsing failed for {filename}, trying OpenBabel fallback...")
-            # ... (OpenBabel Fallback logic remains same) ...
+             return None, f"Could not parse molecule format: {ext} (RDKit failed, Obabel {'missing' if not has_obabel else 'failed'})"
         
         # FIX 1: Strip salts and validate for Files (same as SMILES)
         if mol:
