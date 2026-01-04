@@ -1,10 +1,13 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
-from api.agent_zero import AgentZeroClient, PROMPT_EXPLAIN_RESULTS, PROMPT_NEXT_STEPS
+# from api.agent_zero import AgentZeroClient  # Deprecated HF
+from api.agent_zero.gemini_client import GeminiClient
+from api.agent_zero import PROMPT_EXPLAIN_RESULTS, PROMPT_NEXT_STEPS
 
 router = APIRouter(prefix="/agent", tags=["agent_zero"])
-agent = AgentZeroClient()
+router = APIRouter(prefix="/agent", tags=["agent_zero"])
+agent = GeminiClient()
 
 class ConsultRequest(BaseModel):
     query: str

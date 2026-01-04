@@ -27,3 +27,4 @@ itsdangerous>=2.0.0
 # Optional - comment out if causing issues
 # torch  # Will use CPU-only transformers
 # rdkit-pypi  # Heavy, enable later if needed
+google-generativeai>=0.3.0
