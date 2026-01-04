@@ -258,7 +258,7 @@ export default function JobResultsPage() {
                     </div>
                 </div>
                 <div className="hidden md:flex">
-                    <ExportButtons jobId={jobId} />
+                    <ExportButtons jobId={jobId} job={job} />
                 </div>
             </div>
 

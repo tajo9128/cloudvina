@@ -109,7 +109,7 @@ export default function MolstarViewer({
 
                     const ligandTrajectory = await plugin.builders.structure.parseTrajectory(
                         ligandDataObj,
-                        'pdb'
+                        'pdbqt'
                     );
 
                     const ligandModel = await plugin.builders.structure.createModel(ligandTrajectory);
