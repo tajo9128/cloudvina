@@ -18,7 +18,7 @@ class AgentZeroClient:
     
     def __init__(self):
         self.api_key = os.getenv("HUGGINGFACE_API_KEY")
-        self.api_url = "https://api-inference.huggingface.co/models"
+        self.api_url = "https://router.huggingface.co/hf-inference/models"
         
         if not self.api_key:
             logger.warning("Agent Zero: HUGGINGFACE_API_KEY not found. AI features will be disabled.")

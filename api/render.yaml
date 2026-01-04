@@ -25,3 +25,5 @@ services:
         value: cloudvina-job
       - key: PYTHONUNBUFFERED
         value: "1"
+      - key: HUGGINGFACE_API_KEY
+        sync: false
