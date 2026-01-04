@@ -38,4 +38,5 @@ huggingface-hub>=0.23.0
 # openmm>=7.7.0
 # mdtraj>=1.9.7
 # openmm-forcefields>=0.1.1
+google-generativeai>=0.3.0
 
