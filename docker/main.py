@@ -115,9 +115,10 @@ class DockingRunner:
             print("No config file, using defaults.")
         
         # Hardcode grid size to 20x20x20 for optimal results
-        config_params['size_x'] = '20'
-        config_params['size_y'] = '20'
-        config_params['size_z'] = '20'
+        # FIXED: Respect Config Generator Auto-Boxing (User Feedback)
+        if 'size_x' not in config_params: config_params['size_x'] = '20'
+        if 'size_y' not in config_params: config_params['size_y'] = '20'
+        if 'size_z' not in config_params: config_params['size_z'] = '20'
         
         # For consensus mode, create comprehensive config showing both engines
         if self.engine_type == 'consensus':

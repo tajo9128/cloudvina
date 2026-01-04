@@ -10,8 +10,13 @@ from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.units import inch
 from reportlab.lib.enums import TA_JUSTIFY, TA_CENTER, TA_LEFT
 
-from api.agent_zero.gemini_client import GeminiClient
-# For NAM we might want simpler static text or specific templates, but we keep Agent Zero for dynamic summaries
+try:
+    from agent_zero.gemini_client import GeminiClient
+except ImportError:
+    try:
+        from api.agent_zero.gemini_client import GeminiClient
+    except ImportError:
+        GeminiClient = None # Fail gracefully if agent not found
 
 class ReportGenerator:
     """

@@ -51,12 +51,23 @@ export default function MolstarViewer({
                 setIsLoading(false);
             } catch (err) {
                 console.error('Failed to initialize Molstar:', err);
-                setError('Failed to initialize 3D viewer');
+                setError(`Failed to initialize 3D viewer: ${err.message || err}`);
                 setIsLoading(false);
             }
         };
 
-        initPlugin();
+        // Ensure container has dimensions before init
+        if (containerRef.current) {
+            // Check if container has 0 height/width which crashes Molstar
+            const rect = containerRef.current.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) {
+                 console.warn("Molstar Container has 0 dimensions. Delaying init...");
+                 // Retry once after short delay
+                 setTimeout(initPlugin, 100);
+                 return;
+            }
+            initPlugin();
+        }
 
         return () => {
             if (pluginRef.current) {
