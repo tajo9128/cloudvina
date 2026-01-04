@@ -466,6 +466,7 @@ export default function JobResultsPage() {
                                     </h3>
                                     {/* ... content ... */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                        {/* 1. PDF Report */}
                                         <a href={`${API_URL}/jobs/${jobId}/export/pdf`} download className="group col-span-1 lg:col-span-3 flex items-center justify-between p-4 bg-gradient-to-r from-red-600/20 to-orange-600/20 hover:from-red-600/30 hover:to-orange-600/30 border border-red-500/30 rounded-xl transition-all">
                                             <div className="flex items-center gap-3">
                                                 <div className="p-2 bg-red-500 rounded-lg text-white shadow-lg shadow-red-500/30"><FileText size={20} /></div>
@@ -476,16 +477,68 @@ export default function JobResultsPage() {
                                             </div>
                                             <Download size={16} className="text-red-400 group-hover:text-white transition-colors" />
                                         </a>
-                                        {/* ... other items (Receptor, Vina, etc) ... */}
-                                        {job.download_urls.receptor && (
-                                            <a href={job.download_urls.receptor} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+
+                                        {/* 2. Output PDBQT/SDF */}
+                                        {job.download_urls.output_vina && (
+                                            <a href={job.download_urls.output_vina} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-slate-700 rounded-lg text-slate-300 group-hover:text-white transition-colors"><Database size={20} /></div>
-                                                    <div><div className="font-bold text-sm">Target Receptor</div></div>
+                                                    <div className="p-2 bg-indigo-500 rounded-lg text-white group-hover:bg-indigo-400 transition-colors"><Database size={20} /></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Docked Poses</div>
+                                                        <div className="text-xs text-slate-400 font-mono">.pdbqt</div>
+                                                    </div>
                                                 </div>
                                             </a>
                                         )}
-                                        {/* ... (keeping structure intact) ... */}
+
+                                        {/* 3. Consensus JSON */}
+                                        {job.download_urls.results_json && (
+                                            <a href={job.download_urls.results_json} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-emerald-500 rounded-lg text-white group-hover:bg-emerald-400 transition-colors"><Activity size={20} /></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Consensus Data</div>
+                                                        <div className="text-xs text-slate-400 font-mono">results.json</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        )}
+
+                                        {/* 4. Config File */}
+                                        {job.download_urls.config && (
+                                            <a href={job.download_urls.config} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-slate-600 rounded-lg text-white group-hover:bg-slate-500 transition-colors"><MoreHorizontal size={20} /></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Vina Config</div>
+                                                        <div className="text-xs text-slate-400 font-mono">config.txt</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        )}
+
+                                        {/* 5. Execution Log */}
+                                        {job.download_urls.log && (
+                                            <a href={job.download_urls.log} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-slate-700 rounded-lg text-white group-hover:bg-slate-600 transition-colors"><Clock size={20} /></div>
+                                                    <div>
+                                                        <div className="font-bold text-sm">Execution Log</div>
+                                                        <div className="text-xs text-slate-400 font-mono">log.txt</div>
+                                                    </div>
+                                                </div>
+                                            </a>
+                                        )}
+
+                                        {/* 6. Receptor */}
+                                        {job.download_urls.receptor && (
+                                            <a href={job.download_urls.receptor} className="group flex items-center justify-between p-4 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl transition-all">
+                                                <div className="flex items-center gap-3">
+                                                    <div className="p-2 bg-blue-600 rounded-lg text-white group-hover:bg-blue-500 transition-colors"><Layers size={20} /></div>
+                                                    <div><div className="font-bold text-sm">Receptor Structure</div></div>
+                                                </div>
+                                            </a>
+                                        )}
                                     </div>
                                 </div>
                             </div>

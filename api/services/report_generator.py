@@ -132,10 +132,23 @@ class NAMReportGenerator:
         Story.append(Paragraph("3. Mechanistic Docking Evidence", self.styles['SectionHeader']))
         
         # Docking Table
-        best_affinity = self.analysis.get('best_affinity', 'N/A')
+        best_affinity = self.analysis.get("best_affinity", "N/A")
+        rf_score = self.analysis.get("engines", {}).get("rf", {}).get("pKd", "N/A")
+        
+        # Gnina Details
+        gnina_res = self.analysis.get("engines", {}).get("gnina", {})
+        gnina_score = gnina_res.get("cnn_score", "Skipped")
+        if isinstance(gnina_score, float): gnina_score = f"{gnina_score:.3f}"
+        
+        # Stability Details
+        stability = self.analysis.get("stability_class", "Rigid")
+        rmsd = self.analysis.get("stability_rms", 0.0)
+        
         data = [['Metric', 'Value', 'Interpretation']]
-        data.append(['Affinity (kcal/mol)', f"{best_affinity}", "Binding Strength"])
-        data.append(['Consensus Agreement', "High", "Mechanism Plausible"]) # Placeholder logic
+        data.append(['Vina Affinity', f"{best_affinity} kcal/mol", "Binding Energy"])
+        data.append(['RF-Score (ML)', f"{rf_score} pKd", "Predicted Affinity"])
+        data.append(['Gnina CNN Score', f"{gnina_score}", "AI Confidence (0-1)"])
+        data.append(['Stability Mode', f"{stability}", f"RMSD: {rmsd:.2f} A"])
         
         t = Table(data, colWidths=[2*inch, 2*inch, 2*inch])
         t.setStyle(TableStyle([
@@ -143,6 +156,7 @@ class NAMReportGenerator:
             ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
             ('GRID', (0, 0), (-1, -1), 1, colors.black),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('ROWBACKGROUNDS', (1, 0), (-1, -1), [colors.whitesmoke, colors.white]),
         ]))
         Story.append(t)
         Story.append(Spacer(1, 10))
