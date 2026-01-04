@@ -18,7 +18,7 @@ class GeminiClient:
             logger.warning("Agent Zero: GEMINI_API_KEY not found. Agent disabled.")
         else:
             genai.configure(api_key=self.api_key)
-            self.model = genai.GenerativeModel('gemini-2.5-pro')
+            self.model = genai.GenerativeModel('gemini-1.5-flash')
 
     def consult(self, prompt: str, context: dict = None, use_backup: bool = False, depth: int = 0) -> dict:
         if not self.api_key:
