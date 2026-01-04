@@ -42,6 +42,9 @@ class BioDockifySentinel:
         
         # 3. Check for Zombie Jobs (Running > 24 hours)
         await self._flag_zombies(report)
+
+        # 4. Agent Zero Sentinel: Auto-Analyze Completed Jobs
+        await self._auto_analyze_completed(report)
         
         return report
 
@@ -161,3 +164,64 @@ class BioDockifySentinel:
             }).execute()
         except:
             pass # Best effort logging
+
+    async def _auto_analyze_completed(self, report):
+        """
+        Agent Zero Sentinel: Scans for recently completed jobs that lack AI analysis.
+        Automatically runs Gemini 2.5 interpretation on them.
+        """
+        # Look for completed jobs, order by newest first, limit 5 per cycle to avoid rate limits
+        response = self.db.table("jobs") \
+            .select("*") \
+            .eq("status", "COMPLETED") \
+            .order("created_at", desc=True) \
+            .limit(20) \
+            .execute()
+            
+        candidates = response.data or []
+        
+        # Filter for jobs that don't have analysis yet
+        # Taking optimization: we did checking in Python to avoid complex JSONB queries for now
+        targets = []
+        for job in candidates:
+            meta = job.get("meta") or {}
+            if not meta.get("agent_analysis"):
+                targets.append(job)
+                if len(targets) >= 3: break # Process max 3 per cycle
+                
+        if not targets: return
+
+        from api.agent_zero.gemini_client import GeminiClient
+        agent = GeminiClient()
+        
+        for job in targets:
+            try:
+                # Prepare Context
+                results = job.get("results_data", {})
+                if not results: continue # Skip if empty results
+                
+                best_score = results.get("best_affinity", "N/A")
+                ligand = job.get("ligand_filename", "Unknown")
+                receptor = job.get("receptor_filename", "Unknown")
+                
+                prompt = (f"Analyze this molecular docking job. Ligand: {ligand}, Receptor: {receptor}, "
+                          f"Best Affinity: {best_score} kcal/mol. Provide a 1-sentence assessment of "
+                          f"whether this is a promising hit and why.")
+                          
+                # Run Gemini
+                analysis = agent.consult(prompt)
+                
+                # Save to DB
+                current_meta = job.get("meta") or {}
+                current_meta["agent_analysis"] = analysis
+                
+                report["anomalies_detected"] += 1
+                report["actions_taken"].append(f"Sentinel: Auto-Analyzed Job {job['id']}")
+                
+                safe_update(self.db, "jobs", {"id": job['id']}, {
+                    "meta": current_meta
+                })
+                
+            except Exception as e:
+                print(f"Sentinel Analysis Error for {job['id']}: {e}")
+
