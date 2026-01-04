@@ -160,8 +160,13 @@ class SideChainMinimizer:
                 flexible_residues=flexible_residues
             )
             
-            logger.info("Minimization Complete")
-            return relaxed_protein, relaxed_ligand
+            # Step 5: Calculate RMSD (Side-Chain Stability Metric)
+            # Calculate shift between 'positions' (start) and 'relaxed_positions' (end)
+            # for the atoms involved in minimization.
+            rmsd = self._calculate_rmsd(positions, relaxed_positions, flexible_residues, topology)
+            logger.info(f"Minimization Complete. Side-Chain RMSD: {rmsd:.3f} A")
+            
+            return relaxed_protein, relaxed_ligand, rmsd
         
         except ImportError as ie:
             logger.error(f"OpenMM dependency missing: {ie}")
@@ -279,3 +284,36 @@ class SideChainMinimizer:
             return str(protein_path), str(normalized_ligand_path)
         except:
              return str(protein_path), self.ligand_pdb
+
+    def _calculate_rmsd(self, pos1, pos2, flexible_res_ids: List[int], topology) -> float:
+        """
+        Calculate RMSD between two sets of positions for flexible residues only
+        """
+        import numpy as np
+        from openmm import unit
+        
+        # Convert OpenMM Quantities to numpy arrays (Angstroms)
+        p1 = np.array(pos1.value_in_unit(unit.angstroms))
+        p2 = np.array(pos2.value_in_unit(unit.angstroms))
+        
+        diffs = []
+        
+        for atom in topology.atoms():
+             try:
+                 # Match logic from build_system
+                 res_num = int(atom.residue.id)
+                 if res_num in flexible_res_ids:
+                     idx = atom.index
+                     # Exclude backbone atoms from side-chain RMSD? 
+                     # Ideally yes, but minimizing backbone is constrained anyway.
+                     # Let's include all atoms of flexible residues to capture full shift.
+                     diff = p1[idx] - p2[idx]
+                     diffs.append(np.sum(diff * diff))
+             except:
+                 pass
+                 
+        if not diffs:
+            return 0.0
+            
+        msd = np.mean(diffs)
+        return np.sqrt(msd)

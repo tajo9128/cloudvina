@@ -164,11 +164,13 @@ class DockingEngine:
                 
                 minimizer = SideChainMinimizer(receptor, target_ligand)
                 min_dir = os.path.join(base_dir, "minimized")
-                rel_prot, rel_lig = minimizer.minimize(output_dir=min_dir)
+                rel_prot, rel_lig, rmsd = minimizer.minimize(output_dir=min_dir)
                 
                 results["minimized"] = True
                 results["minimized_receptor"] = rel_prot
                 results["minimized_ligand"] = rel_lig
+                results["stability_rms"] = rmsd
+                results["stability_class"] = "Induced Fit" if rmsd > 0.5 else "Stable"
                 minimized_struct = rel_lig
              except Exception as min_err:
                  logger.error(f"Minimization failed: {min_err}")
