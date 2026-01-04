@@ -774,7 +774,7 @@ def convert_receptor_to_pdbqt(content: str, filename: str) -> Tuple[Optional[str
                     y_str = f"{y:8.3f}"
                     z_str = f"{z:8.3f}"
                     
-                    newline = f"{line_prefix}{x_str}{y_str}{z_str}  1.00  0.00    0.000 {ad_type:<2}"
+                    newline = f"{line_prefix}{x_str}{y_str}{z_str}  1.00  0.00     0.000 {ad_type:<2}"
                     lines.append(newline)
                 except Exception as line_err:
                     continue

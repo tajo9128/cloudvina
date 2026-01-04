@@ -416,7 +416,8 @@ async def get_batch_details(
 
                 except Exception as e:
                     # Log error but don't fail the request
-                    print(f"Failed to repair score for job {job['id']}: {e}", flush=True)
+                    if "NoSuchKey" not in str(e):
+                        print(f"Failed to repair score for job {job['id']}: {e}", flush=True)
 
         # --- VIRTUAL AGGREGATION (Sprint 9) ---
         # Group jobs by ligand_filename to present "10 Files" instead of "30 Jobs"

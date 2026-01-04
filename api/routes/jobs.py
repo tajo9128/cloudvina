@@ -324,7 +324,9 @@ async def get_job_status(
                  if 'best_affinity' in res_data:
                      job['binding_affinity'] = res_data['best_affinity']
                      auth_client.table('jobs').update({'binding_affinity': res_data['best_affinity']}).eq('id', job_id).execute()
-             except: pass
+             except Exception as repair_err:
+                 # Silent fail if results.json missing (e.g. single engine mode)
+                 pass
 
         download_urls = {}
         if job['status'] == 'SUCCEEDED':
@@ -444,14 +446,45 @@ async def get_interaction_analysis(job_id: str, current_user: dict = Depends(get
         if job.data.get('interaction_results'): return {"job_id": job_id, "interactions": job.data['interaction_results'], "from_cache": True}
         
         s3 = boto3.client('s3', region_name=AWS_REGION)
-        rec = s3.get_object(Bucket=S3_BUCKET, Key=f"jobs/{job_id}/receptor.pdb")['Body'].read().decode('utf-8') # Optimistic key
-        out = s3.get_object(Bucket=S3_BUCKET, Key=f"jobs/{job_id}/output.pdbqt")['Body'].read().decode('utf-8')
         
-        interactions = InteractionAnalyzer().analyze_interactions(rec, out)
+        # FIX: Use actual receptor key, not hardcoded '.pdb'
+        receptor_key = job.data.get('receptor_s3_key')
+        if not receptor_key: raise HTTPException(400, "Receptor key missing in job record")
+        
+        try:
+            rec_obj = s3.get_object(Bucket=S3_BUCKET, Key=receptor_key)
+            rec_content = rec_obj['Body'].read().decode('utf-8')
+        except Exception as e:
+            raise HTTPException(404, f"Receptor file not found in S3: {e}")
+
+        # If Receptor is PDBQT, we might need to convert/clean it for PLIP (which prefers PDB)
+        # For now, passing raw content. InteractionAnalyzer should handle it.
+        
+        # Verify output exists
+        try:
+            out_obj = s3.get_object(Bucket=S3_BUCKET, Key=f"jobs/{job_id}/output.pdbqt")
+            out_content = out_obj['Body'].read().decode('utf-8')
+        except:
+             # Try output_vina.pdbqt if main output missing
+             try:
+                out_obj = s3.get_object(Bucket=S3_BUCKET, Key=f"jobs/{job_id}/output_vina.pdbqt")
+                out_content = out_obj['Body'].read().decode('utf-8')
+             except Exception as e:
+                raise HTTPException(404, f"Output file not found: {e}")
+        
+        interactions = InteractionAnalyzer().analyze_interactions(rec_content, out_content)
         auth_client.table('jobs').update({'interaction_results': interactions}).eq('id', job_id).execute()
         return {"job_id": job_id, "interactions": interactions}
     except Exception as e:
+        print(f"Interaction Error: {e}") # Log it
         raise HTTPException(500, str(e))
+
+@router.get("/{job_id}/drug-properties")
+async def get_job_drug_properties(job_id: str, current_user: dict = Depends(get_current_user), credentials: HTTPAuthorizationCredentials = Security(security)):
+    """
+    Alias for ADMET/Drug Properties to match frontend requests.
+    """
+    return await get_job_admet(job_id, current_user, credentials)
 
 @router.post("/{job_id}/explain")
 async def explain_results(job_id: str, request: dict, current_user: dict = Depends(get_current_user), credentials: HTTPAuthorizationCredentials = Security(security)):
