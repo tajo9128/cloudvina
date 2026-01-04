@@ -65,6 +65,11 @@ class GeminiClient:
             return parsed
 
         except Exception as e:
+            error_str = str(e)
+            if "429" in error_str or "ResourceExhausted" in error_str or "Quota exceeded" in error_str:
+                logger.warning("Agent Zero: Free Tier Limit Reached. Stopping analysis.")
+                return {"error": "Daily Limit Reached - Agent Sleeping 😴"}
+            
             logger.error(f"Gemini Error: {e}")
             return {"error": str(e)}
 
