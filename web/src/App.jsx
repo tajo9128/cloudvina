@@ -34,9 +34,7 @@ import ContactPage from './pages/ContactPage'
 import PricingPage from './pages/PricingPage'
 import DockingStudioPage from './pages/DockingStudioPage'
 import PharmaResearchAIPage from './pages/PharmaResearchAIPage'
-// ... (imports)
-                <Route path="/docking-studio" element={<DockingStudioPage />} />
-                <Route path="/pharma-research-ai" element={<PharmaResearchAIPage />} />
+import ToolsPage from './pages/ToolsPage'
 import TargetExplorerPage from './pages/tools/TargetExplorerPage'
 import StructureCheckPage from './pages/tools/StructureCheckPage'
 import BioactivityPage from './pages/tools/BioactivityPage'
@@ -231,8 +229,7 @@ function AppRoutes() {
                 <Route path="/molecular-docking-online" element={<MolecularDockingPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/docking-studio" element={<DockingStudioPage />} />
-                <Route path="/docking-studio" element={<DockingStudioPage />} />
-                <Route path="/biodockviz" element={<BioDockVizPage />} />
+                <Route path="/pharma-research-ai" element={<PharmaResearchAIPage />} />
 
                 {/* New Tools Hub & Individual Tools */}
                 <Route path="/tools" element={<ToolsPage />} />
