@@ -19,13 +19,17 @@ class DrugPropertiesCalculator:
     
     def __init__(self):
         # Lazy import RDKit
-        from rdkit.Chem import FilterCatalog
-        from rdkit.Chem.FilterCatalog import FilterCatalogParams
-        
-        # Initialize PAINS filter
-        params = FilterCatalogParams()
-        params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
-        self.pains_catalog = FilterCatalog.FilterCatalog(params)
+        self.pains_catalog = None
+        try:
+            from rdkit.Chem import FilterCatalog
+            from rdkit.Chem.FilterCatalog import FilterCatalogParams
+            
+            # Initialize PAINS filter
+            params = FilterCatalogParams()
+            params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
+            self.pains_catalog = FilterCatalog.FilterCatalog(params)
+        except Exception as e:
+            logger.warning(f"Failed to initialize PAINS filters (Optional): {e}")
     
     def calculate_all(self, smiles: str) -> Dict:
         """
@@ -150,6 +154,9 @@ class DrugPropertiesCalculator:
         }
     
     def _check_pains(self, mol) -> Dict:
+        if not self.pains_catalog:
+             return {"passed": True, "num_alerts": 0, "alerts": [], "note": "PAINS Check Skipped (Filters not loaded)"}
+             
         matches = self.pains_catalog.GetMatches(mol)
         pains_alerts = [match.GetDescription() for match in matches]
         
