@@ -121,7 +121,8 @@ async def start_job(
         job_data = job.data
 
         grid_params = request.get('grid_params')
-        engine = request.get('engine', 'vina')
+        # Swith default to Consensus so users see Gnina results
+        engine = request.get('engine', 'consensus')
         
         # Config
         from services.config_generator import generate_vina_config

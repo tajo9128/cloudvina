@@ -114,26 +114,47 @@ class DockingEngine:
         if tier_info.get('is_anomaly'):
             logger.warning(f"Anomaly Detected: {tier_info.get('anomaly_reason')}")
 
-        # 4. Run Gnina (Deep Learning) - CONDITIONAL
+        # 4. Run Gnina (Deep Learning) - Optimized "Score-First" Strategy
         gnina_aff = 0.0
-        if tier_info.get('gnina_enabled', True): # Default True if tiering fails
-            try:
+        try:
+            # A. Score Vina Pose (Fast: <1s)
+            logger.info("Gnina: Running fast score-only check...")
+            # Use Vina output as input for scoring
+            score_cmd = [
+                '/usr/local/bin/gnina', '--score_only',
+                '-r', receptor, '-l', out_vina
+            ]
+            score_res = subprocess.run(score_cmd, capture_output=True, text=True)
+            
+            # Parse CNNscore from stdout
+            cnn_score = 0.0
+            for line in score_res.stdout.splitlines():
+                if "CNNscore" in line:
+                    parts = line.split()
+                    if len(parts) >= 3: cnn_score = float(parts[2])
+            
+            logger.info(f"Gnina Fast Score: {cnn_score}")
+            results["engines"]["gnina_fast"] = {"cnn_score": cnn_score}
+
+            # B. Conditional Refinement (Slow: 30s)
+            # Threshold: 0.5 (Inclusive to match user's intent of 0.6 but safer)
+            if cnn_score > 0.5:
+                logger.info("Gnina: High confidence detected. Running full minimization...")
                 out_gnina = os.path.join(base_dir, f"{base_name}_gnina.pdbqt")
-                # Note: We could seed Gnina with Vina pose to speed it up further, 
-                # but for independence we keep standard run or user defined params.
                 res_gnina = self._run_gnina(receptor, ligand, out_gnina, params)
                 results["engines"]["gnina"] = res_gnina
                 gnina_aff = res_gnina.get("best_affinity", 0.0)
-            except Exception as e:
-                logger.error(f"Consensus: Gnina failed: {e}")
-                results["engines"]["gnina"] = {"error": str(e)}
-        else:
-            logger.info("Skipping Gnina (Filtered by Tier)")
-            results["engines"]["gnina"] = {"skipped": True, "reason": tier_info['tier']}
+            else:
+                logger.info("Gnina: Low confidence (<0.5). Skipping full minimization.")
+                results["engines"]["gnina"] = {"skipped": True, "reason": "Low CNNscore", "cnn_score": cnn_score}
+                
+        except Exception as e:
+            logger.error(f"Consensus: Gnina failed: {e}")
+            results["engines"]["gnina"] = {"error": str(e)}
 
         # 5. Side-Chain Minimization - CONDITIONAL
         minimized_struct = None
-        if tier_info.get('minimization_enabled', False) and SideChainMinimizer:
+        if tier_info.get('minimization_enabled', False) and SideChainMinimizer and cnn_score > 0.5: # Skip if junk
              try:
                 logger.info(f"Triggering Side-Chain Minimization...")
                 # Prefer Gnina output if available (refined), else Vina

@@ -171,8 +171,8 @@ def generate_vina_config(job_id: str, grid_params: dict = None, receptor_content
     size_x = params.get('grid_size_x', 20)
     size_y = params.get('grid_size_y', 20)
     size_z = params.get('grid_size_z', 20)
-    exhaustiveness = params.get('exhaustiveness', 32) # Standard for high accuracy
-    num_modes = params.get('num_modes', 20)
+    exhaustiveness = params.get('exhaustiveness', 16) # Balanced (User Request)
+    num_modes = params.get('num_modes', 5) # Focused (User Request)
     energy_range = params.get('energy_range', 5)
     
     # Generate config content
