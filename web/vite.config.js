@@ -16,5 +16,9 @@ export default defineConfig({
     },
     optimizeDeps: {
         exclude: ['molstar']
+    },
+    define: {
+        'process.env': {},
+        'global': 'window'
     }
 })
