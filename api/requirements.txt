@@ -37,5 +37,7 @@ huggingface-hub>=0.23.0
 # Sidechain Minimization (Sprint 10) - Cloud Only
 openmm>=7.7.0
 mdtraj>=1.9.7
-google-generativeai>=0.3.0
-
+google-generativeai
+litellm>=1.0.0
+pyyaml
+pytest>=0.3.0

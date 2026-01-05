@@ -1,0 +1,34 @@
+model_list:
+  # Primary: Gemini 1.5 Flash (Free Tier Rotation Pool)
+  # LiteLLM will load balance across these keys to bypass rate limits.
+  - model_name: gemini-1.5-flash
+    litellm_params:
+      model: gemini/gemini-1.5-flash
+      api_key: "os.environ/GEMINI_API_KEY"
+      rpm: 15 # Rate limit (Requests Per Minute)
+  
+  # Placeholder for 2nd Key (Uncomment and set env var to use)
+  # - model_name: gemini-1.5-flash
+  #   litellm_params:
+  #     model: gemini/gemini-1.5-flash
+  #     api_key: "os.environ/GEMINI_API_KEY_2"
+  #     rpm: 15
+
+  # Placeholder for 3rd Key
+  # - model_name: gemini-1.5-flash
+  #   litellm_params:
+  #     model: gemini/gemini-1.5-flash
+  #     api_key: "os.environ/GEMINI_API_KEY_3"
+  #     rpm: 15
+
+  # Secondary: Gemini 1.5 Pro (For Complex Tasks - if key available)
+  - model_name: gemini-1.5-pro
+    litellm_params:
+      model: gemini/gemini-1.5-pro
+      api_key: "os.environ/GEMINI_API_KEY_PRO" # Optional separate key
+      rpm: 2
+
+router_settings:
+  routing_strategy: "usage-based-routing" # or "simple-shuffle"
+  redis_host: null # Use in-memory if null
+  timeout: 30 # Global timeout
