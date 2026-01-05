@@ -138,6 +138,11 @@ class ExportService:
         mock_woe = {'total_score': 85, 'tier': 'HIGH', 'breakdown': {'docking_contribution': 40, 'md_contribution': 30, 'tox_contribution': 15}}
         mock_tox = {'hERG': {'risk': 'Low', 'confidence': 'High'}, 'ames': {'risk': 'Negative', 'confidence': 'High'}, 'dili': {'risk': 'Low', 'confidence': 'Medium'}}
         
+        # Guard against zero results (Job Failed)
+        if not analysis and not job.get('docking_score'):
+             from fastapi import HTTPException
+             raise HTTPException(status_code=400, detail="Cannot generate report: No docking results available (Job might have failed).")
+
         # Instantiate with correct signature: job, analysis, woe, tox
         generator = NAMReportGenerator(job, analysis or {}, mock_woe, mock_tox)
         
