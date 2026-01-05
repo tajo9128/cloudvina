@@ -6,7 +6,7 @@ import DockingResultsTable from '../components/DockingResultsTable'
 import InteractionTable from '../components/InteractionTable'
 import DrugPropertiesPanel from '../components/DrugPropertiesPanel'
 import { API_URL } from '../config'
-import MolstarViewer from '../components/MolstarViewer' // Testing Molstar integration
+import MoleculeViewer from '../components/MoleculeViewer'
 import { ArrowRight, Download, FileText, Activity, Clock, Database, Layers, Zap, MoreHorizontal, FlaskConical, Play } from 'lucide-react'
 
 export default function JobResultsPage() {
@@ -586,7 +586,13 @@ export default function JobResultsPage() {
                         {/* ... existing viewer logic ... */}
                         <div className="sticky top-28 space-y-4">
                             <div className="bg-white rounded-3xl shadow-xl border border-slate-200 overflow-hidden h-[600px] relative group">
-                                <MolstarViewer pdbqtData={pdbqtData} receptorData={receptorData} />
+                                <MoleculeViewer
+                                    pdbqtData={pdbqtData}
+                                    receptorData={receptorData}
+                                    title="Docking Structure"
+                                    interactions={interactions}
+                                    bindingAffinity={job?.binding_affinity}
+                                />
                             </div>
                         </div>
                     </div>
