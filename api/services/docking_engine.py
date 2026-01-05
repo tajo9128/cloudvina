@@ -85,6 +85,7 @@ class DockingEngine:
             res_vina = self._run_vina(receptor, ligand, out_vina, params)
             results["engines"]["vina"] = res_vina
             vina_aff = res_vina.get("best_affinity", 0.0)
+            results["best_affinity"] = vina_aff  # Initialize with Vina (Fallback)
         except Exception as e:
             logger.error(f"Consensus: Vina failed: {e}")
             results["engines"]["vina"] = {"error": str(e)}
@@ -138,15 +139,21 @@ class DockingEngine:
 
             # B. Conditional Refinement (Slow: 30s)
             # Threshold: 0.5 (Inclusive to match user's intent of 0.6 but safer)
-            if cnn_score > 0.5:
+            if cnn_score > 0.5 and tier_info.get('gnina_enabled', True):
                 logger.info("Gnina: High confidence detected. Running full minimization...")
                 out_gnina = os.path.join(base_dir, f"{base_name}_gnina.pdbqt")
                 res_gnina = self._run_gnina(receptor, ligand, out_gnina, params)
                 results["engines"]["gnina"] = res_gnina
                 gnina_aff = res_gnina.get("best_affinity", 0.0)
+                
+                # If Gnina succeeded, prefer its score? 
+                # Gnina scores are usually comparable to Vina (same scoring function mostly)
+                if gnina_aff < 0: # Valid score
+                    results["best_affinity"] = gnina_aff
+                    results["output_file"] = out_gnina
             else:
-                logger.info("Gnina: Low confidence (<0.5). Skipping full minimization.")
-                results["engines"]["gnina"] = {"skipped": True, "reason": "Low CNNscore", "cnn_score": cnn_score}
+                logger.info("Gnina: Low confidence (<0.5) or Tier Filter. Skipping full minimization.")
+                results["engines"]["gnina"] = {"skipped": True, "reason": "Low CNNscore/Tier", "cnn_score": cnn_score}
                 
         except Exception as e:
             logger.error(f"Consensus: Gnina failed: {e}")
@@ -206,6 +213,16 @@ class DockingEngine:
                     f.write(content) 
             except Exception as e:
                 logger.error(f"Failed to append remarks: {e}")
+
+        # Calculate Average Affinity (Consensus Metric)
+        affinities = []
+        if vina_aff < 0: affinities.append(vina_aff)
+        if gnina_aff < 0: affinities.append(gnina_aff)
+        
+        if affinities:
+             results["average_affinity"] = sum(affinities) / len(affinities)
+        else:
+             results["average_affinity"] = results["best_affinity"]
 
         results["output_file"] = vina_out
         return results
