@@ -263,15 +263,25 @@ class DockingRunner:
                         f.write("GNINA (AI-POWERED CNN) EXECUTION\n")
                         f.write("="*80 + "\n")
                         gnina_res = result['engines']['gnina']
+                        
+                        if gnina_res.get('skipped'):
+                            f.write(f"Status: SKIPPED\n")
+                            f.write(f"Reason: {gnina_res.get('reason', 'Unknown')}\n")
+                        
                         if 'command' in gnina_res:
                             f.write(f"\nCommand: {gnina_res['command']}\n")
+                            
                         f.write(f"\nBest Affinity: {gnina_res.get('best_affinity', 'N/A')} kcal/mol\n")
-                        if gnina_res.get('cnn_score'):
+                        
+                        if 'cnn_score' in gnina_res:
                             f.write(f"CNN Score: {gnina_res['cnn_score']}\n")
+                            
                         if gnina_res.get('stdout'):
                             f.write(f"\nFull Gnina Output:\n{'-'*80}\n")
                             f.write(gnina_res['stdout'])
                             f.write("\n" + "-"*80 + "\n")
+                        elif gnina_res.get('error'):
+                             f.write(f"\nError: {gnina_res['error']}\n")
                     
                     # Summary
                     f.write("\n" + "="*80 + "\n")

@@ -153,7 +153,13 @@ class DockingEngine:
                     results["output_file"] = out_gnina
             else:
                 logger.info("Gnina: Low confidence (<0.5) or Tier Filter. Skipping full minimization.")
-                results["engines"]["gnina"] = {"skipped": True, "reason": "Low CNNscore/Tier", "cnn_score": cnn_score}
+                results["engines"]["gnina"] = {
+                    "skipped": True, 
+                    "reason": "Low CNNscore/Tier", 
+                    "cnn_score": cnn_score,
+                    "stdout": score_res.stdout, # Include log for debugging 0.0 scores
+                    "stderr": score_res.stderr
+                }
                 
         except Exception as e:
             logger.error(f"Consensus: Gnina failed: {e}")
