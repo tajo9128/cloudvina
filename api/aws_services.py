@@ -5,7 +5,10 @@ import boto3
 from botocore.config import Config
 from botocore.exceptions import ClientError
 import os
+import logging
 from typing import Tuple
+
+logger = logging.getLogger(__name__)
 
 # AWS Configuration
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")

@@ -30,11 +30,34 @@ logger = logging.getLogger("api")
 
 # ... (sys.path stuff)
 
-# Suppress noisy HTTP libraries
-logging.getLogger("httpx").setLevel(logging.WARNING)
-logging.getLogger("httpcore").setLevel(logging.WARNING)
+# Import auth and AWS utilities
+from auth import supabase, get_current_user
+from aws_services import (
+    generate_presigned_upload_urls,
+    generate_presigned_download_url,
+    submit_batch_job,
+    get_batch_job_status
+)
+from fastapi.responses import StreamingResponse
+from services.ai_explainer import AIExplainer
+from tools import router as tools_router
+from routes.admin import router as admin_router
+from routes.evolution import router as evolution_router
+from routes.batch import router as batch_router
+from routes.jobs import router as jobs_router # NEW: Dedicated Jobs Router
+from routes.feedback import router as feedback_router 
+from services.cavity_detector import CavityDetector
+from services.drug_properties import DrugPropertiesCalculator
 
-# ... (rest of imports)
+app = FastAPI(
+    title="BioDockify API",
+    description="Molecular docking as a service with AutoDock Vina",
+    version="6.4.0",
+    docs_url=None if os.getenv("ENVIRONMENT") == "production" else "/docs",
+    redoc_url=None if os.getenv("ENVIRONMENT") == "production" else "/redoc"
+)
+
+
 
 @app.on_event("startup")
 async def startup_event():
