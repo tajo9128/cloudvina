@@ -53,15 +53,40 @@ class DockingEngine:
         params = config or {}
         
         if self.engine_type == 'vina':
+            self._validate_pdbqt(receptor_path)
+            self._validate_pdbqt(ligand_path)
             return self._run_vina(receptor_path, ligand_path, output_path, params)
         elif self.engine_type == 'rdock':
+             # rDock uses SDF/MOL2 check usually
             return self._run_rdock(receptor_path, ligand_path, output_path, params)
         elif self.engine_type == 'gnina':
+            self._validate_pdbqt(receptor_path)
+            self._validate_pdbqt(ligand_path)
             return self._run_gnina(receptor_path, ligand_path, output_path, params)
         elif self.engine_type == 'consensus' or self.engine_type == 'triscore':
+            self._validate_pdbqt(receptor_path)
+            self._validate_pdbqt(ligand_path)
             return self._run_consensus(receptor_path, ligand_path, output_path, params)
         else:
             raise ValueError(f"Unsupported docking engine: {self.engine_type}")
+
+    def _validate_pdbqt(self, path: str):
+        """Ensure file is valid PDBQT (Basic Header/Atom Check)"""
+        # If it's a PDB (pre-conversion), skip check (conversion happens later)
+        if path.endswith('.pdb'): return
+        
+        try:
+            with open(path, 'r') as f:
+                content = f.read()
+                if "ATOM" not in content and "HETATM" not in content:
+                    raise ValueError(f"Invalid PDBQT format: No ATOM/HETATM records found in {os.path.basename(path)}")
+                
+                # Check for likely encryption/corruption (binary/too short)
+                if len(content) < 100:
+                    raise ValueError(f"PDBQT file too short (<100 chars): {os.path.basename(path)}")
+                    
+        except Exception as e:
+            raise ValueError(f"PDBQT Validation Failed for {os.path.basename(path)}: {e}")
 
     def _run_consensus(self, receptor: str, ligand: str, output: str, params: Dict) -> Dict:
         """
