@@ -125,15 +125,15 @@ def submit_batch_job(job_id: str, receptor_key: str, ligand_key: str, engine: st
         # DEBUG: Trace Identity and Region
         sts = boto3.client('sts', region_name=AWS_REGION)
         identity = sts.get_caller_identity()
-        print(f"DEBUG: AWS Identity: {identity['Account']}, Region: {batch_client.meta.region_name}")
+        logger.info(f"DEBUG: AWS Identity: {identity['Account']}, Region: {batch_client.meta.region_name}")
         
         # FIX: Handle malformed definition (e.g. ":latest")
         job_def = BATCH_JOB_DEFINITION
         if job_def.startswith(":"):
-            print(f"WARNING: Malformed Job Definition '{job_def}'. Prepending default name.")
+            logger.warning(f"WARNING: Malformed Job Definition '{job_def}'. Prepending default name.")
             job_def = f"biodockify-all-fixes{job_def}"
         
-        print(f"DEBUG: Submitting job {job_id} to Queue: {BATCH_JOB_QUEUE}, Definition: {job_def} Engine: {engine}")
+        logger.info(f"DEBUG: Submitting job {job_id} to Queue: {BATCH_JOB_QUEUE}, Definition: {job_def} Engine: {engine}")
         response = batch_client.submit_job(
             jobName=f'BioDockify-{engine}-{job_id}',
             jobQueue=BATCH_JOB_QUEUE,
@@ -232,7 +232,7 @@ def invoke_md_stability_scorer(rmsd: float, rmsf: float) -> dict:
     import json
     try:
         payload = {"rmsd": rmsd, "rmsf": rmsf}
-        print(f"DEBUG: Invoking Lambda {MD_LAMBDA_FUNCTION} with {payload}")
+        logger.info(f"DEBUG: Invoking Lambda {MD_LAMBDA_FUNCTION} with {payload}")
         
         response = lambda_client.invoke(
             FunctionName=MD_LAMBDA_FUNCTION,
@@ -272,7 +272,7 @@ def submit_md_simulation_job(job_id: str, pdb_key: str) -> str:
     BATCH_MD_DEF = "md-simulation-job-def"
     
     try:
-        print(f"DEBUG: Submitting MD Job {job_id} to {BATCH_MD_QUEUE} ({BATCH_MD_DEF})")
+        logger.info(f"DEBUG: Submitting MD Job {job_id} to {BATCH_MD_QUEUE} ({BATCH_MD_DEF})")
         
         response = batch_client.submit_job(
             jobName=f'MD-Sim-{job_id}',

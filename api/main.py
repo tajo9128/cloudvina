@@ -14,70 +14,35 @@ import uuid
 import sys
 import os
 
-# Robust Path Fix: Ensure 'api' module can be imported even if CWD is inside 'api/'
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# ... (imports)
 
-# Use unbuffered output for instant logs on Render
-sys.stdout.reconfigure(line_buffering=True)
-sys.stderr.reconfigure(line_buffering=True)
+# Logger Setup
+import logging
+import sys
+
+# Force output to stdout (Render captures this)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger("api")
+
+# ... (sys.path stuff)
 
 # Suppress noisy HTTP libraries
-import logging
 logging.getLogger("httpx").setLevel(logging.WARNING)
 logging.getLogger("httpcore").setLevel(logging.WARNING)
 
-# Import auth and AWS utilities
-from auth import supabase, get_current_user
-from aws_services import (
-    generate_presigned_upload_urls,
-    generate_presigned_download_url,
-    submit_batch_job,
-    get_batch_job_status
-)
-from fastapi.responses import StreamingResponse
-from services.ai_explainer import AIExplainer
-from tools import router as tools_router
-from routes.admin import router as admin_router
-from routes.evolution import router as evolution_router
-from routes.batch import router as batch_router
-from routes.jobs import router as jobs_router # NEW: Dedicated Jobs Router
-from routes.feedback import router as feedback_router 
-from services.cavity_detector import CavityDetector
-from services.drug_properties import DrugPropertiesCalculator
-# from services.smiles_converter import pdbqt_to_pdb # Moved to function
-# from rdkit import Chem # Moved to function
-
-app = FastAPI(
-    title="BioDockify API",
-    description="Molecular docking as a service with AutoDock Vina",
-    version="6.4.0",
-    docs_url=None if os.getenv("ENVIRONMENT") == "production" else "/docs",
-    redoc_url=None if os.getenv("ENVIRONMENT") == "production" else "/redoc"
-)
-
-# CORS Configuration - Allow frontend domains
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://www.biodockify.com",
-        "https://biodockify.com",
-        "https://cloudvina-git-main-tajuddin-shaiks-projects.vercel.app",
-        "https://cloudvina.vercel.app",
-        "http://localhost:3000",  # Local development
-        "http://127.0.0.1:3000",
-    ],
-    allow_credentials=True,
-    allow_methods=["*"],  # Allow all HTTP methods
-    allow_headers=["*"],  # Allow all headers
-)
+# ... (rest of imports)
 
 @app.on_event("startup")
 async def startup_event():
-    print("="*50)
-    print("BioDockify API v6.4.0 - Deployed at " + datetime.utcnow().isoformat())
-    print("Optimization: Lazy Loading Enabled")
-    print("Optimization: Layer 1 (Ensemble) Active")
-    print("="*50)
+    logger.info("="*50)
+    logger.info("BioDockify API v6.4.0 - Deployed at " + datetime.utcnow().isoformat())
+    logger.info("Optimization: Lazy Loading Enabled")
+    logger.info("Optimization: Layer 1 (Ensemble) Active")
+    logger.info("="*50)
 
     # --- Start Sentinel Monitoring Loop ---
     import asyncio
@@ -85,7 +50,7 @@ async def startup_event():
     # 1. Self-Healing Sentinel (5 min interval)
     async def start_sentinel_background():
         """Background loop for Self-Healing"""
-        print("🤖 Sentinel: Background Monitor Started (Interval: 5m)")
+        logger.info("🤖 Sentinel: Background Monitor Started (Interval: 5m)")
         while True:
             await asyncio.sleep(300) # Wait 5 minutes
             try:
@@ -99,15 +64,15 @@ async def startup_event():
                 report = await sentinel.scan_and_heal()
                 
                 if report['anomalies_detected'] > 0:
-                     print(f"🤖 Sentinel: Auto-Healed {report['anomalies_detected']} anomalies.")
+                     logger.info(f"🤖 Sentinel: Auto-Healed {report['anomalies_detected']} anomalies.")
                      
             except Exception as e:
-                print(f"❌ Sentinel Loop Error: {e}")
+                logger.error(f"❌ Sentinel Loop Error: {e}")
 
     # 2. Zero-Failure Queue Processor (5 sec interval)
     async def start_queue_processor():
         """Aggressive Loop to consume QUEUED jobs immediately"""
-        print("⚡ Queue Processor: Started (Interval: 5s)")
+        logger.info("⚡ Queue Processor: Started (Interval: 5s)")
         while True:
             await asyncio.sleep(5)
             try:
@@ -124,7 +89,7 @@ async def startup_event():
                 await processor.process_queue()
                 
             except Exception as e:
-                print(f"❌ Queue Loop Error: {e}")
+                logger.error(f"❌ Queue Loop Error: {e}")
                 
     # Fire and forget tasks
     asyncio.create_task(start_sentinel_background())
