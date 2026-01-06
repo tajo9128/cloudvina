@@ -120,6 +120,11 @@ class DockingEngine:
         try:
             # A. Score Vina Pose (Fast: <1s)
             logger.info("Gnina: Running fast score-only check...")
+            
+            # Verify Vina Output exists
+            if not out_vina or not os.path.exists(out_vina) or os.path.getsize(out_vina) == 0:
+                 raise Exception("Vina output missing or empty. Cannot run Gnina scoring.")
+
             # Use Vina output as input for scoring
             score_cmd = [
                 '/usr/local/bin/gnina', '--score_only',
@@ -129,10 +134,34 @@ class DockingEngine:
             
             # Parse CNNscore from stdout
             cnn_score = 0.0
+            
+            # Debug: Log full output if it looks weird
+            if not score_res.stdout.strip():
+                 logger.warning(f"Gnina (Fast Score) returned empty stdout. Stderr: {score_res.stderr}")
+
+            # Robust Parsing Strategy
             for line in score_res.stdout.splitlines():
                 if "CNNscore" in line:
+                    # Standard Format: ## Name CNNscore CNNaffinity
                     parts = line.split()
-                    if len(parts) >= 3: cnn_score = float(parts[2])
+                    if "Name" in line: continue # Skip Header
+                    
+                    # Try explicit columns first (Format: <Name> <Score> <Affinity>)
+                    if len(parts) >= 3:
+                        try:
+                            # Try idx 1 (Score) or idx 2 (Affinity)? 
+                            # Usually: [0]=Name, [1]=Score, [2]=Affinity
+                            val = float(parts[1]) 
+                            if 0.0 <= val <= 1.0: cnn_score = val
+                        except: pass
+                    
+                    # Fallback: Search for ANY float between 0 and 1 in the line
+                    if cnn_score == 0.0:
+                        for part in parts:
+                            try:
+                                val = float(part)
+                                if 0.0 <= val <= 1.0 and val > cnn_score: cnn_score = val
+                            except: pass
             
             logger.info(f"Gnina Fast Score: {cnn_score}")
             results["engines"]["gnina_fast"] = {"cnn_score": cnn_score}
@@ -152,12 +181,13 @@ class DockingEngine:
                     results["best_affinity"] = gnina_aff
                     results["output_file"] = out_gnina
             else:
-                logger.info("Gnina: Low confidence (<0.5) or Tier Filter. Skipping full minimization.")
+                reason = "Low CNNscore (<0.5)" if cnn_score > 0 else "Scoring Parsing Failed (Score=0.0)"
+                logger.info(f"Gnina: {reason}. Skipping full minimization.")
                 results["engines"]["gnina"] = {
                     "skipped": True, 
-                    "reason": "Low CNNscore/Tier", 
+                    "reason": reason, 
                     "cnn_score": cnn_score,
-                    "stdout": score_res.stdout, # Include log for debugging 0.0 scores
+                    "stdout": score_res.stdout, # Include log for debugging
                     "stderr": score_res.stderr
                 }
                 
