@@ -49,19 +49,19 @@ export default function MoleculeViewer({
         // Preset Configurations
         const config = {
             publication: {
-                receptor: { style: 'cartoon', color: 'spectrum', opacity: 1.0 },
+                receptor: { style: 'cartoon', color: 'ss', opacity: 1.0 },  // Secondary structure coloring (rainbow)
                 ligand: { style: 'stick', color: 'greenCarbon', radius: 0.25 },
                 surface: false,
                 hbonds: true
             },
             analysis: {
-                receptor: { style: 'cartoon', color: 'spectrum', opacity: 0.8 },
+                receptor: { style: 'cartoon', color: 'ss', opacity: 0.8 },  // Secondary structure coloring
                 ligand: { style: 'stick', color: 'cyanCarbon', radius: 0.25 },
                 surface: false,
                 hbonds: true
             },
             surface: {
-                receptor: { style: 'cartoon', color: 'white', opacity: 1.0 },
+                receptor: { style: 'cartoon', color: 'ss', opacity: 0.7 },  // Colored receptor for surface mode
                 ligand: { style: 'stick', color: 'greenCarbon', radius: 0.25 },
                 surface: true,
                 hbonds: false
@@ -71,13 +71,32 @@ export default function MoleculeViewer({
         // --- ADD RECEPTOR ---
         if (receptorData && isValidPDB(receptorData)) {
             viewer.addModel(receptorData, receptorType)
-            const style = {}
-            if (config.receptor.style === 'cartoon') {
+
+            // Critical Fix: PDBQTs usually lack secondary structure for cartoons.
+            // If receptorType is 'pdbqt' and style is 'cartoon', fallback to 'line' or 'stick' to ensure visibility.
+            let style = {}
+            const isPdbqt = receptorType === 'pdbqt'
+
+            if (config.receptor.style === 'cartoon' && isPdbqt) {
+                // Fallback for PDBQT with vibrant coloring
+                style.stick = {
+                    colorscheme: 'chainHetatm',  // Colorful chain-based coloring
+                    radius: 0.15
+                }
+                console.warn("MoleculeViewer: PDBQT detected, falling back from Cartoon to Stick style with chain coloring.")
+            } else if (config.receptor.style === 'cartoon') {
                 style.cartoon = {
-                    color: config.receptor.color === 'spectrum' ? 'spectrum' : config.receptor.color,
+                    colorscheme: config.receptor.color,  // Use 'ss' for secondary structure rainbow
+                    opacity: config.receptor.opacity
+                }
+            } else {
+                // Surface mode or other
+                style[config.receptor.style] = {
+                    colorscheme: config.receptor.color,
                     opacity: config.receptor.opacity
                 }
             }
+
             viewer.setStyle({ model: 0 }, style)
         }
 
