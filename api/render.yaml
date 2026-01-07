@@ -5,7 +5,7 @@ services:
     region: oregon
     plan: free
     buildCommand: chmod +x build.sh && ./build.sh
-    startCommand: gunicorn main:app -k uvicorn.workers.UvicornWorker -w 4 -b 0.0.0.0:$PORT --timeout 120 --log-level info
+    startCommand: gunicorn main:app -k uvicorn.workers.UvicornWorker -w 4 -b 0.0.0.0:$PORT --timeout 120 --log-level info --access-logfile - --error-logfile - --capture-output --enable-stdio-inheritance
     envVars:
       - key: SUPABASE_URL
         sync: false

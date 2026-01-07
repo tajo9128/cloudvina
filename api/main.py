@@ -20,13 +20,22 @@ import os
 import logging
 import sys
 
+# Force unbuffered output
+sys.stdout = open(sys.stdout.fileno(), 'w', buffering=1)
+sys.stderr = open(sys.stderr.fileno(), 'w', buffering=1)
+
 # Force output to stdout (Render captures this)
 logging.basicConfig(
     level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    handlers=[logging.StreamHandler(sys.stdout)]
+    format="%(asctime)s [%(levelname)s] [%(name)s] %(message)s",
+    handlers=[logging.StreamHandler(sys.stdout)],
+    force=True  # Override any existing configuration
 )
 logger = logging.getLogger("api")
+
+# Don't suppress uvicorn logs
+logging.getLogger("uvicorn").setLevel(logging.INFO)
+logging.getLogger("uvicorn.access").setLevel(logging.INFO)
 
 # ... (sys.path stuff)
 
