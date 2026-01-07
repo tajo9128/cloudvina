@@ -187,22 +187,7 @@ async def websocket_job_progress(websocket: WebSocket, job_id: str):
     except WebSocketDisconnect:
         manager.disconnect(websocket, job_id)
 
-# CORS middleware for frontend
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[
-        "https://www.biodockify.com",
-        "https://biodockify.com",
-        "https://cloudvina-git-main-tajuddin-shaiks-projects.vercel.app",
-        "https://cloudvina.vercel.app",
-        "http://localhost:5173",
-        "http://localhost:3000"
-    ],
-    allow_origin_regex="https://.*\.biodockify\.com", # Specific subdomains
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+
 
 # Register Routers
 app.include_router(tools_router)
@@ -234,7 +219,6 @@ app.include_router(benchmark_router)
 from routes.user_system import router as user_router
 app.include_router(user_router)
 
-from routes.reporting import router as reporting_router
 from routes.reporting import router as reporting_router
 app.include_router(reporting_router)
 
