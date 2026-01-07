@@ -64,7 +64,6 @@ app = FastAPI(
     version="6.4.0",
     docs_url=None if os.getenv("ENVIRONMENT") == "production" else "/docs",
     redoc_url=None if os.getenv("ENVIRONMENT") == "production" else "/redoc"
-    redoc_url=None if os.getenv("ENVIRONMENT") == "production" else "/redoc"
 )
 
 # --- CORS Middleware (CRITICAL for Frontend) ---
