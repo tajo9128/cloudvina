@@ -19,6 +19,7 @@ export default function JobResultsPage() {
     const [elapsedTime, setElapsedTime] = useState(0)
     const [pdbqtData, setPdbqtData] = useState(null)
     const [receptorData, setReceptorData] = useState(null)
+    const [receptorType, setReceptorType] = useState('pdbqt')
 
     // Multiple Pocket Results State
     const [detectedPockets, setDetectedPockets] = useState([])
@@ -121,7 +122,13 @@ export default function JobResultsPage() {
             }
             if (data.download_urls?.receptor && !receptorData) {
                 const res = await fetch(data.download_urls.receptor)
-                if (res.ok) setReceptorData(await res.text())
+                if (res.ok) {
+                    setReceptorData(await res.text())
+                    // Auto-detect type for Viewer
+                    if (data.download_urls.receptor.endsWith('.pdb')) {
+                        setReceptorType('pdb')
+                    }
+                }
             }
         } catch (err) { console.error(err) }
     }
@@ -467,7 +474,31 @@ export default function JobResultsPage() {
                                     {/* ... content ... */}
                                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                                         {/* 1. PDF Report */}
-                                        <a href={`${API_URL}/jobs/${jobId}/export/pdf`} download className="group col-span-1 lg:col-span-3 flex items-center justify-between p-4 bg-gradient-to-r from-red-600/20 to-orange-600/20 hover:from-red-600/30 hover:to-orange-600/30 border border-red-500/30 rounded-xl transition-all">
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    const { data: { session } } = await supabase.auth.getSession()
+                                                    if (!session) {
+                                                        alert('Please login to download PDF')
+                                                        return
+                                                    }
+                                                    const res = await fetch(`${API_URL}/jobs/${jobId}/export/pdf`, {
+                                                        headers: { 'Authorization': `Bearer ${session.access_token}` }
+                                                    })
+                                                    if (!res.ok) throw new Error('Failed to generate PDF')
+                                                    const blob = await res.blob()
+                                                    const url = window.URL.createObjectURL(blob)
+                                                    const a = document.createElement('a')
+                                                    a.href = url
+                                                    a.download = `BioDockify_Report_${jobId}.pdf`
+                                                    a.click()
+                                                    window.URL.revokeObjectURL(url)
+                                                } catch (err) {
+                                                    alert('Error downloading PDF: ' + err.message)
+                                                }
+                                            }}
+                                            className="group col-span-1 lg:col-span-3 flex items-center justify-between p-4 bg-gradient-to-r from-red-600/20 to-orange-600/20 hover:from-red-600/30 hover:to-orange-600/30 border border-red-500/30 rounded-xl transition-all cursor-pointer"
+                                        >
                                             <div className="flex items-center gap-3">
                                                 <div className="p-2 bg-red-500 rounded-lg text-white shadow-lg shadow-red-500/30"><FileText size={20} /></div>
                                                 <div>
@@ -476,7 +507,7 @@ export default function JobResultsPage() {
                                                 </div>
                                             </div>
                                             <Download size={16} className="text-red-400 group-hover:text-white transition-colors" />
-                                        </a>
+                                        </button>
 
                                         {/* 2. Output PDBQT/SDF */}
                                         {job.download_urls.output_vina && (
@@ -589,6 +620,7 @@ export default function JobResultsPage() {
                                 <MoleculeViewer
                                     pdbqtData={pdbqtData}
                                     receptorData={receptorData}
+                                    receptorType={receptorType}
                                     title="Docking Structure"
                                     interactions={interactions}
                                     bindingAffinity={job?.binding_affinity}
