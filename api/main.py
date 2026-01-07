@@ -64,10 +64,19 @@ app = FastAPI(
     version="6.4.0",
     docs_url=None if os.getenv("ENVIRONMENT") == "production" else "/docs",
     redoc_url=None if os.getenv("ENVIRONMENT") == "production" else "/redoc"
+    redoc_url=None if os.getenv("ENVIRONMENT") == "production" else "/redoc"
 )
 
+# --- CORS Middleware (CRITICAL for Frontend) ---
+from fastapi.middleware.cors import CORSMiddleware
 
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Allow all origins for now (Render, Vercel, localhost)
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.on_event("startup")
 async def startup_event():
     logger.info("="*50)
