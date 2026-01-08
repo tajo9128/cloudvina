@@ -505,19 +505,24 @@ async def _generate_job_export(job_id, current_user, credentials, format_type):
     if not job.data: raise HTTPException(404, "Not found")
     
     job_data = job.data
-    # Helper to clean up calling ExportService with non-None data
     analysis = job_data.get('docking_results') or {}
     interactions = job_data.get('interaction_results') or {}
     
-    if format_type == 'pdf': return await ExportService.export_job_pdf(job_data, analysis, interactions)
-    elif format_type == 'csv': return ExportService.export_jobs_csv([job_data])
-    elif format_type == 'json': return ExportService.export_jobs_json([job_data])
-    elif format_type == 'pymol':
-        # Need Signed URLs for PyMOL to load remote files
-        receptor_url = generate_presigned_download_url(job_id, job_data.get('receptor_filename', 'receptor.pdb'))
-        # Try finding standard output keys
-        ligand_url = generate_presigned_download_url(job_id, 'output.pdbqt')
-        return ExportService.export_job_pymol(job_id, receptor_url, ligand_url)
+    try:
+        if format_type == 'pdf': return await ExportService.export_job_pdf(job_data, analysis, interactions)
+        elif format_type == 'csv': return ExportService.export_jobs_csv([job_data])
+        elif format_type == 'json': return ExportService.export_jobs_json([job_data])
+        elif format_type == 'pymol':
+            # Need Signed URLs for PyMOL to load remote files
+            receptor_url = generate_presigned_download_url(job_id, job_data.get('receptor_filename', 'receptor.pdb'))
+            # Try finding standard output keys
+            ligand_url = generate_presigned_download_url(job_id, 'output.pdbqt')
+            return ExportService.export_job_pymol(job_id, receptor_url, ligand_url)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        # Re-raise to let FastAPI handle the 500 response, but now we have logs
+        raise HTTPException(status_code=500, detail=f"Export failed: {str(e)}")
 
 @router.get("/{job_id}/export/pdf")
 async def export_pdf(job_id: str, u=Depends(get_current_user), c=Security(security)): return await _generate_job_export(job_id, u, c, 'pdf')

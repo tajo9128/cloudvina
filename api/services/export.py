@@ -163,7 +163,7 @@ class ExportService:
         from services.report_generator import ReportGenerator
         
         generator = ReportGenerator()
-        script_buffer = generator.generate_pymol_script(job_id, receptor_url, ligand_url)
+        script_buffer = generator.generate_pymol_export(job_id, receptor_url, ligand_url)
         
         return StreamingResponse(
             script_buffer,
