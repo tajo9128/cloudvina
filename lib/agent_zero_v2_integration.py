@@ -157,10 +157,10 @@ class AgentZeroV2Integration:
         try:
             # Repo Awareness
             self.file_indexer = FileIndexer(str(self.project_path))
-            self.file_indexer.index()
+            self.file_indexer.scan()
 
             self.dependency_graph = DependencyGraph(str(self.project_path))
-            self.dependency_graph.build()
+            self.dependency_graph.build_from_file_index(self.file_indexer.index)
 
             print("[Agent Zero v2] ✓ Repo Awareness loaded")
         except Exception as e:
