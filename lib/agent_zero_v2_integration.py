@@ -52,7 +52,7 @@ try:
     from phase1_optimizations.cache_manager import CacheManager
     from phase1_optimizations.async_logger import AsyncLogger
     from phase1_optimizations.state_streaming import StateStreamer
-    from phase1_optimizations.async_operations import AsyncOperations
+    from phase1_optimizations.async_operations import AsyncRepoInitializer
     PHASE1_OPT_AVAILABLE = True
 except ImportError as e:
     PHASE1_OPT_AVAILABLE = False
@@ -177,8 +177,8 @@ class AgentZeroV2Integration:
 
         try:
             # Explainability
-            self.decision_logger = DecisionLogger()
-            self.execution_tracer = ExecutionTracer()
+            self.decision_logger = DecisionLogger(session_id='v2_default_session')
+            self.execution_tracer = ExecutionTracer(session_id='v2_default_session')
 
             print("[Agent Zero v2] ✓ Explainability loaded")
         except Exception as e:
