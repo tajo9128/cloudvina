@@ -131,7 +131,7 @@ class AgentZeroV2Integration:
         # Phase 1 Optimizations
         if PHASE1_OPT_AVAILABLE:
             try:
-                self.cache_manager = CacheManager(ttl_seconds=3600)
+                self.cache_manager = CacheManager(default_ttl=3600)
                 self.async_logger = AsyncLogger()
                 self.state_streamer = StateStreamer()
                 self.async_ops = AsyncOperations(max_workers=4)
