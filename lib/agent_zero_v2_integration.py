@@ -19,7 +19,7 @@ import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 # Add lib directory to path
-LIB_PATH = Path(__file__).parent.parent.parent / "lib"
+LIB_PATH = Path(__file__).parent
 if LIB_PATH.exists():
     sys.path.insert(0, str(LIB_PATH))
 
