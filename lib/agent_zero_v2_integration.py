@@ -96,7 +96,7 @@ class AgentZeroV2Integration:
         self.cache_manager: Optional[CacheManager] = None
         self.async_logger: Optional[AsyncLogger] = None
         self.state_streamer: Optional[StateStreamer] = None
-        self.async_ops: Optional[AsyncOperations] = None
+        self.async_ops: Optional[AsyncRepoInitializer] = None
 
         # Speed Optimizations - Phase 2
         self.planning_envelope: Optional[PlanningEnvelope] = None
@@ -134,7 +134,7 @@ class AgentZeroV2Integration:
                 self.cache_manager = CacheManager(default_ttl=3600)
                 self.async_logger = AsyncLogger()
                 self.state_streamer = StateStreamer()
-                self.async_ops = AsyncOperations(max_workers=4)
+                self.async_ops = AsyncRepoInitializer(project_path=self.project_path)
                 print("[Agent Zero v2] ✓ Phase 1 Optimizations loaded")
             except Exception as e:
                 print(f"[Agent Zero v2] ✗ Phase 1 Optimizations failed: {e}")
