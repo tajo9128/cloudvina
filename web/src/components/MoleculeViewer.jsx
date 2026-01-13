@@ -75,34 +75,34 @@ export default function MoleculeViewer({
             try {
                 viewer.addModel(receptorData, receptorType)
 
-                // Apply receptor style
-                // Use 'spectrum' color scheme which works reliably for all file types
-                let receptorStyle = {}
-                if (config.receptor.style === 'cartoon') {
-                    receptorStyle.cartoon = {
-                        color: 'spectrum',
-                        opacity: config.receptor.opacity
+                // ROBUST STYLING: Use 'line' style as primary (always works)
+                // 'cartoon' requires secondary structure data that PDBQT files lack
+                // 'spectrum' coloring gives rainbow effect regardless of file type
+                viewer.setStyle({ model: 0 }, {
+                    line: {
+                        colorscheme: 'rasmol',
+                        linewidth: 1.5
                     }
-                } else {
-                    receptorStyle[config.receptor.style] = {
-                        colorscheme: config.receptor.color,
-                        opacity: config.receptor.opacity
+                })
+
+                // Overlay a transparent cartoon if the file supports it (PDB with SS data)
+                if (receptorType === 'pdb') {
+                    try {
+                        viewer.addStyle({ model: 0 }, {
+                            cartoon: {
+                                color: 'spectrum',
+                                opacity: 0.7
+                            }
+                        })
+                    } catch (e) {
+                        console.warn("Cartoon overlay failed, using line only")
                     }
                 }
 
-                viewer.setStyle({ model: 0 }, receptorStyle)
-                console.log("✅ Receptor styled:", config.receptor.style)
+                console.log("✅ Receptor styled: line + spectrum")
 
             } catch (receptorErr) {
                 console.error("❌ Receptor rendering failed:", receptorErr)
-                // Fallback to simple line style if cartoon fails
-                try {
-                    viewer.addModel(receptorData, 'pdb') // Try as PDB
-                    viewer.setStyle({ model: 0 }, { line: { color: 'spectrum' } })
-                    console.log("⚠️ Receptor fallback to line style")
-                } catch (e) {
-                    console.error("❌ Receptor fallback also failed:", e)
-                }
             }
         } else {
             console.warn("⚠️ MoleculeViewer: No valid receptor data provided")

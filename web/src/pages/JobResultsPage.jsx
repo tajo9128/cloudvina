@@ -388,80 +388,7 @@ export default function JobResultsPage() {
                             </div>
                         </div>
 
-                        {/* Peer Review Section (Phase 4) */}
-                        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 p-8">
-                            <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                                    🎓 AI Peer-Review Simulator
-                                </h3>
-                                {!peerReview && (
-                                    <button
-                                        onClick={handlePeerReview}
-                                        disabled={reviewLoading}
-                                        className="bg-slate-900 text-white px-5 py-2 rounded-xl text-sm font-bold hover:bg-slate-800 transition-colors disabled:opacity-50 flex items-center gap-2"
-                                    >
-                                        {reviewLoading ? <span className="animate-spin">🔄</span> : '✨'}
-                                        Simulate Review Board
-                                    </button>
-                                )}
-                            </div>
 
-                            {peerReview && (
-                                <div className="animate-fade-in-up">
-                                    <div className={`p-4 rounded-xl mb-6 border ${peerReview.summary_verdict.includes("Reject") ? "bg-red-50 border-red-100 text-red-900" :
-                                        peerReview.summary_verdict.includes("Major") ? "bg-amber-50 border-amber-100 text-amber-900" :
-                                            "bg-emerald-50 border-emerald-100 text-emerald-900"
-                                        }`}>
-                                        <div className="font-bold text-xs uppercase tracking-wider mb-1">Board Verdict</div>
-                                        <div className="text-2xl font-bold">{peerReview.summary_verdict}</div>
-                                    </div>
-
-                                    <div className="space-y-4">
-                                        {peerReview.reviews.map((review, i) => (
-                                            <div key={i} className="flex gap-4 p-4 bg-slate-50 rounded-xl border border-slate-100">
-                                                <div className={`w-12 h-12 rounded-full flex items-center justify-center shrink-0 font-bold text-lg ${i === 0 ? "bg-blue-100 text-blue-600" : i === 1 ? "bg-purple-100 text-purple-600" : "bg-orange-100 text-orange-600"
-                                                    }`}>
-                                                    {i + 1}
-                                                </div>
-                                                <div>
-                                                    <div className="flex items-center gap-3 mb-1">
-                                                        <span className="font-bold text-slate-900">{review.reviewer}</span>
-                                                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${review.status.includes("Accept") ? "bg-green-100 text-green-700" :
-                                                            review.status.includes("Minor") ? "bg-blue-100 text-blue-700" :
-                                                                "bg-red-100 text-red-700"
-                                                            }`}>{review.status}</span>
-                                                    </div>
-                                                    <p className="text-slate-600 text-sm leading-relaxed">"{review.comment}"</p>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-
-                                    {peerReview.actionable_feedback && (
-                                        <div className="mt-6 pt-6 border-t border-slate-100">
-                                            <h4 className="font-bold text-slate-800 mb-3">Suggested Revisions:</h4>
-                                            <ul className="list-disc pl-5 space-y-1 text-slate-600 text-sm">
-                                                {peerReview.actionable_feedback.map((step, k) => (
-                                                    <li key={k}>{step}</li>
-                                                ))}
-                                            </ul>
-                                        </div>
-                                    )}
-                                </div>
-                            )}
-                            {!peerReview && !reviewLoading && (
-                                <p className="text-slate-500 text-sm">
-                                    Submit your results to our virtual panel of 3 AI reviewers (Methodology, Statistics, Novelty) to identify weaknesses before you publish.
-                                </p>
-                            )}
-                            {reviewLoading && (
-                                <div className="space-y-3 py-4">
-                                    <div className="h-4 bg-slate-100 rounded animate-pulse w-3/4"></div>
-                                    <div className="h-4 bg-slate-100 rounded animate-pulse w-1/2"></div>
-                                    <div className="h-4 bg-slate-100 rounded animate-pulse w-full"></div>
-                                </div>
-                            )}
-                        </div>
 
                         {/* ... Existing components (Downloads, Tables) ... */}
                         {job.status === 'SUCCEEDED' && job.download_urls && (
@@ -560,14 +487,7 @@ export default function JobResultsPage() {
 
                         {/* Detailed Tables */}
                         <div className="space-y-6">
-                            {analysis?.poses && (
-                                <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-                                    <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700">Docking Poses</div>
-                                    <div className="p-6">
-                                        <DockingResultsTable poses={analysis.poses} />
-                                    </div>
-                                </div>
-                            )}
+
                             {interactions && (
                                 <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
                                     <div className="px-6 py-4 bg-slate-50 border-b border-slate-200 font-bold text-slate-700">Molecular Interactions</div>
