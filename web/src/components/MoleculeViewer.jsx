@@ -70,51 +70,61 @@ export default function MoleculeViewer({
 
         // --- ADD RECEPTOR ---
         if (receptorData && isValidPDB(receptorData)) {
-            const m = viewer.addModel(receptorData, receptorType)
+            console.log("🔬 MoleculeViewer: Adding receptor...", receptorType, receptorData.length, "chars")
 
-            // 🌟 CRITICAL ENHANCEMENT: Auto-calculate Secondary Structure
-            // This allows PDBQT (which lacks SS info) to be rendered as beautiful Caroons
-            // instead of falling back to messy Sticks or Lines.
             try {
-                m.calculateSecondaryStructure({
-                    hbondCutoff: 3.5,
-                    anchorLength: 2,
-                    alphaHelix: { minLength: 4 },
-                    betaSheet: { minLength: 2 }
-                })
-            } catch (e) {
-                console.warn("MoleculeViewer: SS Calculation failed", e)
-            }
+                viewer.addModel(receptorData, receptorType)
 
-            // Refined Styling Logic
-            let style = {}
-            if (config.receptor.style === 'cartoon') {
-                // Now we can use Cartoon for everything!
-                style.cartoon = {
-                    colorscheme: 'spectrum', // Rainbow (Blue->Red N->C)
-                    opacity: config.receptor.opacity,
-                    thickness: 0.8, // Slightly thicker for "Premium" look
-                    ribbon: false
+                // Apply receptor style
+                // Use 'spectrum' color scheme which works reliably for all file types
+                let receptorStyle = {}
+                if (config.receptor.style === 'cartoon') {
+                    receptorStyle.cartoon = {
+                        color: 'spectrum',
+                        opacity: config.receptor.opacity
+                    }
+                } else {
+                    receptorStyle[config.receptor.style] = {
+                        colorscheme: config.receptor.color,
+                        opacity: config.receptor.opacity
+                    }
                 }
-            } else {
-                style[config.receptor.style] = {
-                    colorscheme: config.receptor.color,
-                    opacity: config.receptor.opacity
+
+                viewer.setStyle({ model: 0 }, receptorStyle)
+                console.log("✅ Receptor styled:", config.receptor.style)
+
+            } catch (receptorErr) {
+                console.error("❌ Receptor rendering failed:", receptorErr)
+                // Fallback to simple line style if cartoon fails
+                try {
+                    viewer.addModel(receptorData, 'pdb') // Try as PDB
+                    viewer.setStyle({ model: 0 }, { line: { color: 'spectrum' } })
+                    console.log("⚠️ Receptor fallback to line style")
+                } catch (e) {
+                    console.error("❌ Receptor fallback also failed:", e)
                 }
             }
-
-            viewer.setStyle({ model: 0 }, style)
+        } else {
+            console.warn("⚠️ MoleculeViewer: No valid receptor data provided")
         }
 
         // --- ADD LIGAND ---
         if (pdbqtData && isValidPDB(pdbqtData)) {
-            viewer.addModel(pdbqtData, ligandType)
-            viewer.setStyle({ model: -1 }, {
-                stick: {
-                    colorscheme: config.ligand.color,
-                    radius: config.ligand.radius
-                }
-            })
+            console.log("🧪 MoleculeViewer: Adding ligand...", ligandType, pdbqtData.length, "chars")
+            try {
+                viewer.addModel(pdbqtData, ligandType)
+                viewer.setStyle({ model: -1 }, {
+                    stick: {
+                        colorscheme: config.ligand.color,
+                        radius: config.ligand.radius
+                    }
+                })
+                console.log("✅ Ligand styled:", config.ligand.color)
+            } catch (ligandErr) {
+                console.error("❌ Ligand rendering failed:", ligandErr)
+            }
+        } else {
+            console.warn("⚠️ MoleculeViewer: No valid ligand data provided", pdbqtData ? pdbqtData.substring(0, 50) : 'null')
         }
 
         // --- OPTIONAL: SURFACE ---
