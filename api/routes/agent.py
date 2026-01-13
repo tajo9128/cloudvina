@@ -6,7 +6,6 @@ from agent_zero.gemini_client import GeminiClient
 from agent_zero import PROMPT_EXPLAIN_RESULTS, PROMPT_NEXT_STEPS
 
 router = APIRouter(prefix="/agent", tags=["agent_zero"])
-router = APIRouter(prefix="/agent", tags=["agent_zero"])
 agent = GeminiClient()
 
 class ConsultRequest(BaseModel):
@@ -31,7 +30,7 @@ async def consult_agent(request: ConsultRequest):
              )
         elif request.context_type == "peer_review":
              # Import locally to avoid circulars if any, though PROMPT_PEER_REVIEW is in prompts
-             from api.agent_zero import PROMPT_PEER_REVIEW
+             from agent_zero.prompts import PROMPT_PEER_REVIEW
              user_prompt = PROMPT_PEER_REVIEW.format(
                  context_json=request.data
              )
