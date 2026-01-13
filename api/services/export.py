@@ -172,3 +172,30 @@ class ExportService:
                 "Content-Disposition": f"attachment; filename=visualization_{job_id}.pml"
             }
         )
+
+    @staticmethod
+    def export_batch_pdf(batch_id: str, jobs: List[Dict]) -> StreamingResponse:
+        """Export comprehensive batch summary PDF"""
+        from services.report_generator import ReportGenerator
+        
+        # Format hits for legacy generator
+        hits = []
+        for job in jobs:
+            hit = {
+                'name': job.get('ligand_filename', 'Unknown'),
+                'affinity': job.get('binding_affinity', 'N/A'),
+                'rmsd': job.get('docking_score', '-') # Using Gnina/Vina score as secondary metric
+            }
+            hits.append(hit)
+            
+        generator = ReportGenerator()
+        # "Batch {id}" as project name
+        pdf_buffer = generator.generate_report(hits, f"Batch {batch_id[:8]}")
+        
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f"attachment; filename=BioDockify_Batch_{batch_id[:8]}.pdf"
+            }
+        )

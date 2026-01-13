@@ -36,7 +36,8 @@ class QueueProcessor:
         On Startup: Reset any 'PROCESSING' jobs that were left stranded by a crash.
         """
         try:
-            logger.info("🚑 [Rescue] Checking for stranded PROCESSING jobs...")
+            # Silence this log (spammy)
+            # logger.info("🚑 [Rescue] Checking for stranded PROCESSING jobs...")
             response = self.db.table("jobs").select("id").eq("status", "PROCESSING").execute()
             if response.data:
                 ids = [j['id'] for j in response.data]

@@ -287,7 +287,8 @@ async def generate_batch_report(
         return ExportService.export_batch_pdf(batch_id, jobs)
         
     except Exception as e:
-         print(f"Report generation error: {e}", flush=True)
+         import traceback
+         traceback.print_exc()
          raise HTTPException(500, f"Report generation failed: {e}")
 
 @router.get("/{batch_id}")

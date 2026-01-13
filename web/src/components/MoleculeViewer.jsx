@@ -70,27 +70,33 @@ export default function MoleculeViewer({
 
         // --- ADD RECEPTOR ---
         if (receptorData && isValidPDB(receptorData)) {
-            viewer.addModel(receptorData, receptorType)
+            const m = viewer.addModel(receptorData, receptorType)
 
-            // Critical Fix: PDBQTs usually lack secondary structure for cartoons.
-            // If receptorType is 'pdbqt' and style is 'cartoon', fallback to 'line' or 'stick' to ensure visibility.
+            // 🌟 CRITICAL ENHANCEMENT: Auto-calculate Secondary Structure
+            // This allows PDBQT (which lacks SS info) to be rendered as beautiful Caroons
+            // instead of falling back to messy Sticks or Lines.
+            try {
+                m.calculateSecondaryStructure({
+                    hbondCutoff: 3.5,
+                    anchorLength: 2,
+                    alphaHelix: { minLength: 4 },
+                    betaSheet: { minLength: 2 }
+                })
+            } catch (e) {
+                console.warn("MoleculeViewer: SS Calculation failed", e)
+            }
+
+            // Refined Styling Logic
             let style = {}
-            const isPdbqt = receptorType === 'pdbqt'
-
-            if (config.receptor.style === 'cartoon' && isPdbqt) {
-                // Fallback for PDBQT with vibrant coloring
-                style.stick = {
-                    colorscheme: 'chainHetatm',  // Colorful chain-based coloring
-                    radius: 0.15
-                }
-                console.warn("MoleculeViewer: PDBQT detected, falling back from Cartoon to Stick style with chain coloring.")
-            } else if (config.receptor.style === 'cartoon') {
+            if (config.receptor.style === 'cartoon') {
+                // Now we can use Cartoon for everything!
                 style.cartoon = {
-                    colorscheme: config.receptor.color,  // Use 'ss' for secondary structure rainbow
-                    opacity: config.receptor.opacity
+                    colorscheme: 'spectrum', // Rainbow (Blue->Red N->C)
+                    opacity: config.receptor.opacity,
+                    thickness: 0.8, // Slightly thicker for "Premium" look
+                    ribbon: false
                 }
             } else {
-                // Surface mode or other
                 style[config.receptor.style] = {
                     colorscheme: config.receptor.color,
                     opacity: config.receptor.opacity
@@ -268,9 +274,11 @@ export default function MoleculeViewer({
                     </label>
 
                     <div className="flex-1 text-right">
-                        <button onClick={handleSnapshot} className="text-xs font-bold text-slate-500 hover:text-indigo-600 flex items-center gap-1 justify-end ml-auto">
-                            <Camera size={14} /> Download Image
-                        </button>
+                        <div className="flex-1 text-right">
+                            <button onClick={handleSnapshot} className="px-3 py-1.5 bg-slate-900 text-white rounded-lg text-xs font-bold hover:bg-slate-800 transition-all flex items-center gap-2 ml-auto shadow-sm">
+                                <Camera size={14} /> Take Snapshot
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
